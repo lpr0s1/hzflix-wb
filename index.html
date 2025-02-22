@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr" translate="no">
+<head>
+    <meta charset="UTF-8">
+<meta property="og:title" content="Hzflix">
+<meta property="og:description" content="Trouvez les films les plus récents sorties en 2025">
+<meta property="og:url" content="https://www.votre-site.com">
+<meta property="og:type" content="website">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hzflix - Regarder les films les plus récents</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            height: 100%;
+            background: linear-gradient(135deg, #008b8b, #333);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: sticky;
+backdrop-filter: blur(10px);
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            transition: background-color 0.3s ease;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-button {
+            font-size: 30px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .menu {
+            display: flex;
+            gap: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .menu a:hover {
+            background-color: #008b8b;
+            transform: scale(1.1);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 20;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-menu a {
+            font-size: 24px;
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            width: 80%;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .mobile-menu a:hover {
+            background-color: #008b8b;
+            transform: scale(1.05);
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-menu:hover {
+            color: #008b8b;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://via.placeholder.com/1500x800');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            text-align: center;
+        }
+
+        .hero-content {
+            position: absolute;
+            z-index: 1;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 60px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            animation: fadeInUp 2s ease-out;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 25px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 15px 30px;
+            background-color: #008b8b;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-container button:hover {
+            background-color: #005757;
+        }
+
+        .results {
+            margin-top: 30px;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .movie-card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .movie-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .movie-card p {
+            font-size: 16px;
+            color: #bbb;
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.9);
+            text-align: center;
+            padding: 20px;
+        }
+
+        footer p {
+            margin: 0;
+            color: #bbb;
+        }
+
+        @media screen and (max-width: 768px) {
+            .menu {
+                display: none;
+            }
+
+            .menu-button {
+                display: block;
+                color: white;
+                cursor: pointer;
+            }
+
+            .hero h1 {
+                font-size: 40px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">hzflix</div>
+        <div class="menu">
+            <a href="#">Home</a>
+            <a href="#">Contact</a>
+            <a href="#">About</a>
+        </div>
+        <div class="menu-button" onclick="toggleMenu()">☰</div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="close-menu" onclick="closeMenu()">✖</div>
+        <a href="#">Home</a>
+        <a href="#">Contact</a>
+        <a href="#">About</a>
+    </div>
+
+<img class="vedette" src="https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg"/>
+<center>
+<h2 style="color: white; text-shadow: 0px 1px 3px black; padding: 10px 50px; background: linear-gradient(32deg, black, darkgrey); box-shadow: 0px 3px 5px black;">En vedette</h2>
+</center>
+
+<style>
+.vedette{
+height: 400px;
+width: 100%;
+margin-top: -72px;
+  -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
+}
+
+</style>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Regarder les films les plus récents</h1>
+            <p>Sortie en 2025 - Faites votre recherche ci-dessous</p>
+            <div class="search-container">
+                <input id="searchInput" type="search" placeholder="Rechercher un film..." oninput="searchMovies()" list="dt">
+
+<datalist id="dt">
+</datalist>
+     
+            </div>
+            <div class="results" id="searchResults"></div>
+        </div>
+    </section>
+
+
+<style>
+.imgrech{
+height: 230px;
+align-item: center;
+align-content: center;
+border-radius: 5px;
+}
+
+.imglist{
+height: 230px;
+border-radius: 5px;
+margin-left: 30px;
+}
+
+.scro{
+display: flex;
+overflow-x: auto;
+overflow-y: hidden;
+}
+
+</style>
+<h2 style="color: white">Scroller vers la droite -></h2>
+
+<div class="scro">
+
+<a href="https://coflix.moe/film/popeyes-revenge/"><img class="imglist" src="https://m.media-amazon.com/images/M/MV5BNDc5OTQ0NmMtMmI1Zi00NWUyLWEyOTAtYmQ1OTY5OTdlYzNiXkEyXkFqcGc@._V1_FMjpg_UX900_.jpg"/></a>
+
+<a href="https://coflix.moe/film/alien-terreur-sur-grand-ecran/">
+<img class="imglist" src="https://media.themoviedb.org/t/p/w220_and_h330_face/d18URyZDJ4EYmAjMHFoXNuFAVOA.jpg"/></a>
+
+<a href="https://coflix.moe/film/the-bayou/">
+<img class="imglist" src="https://m.media-amazon.com/images/M/MV5BOGQ5MGVmOWYtN2Y0NS00MWM5LWI1MjItNTI5NDdkNmRiMzkzXkEyXkFqcGc@._V1_FMjpg_UY11858_.jpg"/></a>
+
+<a href="https://coflix.moe/film/redouane-bougheraba-du-panier-a-lorange-velodrome/">
+<img class="imglist" src="https://media.themoviedb.org/t/p/w220_and_h330_face/wd4kwLIFIXx7BEB6LqBPEm9Ga48.jpg"/></a>
+
+<a href="https://coflix.moe/film/captain-america-brave-new-world-2025/"><img class="imglist" src="https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg"/></a>
+
+
+</div>
+
+
+    <footer>
+        <p>&copy; 2025 hzflix. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('mobileMenu').style.transform = 'translateX(0)';
+        }
+
+        function closeMenu() {
+            document.getElementById('mobileMenu').style.transform = 'translateX(-100%)';
+        }
+
+const liste = [
+{name: "henry danger", ima: "https://m.media-amazon.com/images/M/MV5BNDg3ZjBjZmQtMmVlZC00MTJiLThjNDItZjJhMGFlYmYzZmM4XkEyXkFqcGc@._V1_FMjpg_UX780_.jpg", ur: "https://coflix.moe/film/henry-danger-the-movie/"},
+
+{name: "The Bayou", ima: "https://m.media-amazon.com/images/M/MV5BOGQ5MGVmOWYtN2Y0NS00MWM5LWI1MjItNTI5NDdkNmRiMzkzXkEyXkFqcGc@._V1_FMjpg_UY11858_.jpg", ur: "https://coflix.moe/film/the-bayou"},
+
+{name: "Redouane Bougheraba - Du Panier à l'Orange Vélodrome", ima: "https://media.themoviedb.org/t/p/w220_and_h330_face/wd4kwLIFIXx7BEB6LqBPEm9Ga48.jpg", ur: "https://coflix.moe/film/redouane-bougheraba-du-panier-a-lorange-velodrome/"},
+
+
+{name: "captain america - brave new world", ima: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", ur: "https://coflix.moe/film/captain-america-brave-new-world-2025/"}
+
+
+]
+
+
+
+function populateDatalist() {
+        const dv = document.getElementById("dt");
+        dv.innerHTML = "";
+
+        liste.forEach(mv => {
+            let option = document.createElement("option");
+            option.value = mv.name;
+            dv.appendChild(option);
+        });
+    }
+
+    populateDatalist()
+
+               function searchMovies() {
+    const inp = document.getElementById('searchInput').value.trim().toLowerCase();
+    const resu = document.getElementById('searchResults');
+
+    const rech = liste.find(t => t.name === inp);
+            
+    if (rech) {
+        resu.innerHTML = "<a href='" + rech.ur + "'><img class='imgrech' src='" + rech.ima + "' alt='movie image'></a>";
+    } else {
+        resu.innerHTML = "Aucun film trouvé.";
+    }
+}
+
+      
+    </script>
+
+
+
+</body>
+</html>
