@@ -40,7 +40,7 @@ background-repeat: no-repeat;
         }
 
         header {
-            position: fixed;
+            position: sticky;
 backdrop-filter: blur(10px);
             top: 0;
             left: 0;
@@ -221,6 +221,10 @@ background-color: transparent;
         }
 
         @media screen and (max-width: 768px) {
+
+          body{
+            width: 70%;
+          }
             .menu {
                 display: none;
             }
@@ -228,7 +232,6 @@ background-color: transparent;
             .menu-button {
                 display: block;
                 color: white;
-                cursor: pointer;
             }
 
             .hero h1 {
