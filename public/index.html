@@ -585,15 +585,14 @@ resu.style.transition = "all 0.4s ease";
         resu.innerHTML = "<a href='" + rech.ur + "'><img class='imgrech' src='" + rech.ima + "' alt='movie image'></a>";
 
       
-res.innerHTML = "<p style='color: lightgreen'>Film trouvé</p>";
+res.innerHTML = "<p style='color: lightgreen'>Film trouvé !</p>";
       res.style.filter = "blur(0px)";
 
-res.style.transform = "scale(0.8)";
+res.style.transform = "scale(1.3)";
     } else {
 resu.style.opacity = "0";
 resu.style.filter = "blur(10px)";
 res.style.opacity = "1";
-      res.innerHTML = "<p style='color: white'>Tu cherche quoi ?</p>";
 res.style.transition = "all 0.3s ease";
 res.style.transform = "scale(1.0)";
         res.innerHTML = "<p style='color: red'>Aucun film trouvé.</p>";
