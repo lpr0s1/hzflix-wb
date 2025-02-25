@@ -51,7 +51,7 @@ resu.style.transition = "all 0.4s ease";
         resu.innerHTML = "<a href='" + rech.ur + "'><img class='imgrech' src='" + rech.ima + "' alt='movie image'></a>";
 
       
-res.innerHTML = "<p style='color: lightgreen'>Film trouvé !</p>";
+res.innerHTML = "<p style='color: green'>Film trouvé !</p>";
       res.style.filter = "blur(0px)";
 
 res.style.transform = "scale(1.3)";
