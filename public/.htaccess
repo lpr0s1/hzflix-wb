@@ -1,16 +1,24 @@
 RewriteEngine On
 
+# Redirige les URLs sans extension vers .html s'il existe
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{DOCUMENT_ROOT}/$1.html -f
 RewriteRule ^([^/.]+)$ $1.html [L]
 
+# Redirige les fichiers CSS sans extension vers .css
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{DOCUMENT_ROOT}/$1.css -f
 RewriteRule ^([^/.]+)$ $1.css [L]
 
+# Redirige les fichiers JS sans extension vers .js
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{DOCUMENT_ROOT}/$1.js -f
 RewriteRule ^([^/.]+)$ $1.js [L]
+
+# Force les URLs sans trailing slash à être interprétées correctement
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/.]+)/$ $1 [L,R=301]
