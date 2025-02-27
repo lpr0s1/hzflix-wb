@@ -15,9 +15,17 @@ const liste = [
 {name: "redouane bougheraba - du panier à l'orange vélodrome", ima: "https://media.themoviedb.org/t/p/w220_and_h330_face/wd4kwLIFIXx7BEB6LqBPEm9Ga48.jpg", ur: "https://coflix.moe/film/redouane-bougheraba-du-panier-a-lorange-velodrome/"},
 
 
-{name: "captain america - brave new world", ima: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", ur: "https://coflix.moe/film/captain-america-brave-new-world-2025/"}
+{name: "captain america - brave new world", ima: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", ur: "https://coflix.moe/film/captain-america-brave-new-world-2025/"},
 
 
+        
+        
+        {name: "bref", ima: "https://media.themoviedb.org/t/p/w220_and_h330_face/sBbkssBa3DQaWSHSNyDaz7bmmLp.jpg", ur: "https://coflix.moe/film/bref-de-bons-amis/"},
+
+        {name: "valiant one", ima: "https://m.media-amazon.com/images/M/MV5BZTQzMGU4NjAtNjVmMy00MDIwLWI2YTYtYjY3MTM2YzExMzJkXkEyXkFqcGc@._V1_FMjpg_UY4000_.jpg", ur: "https://coflix.moe/film/valiant-one/"},
+        {name: "putin", ima: "https://m.media-amazon.com/images/M/MV5BMjZlODY0ZDEtMTUyOS00ZWJiLWI0NGEtMWY4NzViZjFmZGRmXkEyXkFqcGc@._V1_FMjpg_UY3000_.jpg", ur: "https://coflix.moe/film/putin/"}
+        
+        
 ]
 
 
