@@ -435,7 +435,7 @@ margin-top: -75px;
   <br>
 
   <center>
-  <button onclick="tvmod(); tvmodc();" style="display: flex; color: white; font-weight: bold; padding:10px 50px; border: solid 1px white; background-color: transparent; transform: scale(1.5); border-radius: 30px;">Activer mode TV et windows <i class="fas fa-tv"></i></button>
+  <button onclick="tvmod();" style="display: flex; color: white; font-weight: bold; padding:10px 50px; border: solid 1px white; background-color: transparent; transform: scale(1.5); border-radius: 30px;">Activer mode TV et windows <i class="fas fa-tv"></i></button>
   </center>
 
 
@@ -454,19 +454,14 @@ var wn = document.getElementById("wintv");
       wn.style.filter = "blur(0px)";
       wn.style.maxHeight = "100px";
       wn.style.opacity = "1";
+
+      if(wn.style.opacity === "0"){
+        wn.style.opacity = "1";
+    }else{
+        wn.style.opacity = "0";
+      }
       
     }
-
-    
-function tvmodc(){
-      wn.style.transition = "all 0.6s ease";
-      wn.style.transform = "translateY(0px)";
-      wn.style.filter = "blur(6px)";
-      wn.style.maxHeight = "0px";
-      wn.style.opacity = "0";
-    
-}
-    
     
   </script>
 <br>
