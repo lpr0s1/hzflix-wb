@@ -437,21 +437,21 @@ margin-top: -75px;
   </center>
 
 
-  <div id="wintv" style="opacity: 0; height: 0px; filter: blur(6px); transform: translateY(0px); transition: all 0.4s ease;">
+  <div id="wintv" style="opacity: 0; max-height: 0px; filter: blur(6px); transform: translateY(0px); transition: all 0.7s ease;">
 
     <h2 style="color: white">Actuellement en développement. Le mode TV sert a regarder les films sur Hzflix, et non sur des sites web externes.</h2>
-
+<hr>
   </div>
 
   <script>
 var wn = document.getElementById("wintv");
     
     function tvmod(){
-      wn.style.transition = "all 0.4s ease";
-      wn.style.opacity = "1";
-      wn.style.filter = "blur(0px)";
+      wn.style.transition = "all 0.6s ease";
       wn.style.transform = "translateY(100px)";
-      wn.style.height = "100px";
+      wn.style.filter = "blur(0px)";
+      wn.style.maxHeight = "100px";
+      wn.style.opacity = "1";
       
     }
 
