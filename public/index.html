@@ -442,7 +442,7 @@ margin-top: -75px;
   </button>
 </center>
 
-<div id="wintv" style="opacity: 0; max-height: 0px; filter: blur(6px); transform: translateY(0px); transition: all 0.7s ease; overflow-x: hidden; overflow-y: auto; width: 290px; max-width: 290px; border-right: solid 2px white;">
+<div id="wintv" style="opacity: 0; max-height: 0px; filter: blur(6px); transform: translateY(0px); transition: all 0.7s ease; overflow-x: hidden; overflow-y: auto; width: 320px; max-width: 340px; border-right: solid 2px white;">
   <h2 style="color: white">Actuellement en développement. Le mode TV sert à regarder les films sur Hzflix, et non sur des sites web externes.</h2>
   <br>
   <br>
@@ -450,7 +450,37 @@ margin-top: -75px;
   
 </div>
 
+  <br>
+
+  <div id="forwi">
+   <button style="padding: 10px 40px; border-radius: 30px; font-size: 25px; background-color: black; color: cyan;">
+     Page principal
+   </button>
+  </div>
+
 <script>
+
+  var forw = document.getElementById("forwi");
+  var visb = false;
+
+  function afficherwd(){
+    if(visb){
+      forw.style.opacity = "0";
+      forw.style.filter = "blur(8px)";
+      forw.style.transform = "translateY(0px)";
+      forw.style.transition = "all 0.5s ease";
+      
+    }else{
+
+      forw.style.opacity = "1";
+      forw.style.filter = "blur(0px)";
+      forw.style.transform = "translateY(100px)";
+      forw.style.transition = "all 0.5s ease";
+    }
+    visb = !visb;
+  }
+
+  
   var wn = document.getElementById("wintv");
   var isVisible = false;
 
