@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="fr" translate="no">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
-    <meta name="google-site-verification" content="xNWBMQifDtpq5HEFUenaTDYbvSZ0Y7SYUw6lxbEQrX0">
     <meta name="description" content="Regardez les films les plus récents sorties en 2025 avec Hzflix !">
     <title>hzflix - Films 2025</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="https://hzflix.online/favicon.ico" type="image/x-icon">
-    
+    <link rel="icon" href="icone.ico" type="image/x-icon">
+
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
     <!-- CSS Styles -->
     <style>
         body, html {
@@ -42,18 +44,18 @@
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 30px;
             font-weight: bold;
             color: #00FFFF;
             text-transform: uppercase;
             cursor: pointer;
+            text-align: left;
         }
 
         .search-container {
             position: relative;
             display: flex;
             align-items: center;
-            margin-right: 10px;
         }
 
         .search-container input {
@@ -69,6 +71,7 @@
 
         .search-container input:focus {
             border-color: #008b8b;
+            backdrop-filter: blur(3px);
         }
 
         .search-icon {
@@ -82,20 +85,21 @@
             margin-top: 120px;
             padding: 20px;
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 20px;
-            justify-content: center;
             overflow-x: auto;
+            scroll-behavior: smooth;
         }
 
         .movie-card {
+            position: relative;
             width: 250px;
             background-color: rgba(0, 0, 0, 0.6);
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
+            cursor: pointer;
         }
 
         .movie-card:hover {
@@ -107,25 +111,15 @@
             width: 100%;
             height: 350px;
             object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            transition: opacity 0.5s ease;
+            transition: transform 0.3s ease;
         }
 
         .movie-card video {
             width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 10px;
-            z-index: 0;
             opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .movie-card:hover img {
-            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .movie-card:hover video {
@@ -149,6 +143,10 @@
             bottom: 0;
             left: 0;
             right: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
         }
 
         footer a {
@@ -161,6 +159,23 @@
             text-decoration: underline;
         }
 
+        .bottom-menu {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .bottom-menu i {
+            color: #fff;
+            font-size: 25px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .bottom-menu i:hover {
+            color: #00FFFF;
+        }
+
         @media screen and (max-width: 768px) {
             .movie-card {
                 width: 200px;
@@ -169,18 +184,29 @@
             header {
                 padding: 15px;
             }
+
+            .bottom-menu i {
+                font-size: 20px;
+            }
         }
 
         @media screen and (max-width: 480px) {
             .movie-card {
                 width: 180px;
             }
+
+            header {
+                padding: 10px;
+            }
+
+            .bottom-menu i {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
     <header>
         <div class="logo" onclick="window.location.href='index.html'">Hzflix</div>
         <div class="search-container">
@@ -189,59 +215,33 @@
         </div>
     </header>
 
-    <!-- Movie List Section -->
     <section class="movie-list" id="movieList">
         <!-- Movie Cards will be inserted here by JavaScript -->
     </section>
 
-    <!-- Footer -->
     <footer>
-        <p>&copy; 2025 Hzflix - Tous droits réservés</p>
-        <p><a href="#">Politique de confidentialité</a></p>
+        <div class="bottom-menu">
+            <i class="fas fa-home"></i>
+            <i class="fas fa-search"></i>
+            <i class="fas fa-tv"></i>
+            <i class="fas fa-user"></i>
+        </div>
     </footer>
 
-    <!-- External Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 
     <script>
-        // Sample movie data with video links and images
         const movies = [
-            { 
-                title: "Captain America - Brave New World", 
-                videoSrc: "captain-america.mp4", 
-                imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg",
-                link: "https://db.com/captain-america"
-            },
-            { 
-                title: "Guardians of the Galaxy Vol. 3", 
-                videoSrc: "guardians-of-the-galaxy.mp4", 
-                imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", 
-                link: "https://db.com/guardians-of-the-galaxy"
-            },
-            { 
-                title: "The Flash", 
-                videoSrc: "the-flash.mp4", 
-                imgSrc: "https://m.media-amazon.com/images/M/MV5BMmEwYjk0NjQtM2Y3Ny00YzNlLTlmYzUtNzRjMzdiY2JkYjU3XkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", 
-                link: "https://db.com/the-flash"
-            },
-            { 
-                title: "Spider-Man: Across the Spider-Verse", 
-                videoSrc: "spider-man.mp4", 
-                imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", 
-                link: "https://db.com/spider-man"
-            },
-            { 
-                title: "Black Panther: Wakanda Forever", 
-                videoSrc: "black-panther.mp4", 
-                imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", 
-                link: "https://db.com/black-panther"
-            }
+            { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", link: "https://db.com/captain-america" },
+            { title: "Guardians of the Galaxy Vol. 3", videoSrc: "guardians-of-the-galaxy.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", link: "https://db.com/guardians-of-the-galaxy" },
+            { title: "The Flash", videoSrc: "the-flash.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BMmEwYjk0NjQtM2Y3Ny00YzNlLTlmYzUtNzRjMzdiY2JkYjU3XkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", link: "https://db.com/the-flash" },
+            { title: "Spider-Man: Across the Spider-Verse", videoSrc: "spider-man.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", link: "https://db.com/spider-man" },
+            { title: "Black Panther: Wakanda Forever", videoSrc: "black-panther.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg", link: "https://db.com/black-panther" }
         ];
 
-        // Function to display movies
         function displayMovies(moviesToDisplay) {
             const movieList = document.getElementById('movieList');
-            movieList.innerHTML = ''; // Clear previous movies
+            movieList.innerHTML = '';
             moviesToDisplay.forEach(movie => {
                 const movieCard = document.createElement('div');
                 movieCard.classList.add('movie-card');
@@ -259,14 +259,12 @@
             });
         }
 
-        // Search function
         function searchMovies() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
             displayMovies(filteredMovies);
         }
 
-        // Display all movies on initial load
         displayMovies(movies);
     </script>
 
