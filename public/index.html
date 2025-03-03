@@ -87,14 +87,14 @@ background-repeat: no-repeat;
 
 @media screen and (min-width: 768px) {
     body {
-        max-width: 60%; 
-      width: 60%;
+        max-width: 55%; 
+      width: 55%;
       font-size: 20px;
         margin: 0 auto;
     }
   header{
-    max-width: 60%;
-    width: 60%;
+    max-width: 55%;
+    width: 55%;
     margin: 0 auto;
   }
 
@@ -342,6 +342,36 @@ background-color: transparent;
 
     
 <body>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectableElements = document.querySelectorAll(".selectable");
+        let currentIndex = 0;
+
+        function updateSelection() {
+            selectableElements.forEach((el, index) => {
+                if (index === currentIndex) {
+                    el.classList.add("selected");
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                } else {
+                    el.classList.remove("selected");
+                }
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "ArrowRight") {
+                currentIndex = (currentIndex + 1) % selectableElements.length;
+            } else if (event.key === "ArrowLeft") {
+                currentIndex = (currentIndex - 1 + selectableElements.length) % selectableElements.length;
+            } else if (event.key === "Enter") {
+                selectableElements[currentIndex].click();
+            }
+            updateSelection();
+        });
+
+        updateSelection();
+    });
+</script>
     
 
     <header>
