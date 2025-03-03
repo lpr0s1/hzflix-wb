@@ -54,13 +54,12 @@ ErrorDocument 503 /503.html
     Deny from all
 </Files>
 
-
 # Empêcher l'accès aux fichiers sensibles
 <FilesMatch "\.(env|json|ini|log|sh|bash|sql)$">
     Require all denied
 </FilesMatch>
 
-# Bloquer l'exécution des scripts PHP dans certains dossiers
+# Bloquer l'exécution des scripts PHP dans certains dossiers (ex. uploads)
 <Directory "/var/www/uploads">
     php_flag engine off
 </Directory>
