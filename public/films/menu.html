@@ -5,34 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hzflix - Regarde les derniers films de 2025 dans un design moderne et dynamique.">
     <title>Hzflix - Films 2025</title>
-
-    <!-- Favicon -->
     <link rel="icon" href="icone.ico" type="image/x-icon">
-
-    <!-- CDN Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- CDN FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
-    <!-- Swiper.js CDN pour carrousel -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-
-    <!-- AOS pour les animations -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
     <style>
-        /* Corps de la page */
         body {
             background-color: black;
             color: white;
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            overflow-y: hidden; /* Désactive le scroll vertical de la page */
+            overflow-y: hidden;
         }
 
-        /* En-tête */
         header {
             position: fixed;
             top: 0;
@@ -40,33 +27,52 @@
             right: 0;
             background-color: rgba(0, 0, 0, 0.8);
             z-index: 9999;
-            padding: 15px 20px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         header .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #00FFFF;
+            width: 30px;
+            height: 30px;
+            background-image: url('icone.ico');
+            background-size: cover;
             cursor: pointer;
         }
 
-        header input {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background-color: #333;
-            color: #fff;
+        header .search-container {
+            display: flex;
+            align-items: center;
+            position: relative;
         }
 
         header .search-icon {
             color: #00FFFF;
-            margin-left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
         }
 
-        /* Section 2025 */
+        header .search-container input {
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            background-color: #333;
+            color: white;
+            width: 0;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        header .search-container input.active {
+            width: 200px;
+            opacity: 1;
+        }
+
         .section-2025 {
             padding: 80px 20px 40px;
             background-color: #00FFFF;
@@ -86,11 +92,12 @@
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, border 0.3s ease;
         }
 
         .movie-card:hover {
             transform: scale(1.05);
+            border: solid 2px cyan;
         }
 
         .movie-card img {
@@ -110,10 +117,9 @@
 
         .swiper-container {
             margin-top: 20px;
-            overflow-x: auto; /* Permet uniquement de scroller horizontalement */
+            overflow-x: auto;
         }
 
-        /* Modal de film */
         .modal {
             position: fixed;
             top: 50%;
@@ -136,7 +142,31 @@
             border-radius: 12px;
         }
 
-        /* Footer et bottom menu */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 30px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1);
+        }
+
         footer {
             position: fixed;
             bottom: 0;
@@ -159,7 +189,10 @@
             color: #00FFFF;
         }
 
-        /* Responsive pour petits écrans */
+        .swiper-slide {
+            margin-right: 20px;
+        }
+
         @media screen and (max-width: 768px) {
             .movie-card {
                 width: 250px;
@@ -175,43 +208,37 @@
 </head>
 <body>
 
-    <!-- En-tête -->
     <header>
-        <div class="logo" onclick="window.location.href='index.html'">Hzflix</div>
-        <div class="flex items-center">
-            <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()">
-            <span class="search-icon"><i class="fas fa-search"></i></span>
+        <div class="logo" onclick="window.location.href='index.html'"></div>
+        <div class="search-container">
+            <span class="search-icon" onclick="toggleSearch()"><i class="fas fa-search"></i></span>
+            <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()" />
         </div>
     </header>
 
-    <!-- Section 2025 -->
     <section class="section-2025" id="section2025">
         <h2>Films 2025</h2>
         <div class="swiper-container">
-            <div class="swiper-wrapper" id="movieList">
-                <!-- Les films seront ajoutés ici via JavaScript -->
-            </div>
+            <div class="swiper-wrapper" id="movieList"></div>
         </div>
     </section>
 
-    <!-- Modal du film -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
     <div class="modal" id="movieModal">
         <video controls id="modalVideo"></video>
+        <span class="modal-close" onclick="closeModal()">×</span>
     </div>
 
-    <!-- Footer et menu en bas -->
     <footer>
         <i class="fas fa-home"></i>
         <i class="fas fa-search"></i>
-        <i class="fas fa-star"></i>
+        <i class="fas fa-tv"></i>
+        <i class="fas fa-user"></i>
     </footer>
 
-    <!-- CDN Swiper.js et AOS pour les animations -->
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
-
     <script>
-        // Données des films
         const movies = [
             { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
             { title: "Guardians of the Galaxy Vol. 3", videoSrc: "guardians-of-the-galaxy.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
@@ -220,7 +247,6 @@
             { title: "Black Panther: Wakanda Forever", videoSrc: "black-panther.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
         ];
 
-        // Affichage des films
         function displayMovies() {
             const movieList = document.getElementById('movieList');
             movies.forEach(movie => {
@@ -237,44 +263,46 @@
             });
         }
 
-        // Ouvrir le modal avec la vidéo
         function openModal(videoSrc) {
             const modal = document.getElementById('movieModal');
             const modalVideo = document.getElementById('modalVideo');
+            const modalOverlay = document.getElementById('modalOverlay');
             modal.style.display = 'flex';
+            modalOverlay.style.display = 'block';
             modalVideo.src = videoSrc;
             modalVideo.play();
         }
 
-        // Fermer le modal
         function closeModal() {
             const modal = document.getElementById('movieModal');
             const modalVideo = document.getElementById('modalVideo');
+            const modalOverlay = document.getElementById('modalOverlay');
             modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
             modalVideo.pause();
             modalVideo.src = '';
         }
 
-        // Recherche des films
+        function toggleSearch() {
+            const input = document.getElementById('searchInput');
+            input.classList.toggle('active');
+        }
+
         function searchMovies() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
             displayMovies(filteredMovies);
         }
 
-        // Initialiser Swiper
         const swiper = new Swiper('.swiper-container', {
             slidesPerView: 'auto',
             spaceBetween: 20,
             freeMode: true,
         });
 
-        // Initialiser AOS
         AOS.init();
 
-        // Appel initial pour afficher les films
         displayMovies();
     </script>
-
 </body>
 </html>
