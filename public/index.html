@@ -453,7 +453,7 @@ margin-top: -75px;
   <br>
 
   <div id="forwi">
-   <button style="opacity: 0; transform: translateY(0px) scale(0.0); filter: blur(8px); padding: 10px 40px; border-radius: 30px; font-size: 25px; background-color: black; color: cyan;">
+   <button style="opacity: 0; transform: translateY(0px); filter: blur(8px); padding: 10px 40px; border-radius: 30px; font-size: 25px; background-color: black; color: cyan;">
      Page principal
    </button>
   </div>
@@ -467,14 +467,14 @@ margin-top: -75px;
     if(visb){
       forw.style.opacity = "0";
       forw.style.filter = "blur(8px)";
-      forw.style.transform = "translateY(0px) scale(0.0)";
+      forw.style.transform = "translateY(0px)";
       forw.style.transition = "all 0.5s ease";
       
     }else{
 
       forw.style.opacity = "1";
       forw.style.filter = "blur(0px)";
-      forw.style.transform = "translateY(100px) scale(1.0)";
+      forw.style.transform = "translateY(100px)";
       forw.style.transition = "all 0.5s ease";
     }
     visb = !visb;
