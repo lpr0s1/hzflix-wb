@@ -85,19 +85,27 @@ background-repeat: no-repeat;
             overflow-x: hidden;
         }
 
-      @media screen and (min-width: 768px) {
-    body,html {
-        width: 70%;
-      align-content: center;
-      align-items: center;
+    @media screen and (min-width: 768px) {
+    body, html {
+        width: 100%;
+        display: flex; 
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-        header{
-          width: 70%;
-          align-content: center;
-          align-items: center;
-        }
+
+    header {
+        width: 70%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0; 
+    }
 }
 
+
+      
         header {
             position: fixed;
 backdrop-filter: blur(10px);
