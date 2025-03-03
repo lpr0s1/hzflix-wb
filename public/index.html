@@ -446,16 +446,25 @@ margin-top: -75px;
   <h2 style="color: white">Actuellement en développement. Le mode TV sert à regarder les films sur Hzflix, et non sur des sites web externes.</h2>
   <br>
   <br>
-  <button onclick="afficherwd()" style="color: darkcyan; border: solid 2px darkcyan; background-color: transparent; padding: 10px 50px; border-radius: 30px;"><i class="fas fa-arrow-down"></i>Afficher la liste <i class="fas fa-arrow-down"></i></button>
+  <button onclick="afficherwd()" style="color: white; border: solid 2px darkcyan; background-color: transparent; padding: 10px 50px; font-size: 25px; border-radius: 50px;"><i class="fas fa-arrow-down"></i>Afficher la liste <i class="fas fa-arrow-down"></i></button>
   
 </div>
 
   <br>
 
-  <div id="forwi" style="opacity: 0; transform: translateY(0px); filter: blur(8px);">
+  <div id="forwi" style="overflow-x: auto; opacity: 0; transform: translateY(0px); filter: blur(8px);">
    <button style="padding: 10px 40px; border-radius: 30px; font-size: 25px; background-color: black; color: white;">
-     Page principal
+     Afficher en grand
    </button>
+    <label for="film-cptamer">Capt America - Brave The world</label>
+    <hr>
+    <video id="film-cptamer" width="250px" height="300px" control></video>
+     <label for="film-brf">Bref</label>
+    <hr>
+    <video id="film-brf" width="250px" height="300px" control></video>
+    
+
+    
   </div>
 
 <script>
