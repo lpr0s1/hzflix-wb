@@ -386,6 +386,7 @@ background-color: transparent;
 <!-- menu pour windows: -->
 
         <div class="menu">
+          <a href="films/menu.html"><i class="fas fa-tv"></i></a>
             <a href="#">Home</a>
             <a href="https://www.tiktok.com/@hanzo_x65?_t=ZN-8uA7bPB1j0Q&_r=1" target="_blank">Contact</a>
             <a href="#">About</a>
@@ -421,7 +422,7 @@ filter: blur(8px);
  
 
 
-    <h2 style="font-size: 40px;">Menu</h2>
+    <h2 style="font-size: 58px;">Menu</h2>
 
 <br/>
 <br/>
@@ -524,78 +525,14 @@ margin-top: -75px;
 
 
 <center>
-  <button onclick="tvmod();" style="display: flex; color: white; font-weight: bold; padding:10px 50px; border: solid 1px white; background-color: transparent; transform: scale(1.5); border-radius: 30px;">
-    Activer mode TV et windows <i class="fas fa-tv"></i>
-  </button>
-</center>
 
-<div id="wintv" style="opacity: 0; max-height: 0px; filter: blur(6px); transform: translateY(0px); transition: all 0.7s ease; overflow-x: hidden; overflow-y: auto; width: 320px; max-width: 340px; border-right: solid 2px white;">
-  <h2 style="color: white">Actuellement en développement. Le mode TV sert à regarder les films sur Hzflix, et non sur des sites web externes.</h2>
-  <br>
-  <br>
-  <button onclick="afficherwd()" style="color: white; border: solid 2px darkcyan; background-color: transparent; padding: 10px 50px; font-size: 25px; border-radius: 50px;"><i class="fas fa-arrow-down"></i>Afficher les pages <i class="fas fa-arrow-down"></i></button>
+    
+    
+
+    
   
-</div>
 
-  <br>
 
-  <div id="forwi" style="overflow-x: auto; opacity: 0; transform: translateY(0px); filter: blur(8px);">
-   <button onclick="ouvrpg()" style="padding: 10px 40px; background-color: transparent; border-radius: 30px; font-size: 25px; border: solid 1px white; color: white;">
-     2025
-   </button>
-
-    <script>
-      function ouvrpg(){
-          window.location.href='https://hzflix.online/films/menu.html'
-      }
-    </script>
-    
-
-    
-  </div>
-
-<script>
-
-  var forw = document.getElementById("forwi");
-  var visb = false;
-
-  function afficherwd(){
-    if(visb){
-      forw.style.opacity = "0";
-      forw.style.filter = "blur(8px)";
-      forw.style.transform = "translateY(0px)";
-      forw.style.transition = "all 0.5s ease";
-      
-    }else{
-
-      forw.style.opacity = "1";
-      forw.style.filter = "blur(0px)";
-      forw.style.transform = "translateY(100px)";
-      forw.style.transition = "all 0.5s ease";
-    }
-    visb = !visb;
-  }
-
-  
-  var wn = document.getElementById("wintv");
-  var isVisible = false;
-
-  function tvmod() {
-    if (isVisible) {
-      wn.style.opacity = "0";
-      wn.style.maxHeight = "0px";
-      wn.style.filter = "blur(6px)";
-      wn.style.transform = "translateY(0px)";
-    } else {
-      wn.style.opacity = "1";
-      wn.style.maxHeight = "340px";
-      wn.style.filter = "blur(0px)";
-      wn.style.transform = "translateY(20px)";
-    }
-    
-    isVisible = !isVisible;
-  }
-</script>
   
 <br>
   <br>
