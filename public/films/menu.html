@@ -16,6 +16,12 @@
     <!-- Font Awesome CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
+    <!-- Swiper CDN (Carrousel pour les films) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+
+    <!-- AOS CDN (Pour les animations) -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
     <style>
         /* Global Styles */
         body {
@@ -27,96 +33,82 @@
             overflow-x: hidden;
         }
 
-        .movie-card:hover video {
-            opacity: 1;
+        /* Style des films */
+        .movie-card {
+            position: relative;
+            width: 250px;
+            margin-right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease;
+            cursor: pointer;
         }
 
-        /* Adjust video and image dimensions */
-        .movie-card img, .movie-card video {
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            transition: opacity 0.3s ease;
         }
 
-        /* Video opacity effect */
-        .movie-card video {
-            opacity: 0;
+        .movie-card h3 {
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            margin-top: -10px;
         }
 
-        /* Header Style */
-        header {
-            position: fixed;
+        .movie-card .overlay {
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            z-index: 100;
-            width: 100%;
-        }
-
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: #00FFFF;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        .search-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .search-container input {
-            padding: 10px;
-            font-size: 18px;
-            background-color: transparent;
-            border: 2px solid #00FFFF;
-            border-radius: 20px;
-            color: white;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .search-container input:focus {
-            border-color: #008b8b;
-            backdrop-filter: blur(2px);
-        }
-
-        .search-icon {
-            font-size: 20px;
-            color: white;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-
-        /* Footer Style */
-        footer {
-            background-color: rgba(0, 0, 0, 0.9);
-            text-align: center;
-            padding: 20px;
-            color: #bbb;
-            position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        footer a {
+        .movie-card:hover .overlay {
+            opacity: 1;
+        }
+
+        .movie-card .overlay i {
+            font-size: 40px;
             color: #00FFFF;
-            text-decoration: none;
-            font-weight: bold;
         }
 
-        footer a:hover {
-            text-decoration: underline;
+        /* Modal Style */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 9999;
+            max-width: 80%;
+            max-height: 80%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal video {
+            width: 100%;
+            height: 100%;
         }
 
         /* Bottom Menu Style */
@@ -124,6 +116,7 @@
             display: flex;
             justify-content: space-around;
             padding: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
         }
 
         .bottom-menu i {
@@ -142,36 +135,50 @@
             .movie-card {
                 width: 200px;
             }
-            .bottom-menu i {
-                font-size: 20px;
-            }
         }
 
         @media screen and (max-width: 480px) {
             .movie-card {
                 width: 180px;
             }
-            .bottom-menu i {
-                font-size: 18px;
-            }
+        }
+
+        /* Section 2025 Style */
+        .section-2025 {
+            background-color: #00FFFF;
+            padding: 40px;
+            color: #121212;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo" onclick="window.location.href='index.html'">Hzflix</div>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()">
-            <span class="search-icon"><i class="fas fa-search"></i></span>
+    <!-- Header Section -->
+    <header class="fixed top-0 left-0 right-0 flex justify-between items-center p-5 bg-black bg-opacity-70 backdrop-blur-lg z-10">
+        <div class="logo text-3xl font-bold text-cyan-400 cursor-pointer" onclick="window.location.href='index.html'">Hzflix</div>
+        <div class="search-container flex items-center">
+            <input type="text" id="searchInput" class="p-2 text-white bg-transparent border-2 border-cyan-400 rounded-lg" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <span class="search-icon ml-3 text-white"><i class="fas fa-search"></i></span>
         </div>
     </header>
 
-    <section class="movie-list flex overflow-x-auto gap-5 mt-32 pb-8 px-4" id="movieList">
-        <!-- Movie Cards will be inserted here by JavaScript -->
+    <!-- Section 2025 -->
+    <section class="section-2025" id="section2025">
+        <h2 class="text-4xl font-bold text-center">Films 2025</h2>
+        <div class="swiper-container mt-6">
+            <div class="swiper-wrapper" id="movieList">
+                <!-- Movie Cards will be inserted here by JavaScript -->
+            </div>
+        </div>
     </section>
 
-    <footer>
+    <!-- Movie Modal -->
+    <div class="modal" id="movieModal">
+        <video controls id="modalVideo"></video>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black bg-opacity-80 text-white text-center py-4 mt-10">
         <div class="bottom-menu">
             <i class="fas fa-home"></i>
             <i class="fas fa-search"></i>
@@ -180,9 +187,12 @@
         </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    <!-- Swiper JS and AOS for Animations -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
 
     <script>
+        // Sample movie data
         const movies = [
             { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
             { title: "Guardians of the Galaxy Vol. 3", videoSrc: "guardians-of-the-galaxy.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
@@ -191,32 +201,61 @@
             { title: "Black Panther: Wakanda Forever", videoSrc: "black-panther.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
         ];
 
-        function displayMovies(moviesToDisplay) {
+        // Display Movies
+        function displayMovies() {
             const movieList = document.getElementById('movieList');
-            movieList.innerHTML = '';
-            moviesToDisplay.forEach(movie => {
+            movies.forEach(movie => {
                 const movieCard = document.createElement('div');
-                movieCard.classList.add('movie-card', 'relative', 'w-60', 'bg-black', 'rounded-lg', 'overflow-hidden', 'shadow-lg', 'hover:scale-105', 'transition-all', 'duration-500', 'cursor-pointer');
+                movieCard.classList.add('swiper-slide', 'movie-card');
                 movieCard.innerHTML = `
-                    <div class="relative">
-                        <img src="${movie.imgSrc}" alt="${movie.title}" class="transition-all duration-500">
-                        <video class="absolute top-0 left-0 w-full h-full opacity-0" controls>
-                            <source src="${movie.videoSrc}" type="video/mp4">
-                        </video>
-                    </div>
-                    <h3 class="text-center text-xl text-white p-2">${movie.title}</h3>
+                    <img src="${movie.imgSrc}" alt="${movie.title}">
+                    <div class="overlay"><i class="fas fa-play-circle"></i></div>
+                    <h3>${movie.title}</h3>
                 `;
+                movieCard.onclick = function() {
+                    openModal(movie.videoSrc);
+                };
                 movieList.appendChild(movieCard);
             });
         }
 
+        // Open Movie Modal
+        function openModal(videoSrc) {
+            const modal = document.getElementById('movieModal');
+            const modalVideo = document.getElementById('modalVideo');
+            modal.style.display = 'flex';
+            modalVideo.src = videoSrc;
+            modalVideo.play();
+        }
+
+        // Close Movie Modal
+        function closeModal() {
+            const modal = document.getElementById('movieModal');
+            const modalVideo = document.getElementById('modalVideo');
+            modal.style.display = 'none';
+            modalVideo.pause();
+            modalVideo.src = '';
+        }
+
+        // Search Movies
         function searchMovies() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
             displayMovies(filteredMovies);
         }
 
-        displayMovies(movies);
+        // Initialize Swiper
+        const swiper = new Swiper('.swiper-container', {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            freeMode: true,
+        });
+
+        // Initialize AOS for animations
+        AOS.init();
+
+        // Initial call to display movies
+        displayMovies();
     </script>
 
 </body>
