@@ -22,6 +22,7 @@
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
+        /* Corps de la page */
         body {
             background-color: black;
             color: white;
@@ -82,14 +83,14 @@
 
         .section-2025 {
             padding: 80px 20px 40px;
-            background-color: #00FFFF;
-            color: #121212;
+            background-color: black;
         }
 
         .section-2025 h2 {
             text-align: center;
             font-size: 3rem;
             font-weight: bold;
+            color: white;
         }
 
         .movie-card {
@@ -115,7 +116,6 @@
             width: 100%;
             height: 300px;
             object-fit: cover;
-            transition: opacity 0.3s ease;
         }
 
         .movie-card h3 {
@@ -124,6 +124,7 @@
             padding: 10px;
             background-color: rgba(0, 0, 0, 0.6);
             margin-top: -10px;
+            color: white;
         }
 
         .swiper-container {
@@ -131,6 +132,7 @@
             overflow-x: auto;
         }
 
+        /* Modal de film */
         .modal {
             position: fixed;
             top: 50%;
@@ -163,6 +165,7 @@
             border-radius: 12px;
         }
 
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -176,7 +179,7 @@
 
         footer i {
             font-size: 28px;
-            color: #fff;
+            color: white;
             cursor: pointer;
             transition: color 0.3s ease;
         }
@@ -185,10 +188,7 @@
             color: #00FFFF;
         }
 
-        .movie-card, input, h2 {
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.7);
-        }
-
+        /* Responsive */
         @media screen and (max-width: 768px) {
             .movie-card {
                 width: 250px;
