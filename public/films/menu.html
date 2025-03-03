@@ -3,49 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="index, follow">
-    <meta name="description" content="Regardez les films les plus récents sorties en 2025 avec Hzflix !">
+    <meta name="description" content="Hzflix - Regarde les derniers films de 2025 dans un design moderne et dynamique.">
     <title>Hzflix - Films 2025</title>
 
     <!-- Favicon -->
     <link rel="icon" href="icone.ico" type="image/x-icon">
 
-    <!-- Tailwind CSS CDN -->
+    <!-- CDN Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome CDN -->
+    <!-- CDN FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-    <!-- Swiper CDN (Carrousel pour les films) -->
+    <!-- Swiper.js CDN pour carrousel -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
 
-    <!-- AOS CDN (Pour les animations) -->
+    <!-- AOS pour les animations -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
-        /* Global Styles */
+        /* Corps de la page */
         body {
             background-color: #121212;
             color: #fff;
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            width: 98%;
-            max-width: 80%;
             padding: 0;
-            overflow-x: hidden;
         }
 
-        /* Style des films */
+        /* En-tête */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00FFFF;
+            cursor: pointer;
+        }
+
+        header input {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+        }
+
+        header .search-icon {
+            color: #00FFFF;
+            margin-left: 10px;
+        }
+
+        /* Section 2025 */
+        .section-2025 {
+            padding: 80px 20px 40px;
+            background-color: #00FFFF;
+            color: #121212;
+        }
+
+        .section-2025 h2 {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
         .movie-card {
             position: relative;
-            width: 250px;
-            margin-right: 20px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
+            transition: transform 0.3s ease;
         }
 
         .movie-card:hover {
@@ -54,55 +94,35 @@
 
         .movie-card img {
             width: 100%;
-            height: 100%;
+            height: 300px;
             object-fit: cover;
             transition: opacity 0.3s ease;
         }
 
         .movie-card h3 {
             text-align: center;
-            color: white;
-            font-size: 20px;
+            font-size: 1.5rem;
             padding: 10px;
             background-color: rgba(0, 0, 0, 0.6);
             margin-top: -10px;
         }
 
-        .movie-card .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .swiper-container {
+            margin-top: 20px;
         }
 
-        .movie-card:hover .overlay {
-            opacity: 1;
-        }
-
-        .movie-card .overlay i {
-            font-size: 40px;
-            color: #00FFFF;
-        }
-
-        /* Modal Style */
+        /* Modal de film */
         .modal {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.9);
+            width: 80%;
+            max-width: 1000px;
             padding: 20px;
-            border-radius: 10px;
-            z-index: 9999;
-            max-width: 80%;
-            max-height: 80%;
+            border-radius: 12px;
+            z-index: 10000;
             display: none;
             justify-content: center;
             align-items: center;
@@ -110,32 +130,37 @@
 
         .modal video {
             width: 100%;
-            height: 100%;
+            height: auto;
+            border-radius: 12px;
         }
 
-        /* Bottom Menu Style */
-        .bottom-menu {
+        /* Footer et bottom menu */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
             display: flex;
             justify-content: space-around;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.8);
         }
 
-        .bottom-menu i {
+        footer i {
+            font-size: 28px;
             color: #fff;
-            font-size: 25px;
             cursor: pointer;
             transition: color 0.3s ease;
         }
 
-        .bottom-menu i:hover {
+        footer i:hover {
             color: #00FFFF;
         }
 
-        /* Responsive Design */
+        /* Responsive pour petits écrans */
         @media screen and (max-width: 768px) {
             .movie-card {
-                width: 200px;
+                width: 250px;
             }
         }
 
@@ -144,57 +169,48 @@
                 width: 180px;
             }
         }
-
-        /* Section 2025 Style */
-        .section-2025 {
-            background-color: #00FFFF;
-            padding: 40px;
-            color: #121212;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <header class="fixed top-0 left-0 right-0 flex justify-between items-center p-5 bg-black bg-opacity-70 backdrop-blur-lg z-10">
-        <div class="logo text-3xl font-bold text-cyan-400 cursor-pointer" onclick="window.location.href='index.html'">Hzflix</div>
-        <div class="search-container flex items-center">
-            <input type="text" id="searchInput" class="p-2 text-white bg-transparent border-2 border-cyan-400 rounded-lg" placeholder="Rechercher un film..." oninput="searchMovies()">
-            <span class="search-icon ml-3 text-white"><i class="fas fa-search"></i></span>
+    <!-- En-tête -->
+    <header>
+        <div class="logo" onclick="window.location.href='index.html'">Hzflix</div>
+        <div class="flex items-center">
+            <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <span class="search-icon"><i class="fas fa-search"></i></span>
         </div>
     </header>
 
     <!-- Section 2025 -->
     <section class="section-2025" id="section2025">
-        <h2 class="text-4xl font-bold text-center">Films 2025</h2>
-        <div class="swiper-container mt-6">
+        <h2>Films 2025</h2>
+        <div class="swiper-container">
             <div class="swiper-wrapper" id="movieList">
-                <!-- Movie Cards will be inserted here by JavaScript -->
+                <!-- Les films seront ajoutés ici via JavaScript -->
             </div>
         </div>
     </section>
 
-    <!-- Movie Modal -->
+    <!-- Modal du film -->
     <div class="modal" id="movieModal">
         <video controls id="modalVideo"></video>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-black bg-opacity-80 text-white text-center py-4 mt-10">
-        <div class="bottom-menu">
-            <i class="fas fa-home"></i>
-            <i class="fas fa-search"></i>
-            <i class="fas fa-tv"></i>
-            <i class="fas fa-user"></i>
-        </div>
+    <!-- Footer et menu en bas -->
+    <footer>
+        <i class="fas fa-home"></i>
+        <i class="fas fa-search"></i>
+        <i class="fas fa-tv"></i>
+        <i class="fas fa-user"></i>
     </footer>
 
-    <!-- Swiper JS and AOS for Animations -->
+    <!-- CDN Swiper.js et AOS pour les animations -->
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
 
     <script>
-        // Sample movie data
+        // Données des films
         const movies = [
             { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
             { title: "Guardians of the Galaxy Vol. 3", videoSrc: "guardians-of-the-galaxy.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
@@ -203,7 +219,7 @@
             { title: "Black Panther: Wakanda Forever", videoSrc: "black-panther.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
         ];
 
-        // Display Movies
+        // Affichage des films
         function displayMovies() {
             const movieList = document.getElementById('movieList');
             movies.forEach(movie => {
@@ -211,7 +227,6 @@
                 movieCard.classList.add('swiper-slide', 'movie-card');
                 movieCard.innerHTML = `
                     <img src="${movie.imgSrc}" alt="${movie.title}">
-                    <div class="overlay"><i class="fas fa-play-circle"></i></div>
                     <h3>${movie.title}</h3>
                 `;
                 movieCard.onclick = function() {
@@ -221,7 +236,7 @@
             });
         }
 
-        // Open Movie Modal
+        // Ouvrir le modal avec la vidéo
         function openModal(videoSrc) {
             const modal = document.getElementById('movieModal');
             const modalVideo = document.getElementById('modalVideo');
@@ -230,7 +245,7 @@
             modalVideo.play();
         }
 
-        // Close Movie Modal
+        // Fermer le modal
         function closeModal() {
             const modal = document.getElementById('movieModal');
             const modalVideo = document.getElementById('modalVideo');
@@ -239,24 +254,24 @@
             modalVideo.src = '';
         }
 
-        // Search Movies
+        // Recherche des films
         function searchMovies() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
             displayMovies(filteredMovies);
         }
 
-        // Initialize Swiper
+        // Initialiser Swiper
         const swiper = new Swiper('.swiper-container', {
             slidesPerView: 'auto',
             spaceBetween: 20,
             freeMode: true,
         });
 
-        // Initialize AOS for animations
+        // Initialiser AOS
         AOS.init();
 
-        // Initial call to display movies
+        // Appel initial pour afficher les films
         displayMovies();
     </script>
 
