@@ -453,9 +453,19 @@ margin-top: -75px;
   <br>
 
   <div id="forwi" style="overflow-x: auto; opacity: 0; transform: translateY(0px); filter: blur(8px);">
-   <button onclick="window.location.href='https://hzflix.online/films/menu.html'" style="padding: 10px 40px; border-radius: 30px; font-size: 25px; border: solid 1px white; color: white;">
+   <button onclick="ouvrpg()" style="padding: 10px 40px; background-color: transparent; border-radius: 30px; font-size: 25px; border: solid 1px white; color: white;">
      2025
    </button>
+
+    <script>
+      function ouvrpg(){
+        try{
+          window.location.href='https://hzflix.online/films/menu.html'
+        }catch(error){
+          alert(error.message);
+        }
+      }
+    </script>
     
 
     
