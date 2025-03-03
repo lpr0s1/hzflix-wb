@@ -3,26 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hzflix - Regarde les derniers films de 2025 dans un design moderne et dynamique.">
-    <title>Hzflix - Films 2025</title>
-
-    <!-- Favicon -->
+    <meta name="description" content="Hzflix - Serveur hzflix pour les films. Adapter a tout type d'appareil.">
+    <title>Hzflix - Serveur Hzflix - Films 2025</title>
     <link rel="icon" href="icone.ico" type="image/x-icon">
-
-    <!-- CDN Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- CDN FontAwesome -->
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
-    <!-- Swiper.js CDN pour carrousel -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-
-    <!-- AOS pour les animations -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
-        /* Corps de la page */
         body {
             background-color: black;
             color: white;
@@ -205,7 +196,7 @@
 <body>
 
 <header>
-    <div class="logo" onclick="window.location.href='index.html'">Hzflix</div>
+    <div class="logo" onclick="window.location.href='index.html'"><img src="https://hzflix.online/logo.ico"></img></div>
     <div class="search-wrapper">
         <span class="search-icon" onclick="toggleSearchInput()"><i class="fas fa-search"></i></span>
         <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()">
@@ -235,11 +226,7 @@
 
 <script>
     const movies = [
-        { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
-        { title: "Guardians of the Galaxy Vol. 3", videoSrc: "guardians-of-the-galaxy.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
-        { title: "The Flash", videoSrc: "the-flash.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BMmEwYjk0NjQtM2Y3Ny00YzNlLTlmYzUtNzRjMzdiY2JkYjU3XkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
-        { title: "Spider-Man: Across the Spider-Verse", videoSrc: "spider-man.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BZDZkZTY0NzYtOTMwOC00ZDJhLTgwNjAtNjcwZjE5Y2I1M2VkXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
-        { title: "Black Panther: Wakanda Forever", videoSrc: "black-panther.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2ZmNDRlMjYtODQwYy00MTg5LTg5ZmQtM2ExZTMwNjM0YjcxXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
+        { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
     ];
 
     function displayMovies(filteredMovies = movies) {
