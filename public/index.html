@@ -16,7 +16,7 @@
 <link rel="icon" href="https://hzflix.online/favicon.ico" type="image/x-icon">
 <link rel="shortcut icon" href="https://hzflix.online/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <script type="application/ld+json">
+  <script type="application/ld+json" async>
 {
   "@context": "http://schema.org",
   "@type": "Movie",
@@ -28,7 +28,7 @@
 </script>
 
   
-  <script type="application/ld+json">
+  <script type="application/ld+json" async>
 {
   "@context": "http://schema.org",
   "@type": "Movie",
@@ -40,7 +40,7 @@
 </script>
 
   
-<script type="application/ld+json">
+<script type="application/ld+json" async>
 {
   "@context": "http://schema.org",
   "@type": "Movie",
@@ -357,7 +357,7 @@ background-color: transparent;
 
     
 <body>
-  <script>
+  <script async>
     document.addEventListener("DOMContentLoaded", function () {
         const selectableElements = document.querySelectorAll(".selectable");
         let currentIndex = 0;
@@ -486,7 +486,7 @@ transform: scale(0.9);
 <button style="color: red; -webkit-user-select: none; user-select: none; padding: 7px 130px; font-size: 30px; border-radius: 60px; background-color: transparent; border: solid 2px white;" onclick="tgl()">Fermer</button>
 </div>
 
-<script>
+<script async>
     var menu = document.getElementById("menu");
 
     function togglopn() {
@@ -539,6 +539,13 @@ margin-top: -75px;
   <br>
   <br>
   <br>
+
+
+  <!-- test -->
+  
+  <span id="testtxt" style="color: white"></span>
+  <script src="inf.js">
+  </script>
 
 
 
@@ -671,7 +678,7 @@ overflow-y: hidden;
         <p>&copy; 2025 hzflix. Tous droits réservés.</p>
     </footer>
 
-    <script src="flm.js"></script>
+    <script src="flm.js" async></script>
 
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
