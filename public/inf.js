@@ -1,1 +1,1 @@
-document.getElementById("testtxt").innerHTML = "test"
+document.getElementById("testtxt").innerHTML = "te"
