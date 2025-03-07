@@ -1,2 +1,2 @@
 let hv = document.getElementById("testtxt");
-hv.innerHTML = "<h2 style='color: white'>.</h2>"
+hv.innerHTML = "<h2 style='color: white'>bonjour</h2>"
