@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page d'inscription - hzflix</title>
+
+  <!-- Charger le script Google Sign-In -->
   <script src="https://apis.google.com/js/platform.js" async defer></script>
+  
+  <!-- Intégration des SDKs Firebase -->
   <script type="module">
-    // Importer les fonctions nécessaires depuis Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAuth, signInWithCredential, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 
     // Configuration Firebase
@@ -24,30 +27,35 @@
 
     // Initialiser Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const auth = getAuth(app);
+    const analytics = getAnalytics(app);
 
-    // Fonction pour se connecter avec Google
-    const signInWithGoogle = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        // Lancer l'authentification via la popup Google
-        const result = await signInWithPopup(auth, provider);
-        
-        // Connexion réussie, redirection vers le site
-        window.location.href = "https://hzflix.online";
-      } catch (error) {
-        console.error(error);
-        alert("Erreur lors de la connexion. Essayez à nouveau.");
-      }
+    // Fonction pour se connecter avec Google via Firebase
+    const onSignIn = (googleUser) => {
+      // Obtenir le token ID de Google
+      const idToken = googleUser.getAuthResponse().id_token;
+
+      // Créer une credentiel Google pour Firebase
+      const credential = GoogleAuthProvider.credential(idToken);
+
+      // Se connecter à Firebase avec le token Google
+      signInWithCredential(auth, credential)
+        .then((result) => {
+          // Connexion réussie, rediriger l'utilisateur
+          window.location.href = "https://hzflix.online";
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Erreur lors de la connexion. Essayez à nouveau.");
+        });
     };
   </script>
 </head>
 <body>
   <h1>Bienvenue sur hzflix</h1>
 
-  <!-- Bouton Google officiel -->
-  <div class="g-signin2" data-onsuccess="signInWithGoogle"></div>
+  <!-- Le bouton officiel Google -->
+  <div class="g-signin2" data-onsuccess="onSignIn"></div>
 
 </body>
 </html>
