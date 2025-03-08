@@ -28,49 +28,51 @@
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Fonction de connexion avec Google
-        function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            
-            // Utilisation de `signInWithPopup` pour se connecter avec Google
-            auth.signInWithPopup(provider)
+        // Fonction pour connecter l'utilisateur avec Google
+        function onSignIn(googleUser) {
+            // Récupérer le token d'authentification de Google
+            const id_token = googleUser.getAuthResponse().id_token;
+
+            // Créer un credential Firebase avec ce token
+            const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+
+            // Connexion avec Firebase
+            auth.signInWithCredential(credential)
                 .then((result) => {
+                    // Connexion réussie
                     const user = result.user;
-                    console.log("Utilisateur connecté : ", user);
+                    console.log("Utilisateur connecté via Google : ", user);
                     alert('Connexion réussie avec Google !');
-                    window.location.href = "index.html"; // Rediriger après la connexion réussie
+                    window.location.href = "index.html"; // Remplacer par la page d'accueil
                 })
                 .catch((error) => {
-                    console.error("Erreur de connexion Google : ", error);
+                    console.error("Erreur lors de la connexion avec Google : ", error);
                     alert("Erreur de connexion avec Google : " + error.message);
                 });
         }
 
-        // Fonction d'initialisation du bouton Google
-        function initGoogleButton() {
+        // Initialiser Google Sign-In
+        function renderButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
-                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton client_id Google
+                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton ID client Google
                 }).then(function() {
-                    // Ajout du bouton Google avec les fonctionnalités
+                    // Ajouter le bouton de Google sur la page
                     const auth2 = gapi.auth2.getAuthInstance();
-                    auth2.attachClickHandler(document.getElementById('google-signin-button'), {}, function(googleUser) {
-                        signInWithGoogle();
-                    });
+                    auth2.attachClickHandler(document.getElementById('google-signin-button'), {}, onSignIn);
                 });
             });
         }
 
-        window.onload = initGoogleButton; // Initialiser le bouton à l'ouverture de la page
+        // Charger le bouton Google dès que la page est prête
+        window.onload = renderButton;
     </script>
 </head>
 <body>
     <h2>Connexion avec Google</h2>
-    
-    <!-- Ajouter un bouton Google personnalisé -->
-    <button id="google-signin-button" style="background-color: #4285F4; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px; border: none;">
-        Se connecter avec Google
-    </button>
+
+    <!-- Bouton Google officiel -->
+    <div id="google-signin-button"></div> <!-- Google ajoutera ici le vrai bouton -->
 
 </body>
 </html>
