@@ -47,7 +47,7 @@
                     // Afficher l'erreur dans une alerte
                     const errorCode = error.code;
                     const errorMessage = error.message;
-                    alert("Erreur : " + errorMessage); // Afficher l'erreur
+                    alert("Erreur : " + error.message); // Afficher l'erreur
                     console.error("Erreur lors de l'inscription : ", errorCode, errorMessage);
                 });
         }
