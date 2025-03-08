@@ -6,16 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page d'inscription - hzflix</title>
   
-  <!-- Inclure le script de Google Identity Services -->
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
-  <!-- Intégration des SDKs Firebase -->
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, signInWithCredential, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 
-    // Configuration Firebase
+    
     const firebaseConfig = {
       apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
       authDomain: "hzflix.firebaseapp.com",
@@ -26,19 +26,19 @@
       measurementId: "G-BJFG2DCVBF"
     };
 
-    // Initialiser Firebase
+  
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const analytics = getAnalytics(app);
 
-    // Fonction pour se connecter avec Google via Firebase
+  
     const signInWithGoogle = (response) => {
       const credential = GoogleAuthProvider.credential(response.credential);
 
-      // Sign-in via Firebase avec les informations Google
+    
       signInWithCredential(auth, credential)
         .then((result) => {
-          // Connexion réussie, l'utilisateur est connecté
+        
           alert("Connexion réussie !");
         })
         .catch((error) => {
@@ -50,9 +50,10 @@
 
 </head>
 <body>
-  <h1>Bienvenue sur hzflix</h1>
+  <center>
+  <h1 style="color: darkcyan; background-color: rgba(0,0,0,0,0.4); backdrop-filter: blur(7px); padding: 10px 30px; border-bottom-left-radius: 7px; border-top-right-radius: 7px;">Bienvenue sur hzflix</h1>
 
-  <!-- Conteneur pour le bouton Google -->
+  
   <div class="google-btn-container">
     <div id="g_id_onload"
          data-client_id="518287252625-4rolcjn8nuo7mdaeaerk82ukpscufv4k.apps.googleusercontent.com"
@@ -60,7 +61,7 @@
          data-auto_prompt="false">
     </div>
     
-    <!-- Bouton de connexion Google -->
+  
     <div class="g_id_signin" 
          data-type="standard" 
          data-shape="pill" 
@@ -72,7 +73,7 @@
   </div>
 
   <script>
-    // Gère l'authentification avec Google
+
     window.onload = function() {
       google.accounts.id.initialize({
         client_id: "518287252625-4rolcjn8nuo7mdaeaerk82ukpscufv4k.apps.googleusercontent.com",  // Assure-toi que c'est le bon client ID
@@ -89,6 +90,24 @@
         }
       );
     };
+
+        window.onerror = function(message, source, lineno, colno, error) {
+      const errorMessage = `Erreur : ${message}\nSource : ${source}\nLigne : ${lineno}\nColonne : ${colno}\nErreur : ${error}`;
+      const errorElement = document.createElement('div');
+      errorElement.style.position = 'absolute';
+      errorElement.style.top = '0';
+      errorElement.style.left = '0';
+      errorElement.style.width = '100%';
+      errorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.7)';
+      errorElement.style.color = 'white';
+      errorElement.style.padding = '10px';
+      errorElement.style.zIndex = '9999';
+      errorElement.innerText = errorMessage;
+      document.body.appendChild(errorElement);
+      return true; 
+    }
   </script>
+
+  </center>
 </body>
 </html>
