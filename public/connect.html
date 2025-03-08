@@ -1,78 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion avec Google</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page d'inscription - hzflix</title>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script type="module">
+    // Importer les fonctions nécessaires depuis Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 
-    <!-- Charger l'API de Google pour l'authentification -->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+      authDomain: "hzflix.firebaseapp.com",
+      projectId: "hzflix",
+      storageBucket: "hzflix.firebasestorage.app",
+      messagingSenderId: "626892229265",
+      appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
+      measurementId: "G-BJFG2DCVBF"
+    };
 
-    <!-- Charger les scripts Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+    // Initialiser Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
 
-    <script>
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
-            authDomain: "hzflix.firebaseapp.com",
-            projectId: "hzflix",
-            storageBucket: "hzflix.firebasestorage.app",
-            messagingSenderId: "626892229265",
-            appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
-            measurementId: "G-BJFG2DCVBF"
-        };
-
-        // Initialiser Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // Fonction appelée après que l'utilisateur se connecte avec Google
-        function onSignIn(googleUser) {
-            // Récupère le token d'authentification Google
-            const id_token = googleUser.getAuthResponse().id_token;
-
-            // Créer un credential Firebase à partir de ce token
-            const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-
-            // Authentification avec Firebase
-            auth.signInWithCredential(credential)
-                .then((result) => {
-                    // Connexion réussie
-                    const user = result.user;
-                    console.log("Utilisateur connecté via Google : ", user);
-                    alert('Connexion réussie avec Google !');
-                    window.location.href = "index.html"; // Redirection vers la page d'accueil ou une autre page
-                })
-                .catch((error) => {
-                    console.error("Erreur lors de la connexion avec Google : ", error);
-                    alert("Erreur de connexion avec Google : " + error.message);
-                });
-        }
-
-        // Initialisation du bouton Google
-        function renderButton() {
-            gapi.load('auth2', function() {
-                gapi.auth2.init({
-                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Remplace par ton ID client
-                }).then(function() {
-                    // Attache le gestionnaire d'événements au vrai bouton Google
-                    const auth2 = gapi.auth2.getAuthInstance();
-                    auth2.attachClickHandler(document.getElementById('google-signin-button'), {}, onSignIn);
-                });
-            });
-        }
-
-        // Charger le bouton Google dès que la page est prête
-        window.onload = renderButton;
-    </script>
+    // Fonction pour se connecter avec Google
+    const signInWithGoogle = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        // Lancer l'authentification via la popup Google
+        const result = await signInWithPopup(auth, provider);
+        
+        // Connexion réussie, redirection vers le site
+        window.location.href = "https://hzflix.online";
+      } catch (error) {
+        console.error(error);
+        alert("Erreur lors de la connexion. Essayez à nouveau.");
+      }
+    };
+  </script>
 </head>
 <body>
-    <h2>Connexion avec Google</h2>
+  <h1>Bienvenue sur hzflix</h1>
 
-    <!-- Le vrai bouton Google sera généré ici -->
-    <div id="google-signin-button"></div>
+  <!-- Bouton Google officiel -->
+  <div class="g-signin2" data-onsuccess="signInWithGoogle"></div>
 
 </body>
 </html>
