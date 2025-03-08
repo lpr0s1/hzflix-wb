@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Google</title>
+    <title>Connexion avec Google</title>
 
     <!-- Charger Firebase -->
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
 
-    <!-- Charger le SDK Google -->
+    <!-- Charger Google Platform API -->
     <script src="https://apis.google.com/js/platform.js" async defer></script>
 
-    <script type="module">
+    <script>
         // Configuration de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
@@ -24,54 +24,53 @@
             measurementId: "G-BJFG2DCVBF"
         };
 
-        // Initialisation de Firebase
+        // Initialiser Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
         // Fonction de connexion avec Google
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            
+            // Utilisation de `signInWithPopup` pour se connecter avec Google
             auth.signInWithPopup(provider)
                 .then((result) => {
-                    // Connexion réussie
                     const user = result.user;
-                    console.log(user);
-                    alert("Connexion réussie !");
-                    window.location.href = "index.html";  // Redirige vers la page d'accueil
+                    console.log("Utilisateur connecté : ", user);
+                    alert('Connexion réussie avec Google !');
+                    window.location.href = "index.html"; // Rediriger après la connexion réussie
                 })
                 .catch((error) => {
-                    console.error("Erreur de connexion : ", error);
-                    alert("Erreur de connexion : " + error.message);
+                    console.error("Erreur de connexion Google : ", error);
+                    alert("Erreur de connexion avec Google : " + error.message);
                 });
         }
 
-        // Initialisation du bouton Google
+        // Fonction d'initialisation du bouton Google
         function initGoogleButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
                     client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton client_id Google
                 }).then(function() {
-                    gapi.signin2.render('google-signin-button', {
-                        'scope': 'profile email',
-                        'longtitle': true, // Texte long sur le bouton
-                        'theme': 'dark',   // Thème sombre
-                        'onsuccess': signInWithGoogle, // Appel à la fonction de connexion
-                        'onfailure': function(error) {
-                            console.log("Erreur d'authentification : ", error);
-                            alert("Erreur d'authentification avec Google : " + error);
-                        }
+                    // Ajout du bouton Google avec les fonctionnalités
+                    const auth2 = gapi.auth2.getAuthInstance();
+                    auth2.attachClickHandler(document.getElementById('google-signin-button'), {}, function(googleUser) {
+                        signInWithGoogle();
                     });
                 });
             });
         }
 
-        window.onload = initGoogleButton;  // Appel à l'initialisation du bouton Google dès le chargement de la page
+        window.onload = initGoogleButton; // Initialiser le bouton à l'ouverture de la page
     </script>
 </head>
 <body>
-
-    <!-- Le vrai bouton Google -->
-    <div id="google-signin-button"></div>
+    <h2>Connexion avec Google</h2>
+    
+    <!-- Ajouter un bouton Google personnalisé -->
+    <button id="google-signin-button" style="background-color: #4285F4; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px; border: none;">
+        Se connecter avec Google
+    </button>
 
 </body>
 </html>
