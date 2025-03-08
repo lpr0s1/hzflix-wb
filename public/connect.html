@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Google</title>
 
-    <!-- Ajouter le SDK Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    <!-- Charger Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
 
-        // Configuration Firebase
+    <!-- Charger le SDK Google -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+    <script type="module">
+        // Configuration de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
             authDomain: "hzflix.firebaseapp.com",
@@ -22,49 +25,39 @@
         };
 
         // Initialisation de Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
         // Fonction de connexion avec Google
         function signInWithGoogle() {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider)
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
                 .then((result) => {
                     // Connexion réussie
                     const user = result.user;
                     console.log(user);
-                    window.location.href = "index.html";  // Redirection après la connexion
+                    alert("Connexion réussie !");
+                    window.location.href = "index.html";  // Redirige vers la page d'accueil
                 })
                 .catch((error) => {
-                    console.error("Erreur de connexion avec Google : ", error);
-                    alert("Erreur : " + error.message);
+                    console.error("Erreur de connexion : ", error);
+                    alert("Erreur de connexion : " + error.message);
                 });
         }
-    </script>
 
-    <!-- Charger le SDK Google pour le bouton -->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-
-</head>
-<body>
-
-    <!-- Le vrai bouton Google -->
-    <div id="google-signin-button"></div>
-
-    <script>
         // Initialisation du bouton Google
         function initGoogleButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
                     client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton client_id Google
                 }).then(function() {
-                    // Rendu du bouton Google
                     gapi.signin2.render('google-signin-button', {
                         'scope': 'profile email',
                         'longtitle': true, // Texte long sur le bouton
-                        'theme': 'dark', // Thème sombre
-                        'onsuccess': signInWithGoogle, // Connexion réussie
+                        'theme': 'dark',   // Thème sombre
+                        'onsuccess': signInWithGoogle, // Appel à la fonction de connexion
                         'onfailure': function(error) {
+                            console.log("Erreur d'authentification : ", error);
                             alert("Erreur d'authentification avec Google : " + error);
                         }
                     });
@@ -72,9 +65,13 @@
             });
         }
 
-        // Lancer l'initialisation au chargement de la page
-        window.onload = initGoogleButton;
+        window.onload = initGoogleButton;  // Appel à l'initialisation du bouton Google dès le chargement de la page
     </script>
+</head>
+<body>
+
+    <!-- Le vrai bouton Google -->
+    <div id="google-signin-button"></div>
 
 </body>
 </html>
