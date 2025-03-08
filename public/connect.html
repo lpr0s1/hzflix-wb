@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -55,7 +56,7 @@
   <div class="google-btn-container">
     <div id="g_id_onload"
          data-client_id="518287252625-4rolcjn8nuo7mdaeaerk82ukpscufv4k.apps.googleusercontent.com"
-         data-login_uri="https://hzflix.online/index.html"
+         data-login_uri="https://hzflix.online/index.html"  <!-- URL de redirection que tu as ajoutée dans la console -->
          data-auto_prompt="false">
     </div>
     
@@ -74,7 +75,7 @@
     // Gère l'authentification avec Google
     window.onload = function() {
       google.accounts.id.initialize({
-        client_id: "626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com",
+        client_id: "518287252625-4rolcjn8nuo7mdaeaerk82ukpscufv4k.apps.googleusercontent.com",  // Assure-toi que c'est le bon client ID
         callback: signInWithGoogle
       });
 
