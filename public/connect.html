@@ -42,6 +42,7 @@
     window.onerror = function(message, source, lineno, colno, error) {
       const errorMessage = `Erreur : ${message}\nSource : ${source}\nLigne : ${lineno}\nColonne : ${colno}\nErreur : ${error}`;
       const errorElement = document.createElement('div');
+      errorElement.style.marginTop = "200px";
       errorElement.style.position = 'absolute';
       errorElement.style.top = '0';
       errorElement.style.left = '0';
@@ -50,7 +51,7 @@
       errorElement.style.color = 'white';
       errorElement.style.padding = '10px';
       errorElement.style.zIndex = '9999';
-      errorElement.innerText = errorMessage;
+      errorElement.innerHTML = "<pre>Pour le debuggage: </pre>errorMessage;
       document.body.appendChild(errorElement);
       return true;
     };
