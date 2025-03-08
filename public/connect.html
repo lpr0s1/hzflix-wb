@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription et Connexion via Email</title>
+    <title>Inscription - hzflix</title>
     <script type="module">
-        // Import des fonctions nécessaires depuis Firebase
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
         import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Configuration de Firebase
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
             authDomain: "hzflix.firebaseapp.com",
@@ -20,110 +21,120 @@
             measurementId: "G-BJFG2DCVBF"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
 
-        // Fonction pour envoyer un email de confirmation
-        function sendEmailLink() {
-            const email = document.getElementById("emailInput").value;
+        // Fonction pour envoyer un lien de confirmation par e-mail
+        function signUpUser() {
+            const email = document.getElementById('email').value;
+
             const actionCodeSettings = {
-                url: 'https://hzflix.online/confirm-email', // Remplace par l'URL de redirection après confirmation
+                // URL de redirection après que l'utilisateur ait cliqué sur le lien de confirmation
+                url: 'https://hzflix.online/confirmation',  // Remplace par la page de confirmation de ton choix
                 handleCodeInApp: true,
             };
 
+            // Envoi du lien de confirmation par e-mail
             sendSignInLinkToEmail(auth, email, actionCodeSettings)
                 .then(() => {
-                    // Sauvegarder l'email dans le stockage local pour une connexion future
+                    // Sauvegarder l'email pour la vérification dans le localStorage
                     window.localStorage.setItem('emailForSignIn', email);
-                    alert('Vérifie ton email pour confirmer ton inscription !');
+                    alert("Un email de confirmation a été envoyé ! Veuillez vérifier votre boîte de réception.");
                 })
                 .catch((error) => {
-                    console.error('Erreur lors de l\'envoi de l\'email :', error);
-                    alert('Erreur lors de l\'envoi de l\'email : ' + error.message);
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    alert("Erreur: " + errorMessage);
                 });
         }
 
-        // Fonction pour vérifier si l'email est vérifié après le clic sur le lien
-        function handleEmailConfirmation() {
+        // Fonction pour vérifier le lien de confirmation et connecter l'utilisateur
+        function handleEmailLinkSignIn() {
             const email = window.localStorage.getItem('emailForSignIn');
             if (isSignInWithEmailLink(auth, window.location.href)) {
+                // Si le lien est valide, connecter l'utilisateur
                 signInWithEmailLink(auth, email, window.location.href)
                     .then((result) => {
-                        // Connexion réussie
-                        alert('Inscription confirmée avec succès !');
-                        window.localStorage.removeItem('emailForSignIn');
+                        alert("Vous êtes maintenant connecté !");
+                        // Rediriger vers la page d'accueil ou une autre page
+                        window.location.href = "index.html";  // Remplace par ta page d'accueil
                     })
                     .catch((error) => {
-                        console.error('Erreur lors de la confirmation :', error);
-                        alert('Erreur de confirmation : ' + error.message);
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        alert("Erreur: " + errorMessage);
                     });
             }
         }
-
-        window.onload = function () {
-            // Vérifie si l'utilisateur vient de cliquer sur le lien d'email
-            if (window.location.href.includes("confirm-email")) {
-                handleEmailConfirmation();
-            }
-        };
     </script>
     <style>
-        body {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: Arial, sans-serif;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #f0f0f0;
-            margin: 0;
         }
 
         .container {
-            width: 300px;
+            background-color: white;
             padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-        }
-
-        input[type="email"] {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
+            max-width: 400px;
         }
 
         h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        .error-message {
-            color: red;
-            font-size: 12px;
-            margin-top: 10px;
-            text-align: center;
+        .input-group {
+            margin-bottom: 15px;
         }
 
-        .success-message {
-            color: green;
-            font-size: 12px;
-            margin-top: 10px;
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
             text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -131,17 +142,25 @@
 
     <div class="container">
         <h2>Inscription</h2>
-        <input type="email" id="emailInput" placeholder="Email" />
-        <button onclick="sendEmailLink()">Envoyer le lien de confirmation</button>
-        <div id="messageContainer"></div>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Entrez votre email" required>
+        </div>
+        <button class="btn" onclick="signUpUser()">S'inscrire</button>
+        <div class="message">
+            <p>Vous avez déjà un compte ? <a href="#" onclick="showLogin()">Se connecter</a></p>
+        </div>
     </div>
 
     <script>
-        // Ajout d'un message de confirmation ou d'erreur après l'envoi de l'email
-        function showMessage(message, type) {
-            const messageContainer = document.getElementById("messageContainer");
-            messageContainer.textContent = message;
-            messageContainer.className = type === "success" ? "success-message" : "error-message";
+        // Fonction pour afficher la page de connexion au lieu de l'inscription (si besoin)
+        function showLogin() {
+            window.location.href = "login.html";  // Remplace par l'URL de ta page de connexion
+        }
+        
+        // Vérifie si l'URL contient un lien de confirmation
+        window.onload = function() {
+            handleEmailLinkSignIn();
         }
     </script>
 
