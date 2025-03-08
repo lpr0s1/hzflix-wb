@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - hzflix</title>
-    <!-- Import du SDK Firebase -->
+    <title>Connexion avec Google</title>
     <script type="module">
+        // Importation des modules Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Config Firebase
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
             authDomain: "hzflix.firebaseapp.com",
@@ -24,72 +24,26 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
-        // Fonction pour la connexion avec Google
+        // Fonction de connexion avec Google
         function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
 
-            // Connexion avec le popup de Google
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    // Le résultat de la connexion contient l'utilisateur
+                    // L'utilisateur est connecté
                     const user = result.user;
-                    console.log("Utilisateur connecté : ", user);
-                    alert("Connexion réussie avec Google !");
-                    window.location.href = "index.html";  // Redirection après connexion
+                    alert("Bienvenue " + user.displayName + " !");
+                    console.log(user);
+                    window.location.href = "index.html";  // Rediriger vers la page d'accueil après la connexion
                 })
                 .catch((error) => {
-                    // Si une erreur se produit lors de la connexion
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.error("Erreur lors de la connexion avec Google : ", errorCode, errorMessage);
-                    alert("Erreur lors de la connexion : " + errorMessage);
+                    console.error("Erreur lors de la connexion : ", error);
+                    alert("Erreur : " + error.message);
                 });
         }
     </script>
-    <!-- Import du bouton Google -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-
-        .google-btn-container {
-            margin-top: 20px;
-        }
-    </style>
 </head>
 <body>
-
-    <h2>Connexion avec Google</h2>
-
-    <!-- Conteneur pour le bouton Google -->
-    <div class="google-btn-container">
-        <div id="g_id_onload"
-            data-client_id="626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com"
-            data-login_uri="index.html"  <!-- Change ici pour l'URL où rediriger l'utilisateur après la connexion -->
-            data-auto_prompt="false">
-        </div>
-        
-        <!-- Bouton de connexion Google -->
-        <div class="g_id_signin" 
-            data-type="standard" 
-            data-shape="pill" 
-            data-theme="outline" 
-            data-text="signin_with" 
-            data-size="large" 
-            data-logo_alignment="left">
-        </div>
-    </div>
-
-    <script>
-        // Gère l'authentification avec Google
-        window.onload = function() {
-            const googleSignInButton = document.querySelector('.g_id_signin');
-            googleSignInButton.addEventListener('click', signInWithGoogle);
-        };
-    </script>
-
+    <button onclick="signInWithGoogle()">Se connecter avec Google</button>
 </body>
 </html>
