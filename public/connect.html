@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion avec Google</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+    authDomain: "hzflix.firebaseapp.com",
+    projectId: "hzflix",
+    storageBucket: "hzflix.firebasestorage.app",
+    messagingSenderId: "626892229265",
+    appId: "1:626892229265:web:6dc8f5c377ed328b7bcd30",
+    measurementId: "G-WE938ZHWZP"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
     <style>
         * {
             margin: 0;
