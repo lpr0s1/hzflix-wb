@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion avec Google</title>
-    <script src="https://apis.google.com/js/platform.js" async defer></script> <!-- Importation du script Google -->
+    <!-- Charger le SDK Google pour l'authentification -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
     <script type="module">
         // Importation des modules Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -25,36 +27,35 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
-        // Fonction de connexion avec Google
+        // Fonction pour la connexion via Google
         function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
-            
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    // L'utilisateur est connecté
+                    // Connexion réussie
                     const user = result.user;
                     alert("Bienvenue " + user.displayName + " !");
                     console.log(user);
-                    window.location.href = "index.html";  // Rediriger vers la page d'accueil après la connexion
+                    window.location.href = "index.html";  // Redirige vers la page d'accueil après la connexion
                 })
                 .catch((error) => {
-                    console.error("Erreur lors de la connexion : ", error);
+                    console.error("Erreur de connexion avec Google : ", error);
                     alert("Erreur : " + error.message);
                 });
         }
 
-        // Fonction d'initialisation du bouton Google
+        // Fonction pour initialiser le bouton de connexion Google
         function initGoogleButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
-                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com'
+                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton ID client Google
                 }).then(function() {
-                    // Attacher le bouton Google au DOM
+                    // Rendu du bouton Google
                     gapi.signin2.render('google-signin-button', {
                         'scope': 'profile email',
                         'longtitle': true,
                         'theme': 'dark',
-                        'onsuccess': signInWithGoogle,
+                        'onsuccess': signInWithGoogle, // Fonction appelée après une connexion réussie
                         'onfailure': function(error) {
                             alert("Erreur d'authentification avec Google : " + error);
                         }
@@ -66,8 +67,7 @@
 </head>
 <body onload="initGoogleButton()"> <!-- Appel de la fonction pour initialiser le bouton Google -->
     <h2>Connexion à Hzflix</h2>
-    <!-- Bouton Google -->
-    <div id="google-signin-button"></div>
-
+    <!-- Le vrai bouton de connexion Google -->
+    <div id="google-signin-button"></div> <!-- Le bouton s'affichera ici -->
 </body>
 </html>
