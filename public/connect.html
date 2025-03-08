@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion avec Google</title>
+    <title>Connexion Google</title>
 
-    <!-- Charger le SDK Firebase -->
+    <!-- Ajouter le SDK Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -25,7 +25,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
-        // Fonction pour la connexion avec Google
+        // Fonction de connexion avec Google
         function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
             signInWithPopup(auth, provider)
@@ -33,14 +33,25 @@
                     // Connexion réussie
                     const user = result.user;
                     console.log(user);
-                    window.location.href = "index.html";  // Redirection après connexion (si nécessaire)
+                    window.location.href = "index.html";  // Redirection après la connexion
                 })
                 .catch((error) => {
                     console.error("Erreur de connexion avec Google : ", error);
                     alert("Erreur : " + error.message);
                 });
         }
+    </script>
 
+    <!-- Charger le SDK Google pour le bouton -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+</head>
+<body>
+
+    <!-- Le vrai bouton Google -->
+    <div id="google-signin-button"></div>
+
+    <script>
         // Initialisation du bouton Google
         function initGoogleButton() {
             gapi.load('auth2', function() {
@@ -51,8 +62,8 @@
                     gapi.signin2.render('google-signin-button', {
                         'scope': 'profile email',
                         'longtitle': true, // Texte long sur le bouton
-                        'theme': 'dark', // Thème sombre pour le bouton
-                        'onsuccess': signInWithGoogle, // Appeler la fonction de connexion sur succès
+                        'theme': 'dark', // Thème sombre
+                        'onsuccess': signInWithGoogle, // Connexion réussie
                         'onfailure': function(error) {
                             alert("Erreur d'authentification avec Google : " + error);
                         }
@@ -60,14 +71,10 @@
                 });
             });
         }
+
+        // Lancer l'initialisation au chargement de la page
+        window.onload = initGoogleButton;
     </script>
 
-    <!-- Charger le SDK Google pour l'authentification -->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-
-</head>
-<body onload="initGoogleButton()">
-    <!-- Le vrai bouton Google sera affiché ici -->
-    <div id="google-signin-button"></div> <!-- Le bouton Google s'affichera ici -->
 </body>
 </html>
