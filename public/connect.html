@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion avec Google</title>
+    
     <!-- Charger le SDK Google pour l'authentification -->
     <script src="https://apis.google.com/js/platform.js" async defer></script>
 
+    <!-- Charger les SDK Firebase -->
     <script type="module">
-        // Importation des modules Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
@@ -23,7 +24,7 @@
             measurementId: "G-BJFG2DCVBF"
         };
 
-        // Initialisation Firebase
+        // Initialisation de Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
@@ -36,7 +37,7 @@
                     const user = result.user;
                     alert("Bienvenue " + user.displayName + " !");
                     console.log(user);
-                    window.location.href = "index.html";  // Redirige vers la page d'accueil après la connexion
+                    window.location.href = "index.html";  // Redirection après la connexion
                 })
                 .catch((error) => {
                     console.error("Erreur de connexion avec Google : ", error);
@@ -48,13 +49,13 @@
         function initGoogleButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
-                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton ID client Google
+                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // ID client Google
                 }).then(function() {
                     // Rendu du bouton Google
                     gapi.signin2.render('google-signin-button', {
                         'scope': 'profile email',
-                        'longtitle': true,
-                        'theme': 'dark',
+                        'longtitle': true, // Titre long
+                        'theme': 'dark', // Thème sombre
                         'onsuccess': signInWithGoogle, // Fonction appelée après une connexion réussie
                         'onfailure': function(error) {
                             alert("Erreur d'authentification avec Google : " + error);
@@ -65,9 +66,12 @@
         }
     </script>
 </head>
-<body onload="initGoogleButton()"> <!-- Appel de la fonction pour initialiser le bouton Google -->
+<body onload="initGoogleButton()">
     <h2>Connexion à Hzflix</h2>
-    <!-- Le vrai bouton de connexion Google -->
+    
+    <!-- Le vrai bouton de connexion Google sera ici -->
     <div id="google-signin-button"></div> <!-- Le bouton s'affichera ici -->
+    
+    <!-- Ajoute un script de redirection à la page Google après une connexion réussie -->
 </body>
 </html>
