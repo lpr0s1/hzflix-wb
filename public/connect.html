@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - hzflix</title>
+    <title>Connexion - hzflix</title>
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
             authDomain: "hzflix.firebaseapp.com",
@@ -23,138 +20,51 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth();
 
-        // Fonction pour inscrire un utilisateur
-        function signUpUser(event) {
-            // Empêcher le rechargement de la page lors de la soumission du formulaire
-            event.preventDefault();
+        // Fonction de connexion avec Google
+        function signInWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                'client_id': '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com'
+            });
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            // Validation des champs
-            if (!email || !password) {
-                alert("Veuillez entrer un email et un mot de passe valide.");
-                return;
-            }
-
-            console.log("Inscription de l'utilisateur avec l'email : " + email);
-
-            // Création de l'utilisateur
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Inscription réussie
-                    const user = userCredential.user;
-                    alert("Inscription réussie !");
-                    console.log("Utilisateur inscrit : ", user);
-                    window.location.href = "index.html";  // Redirection vers la page d'accueil
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Utilisateur connecté :", user);
+                    alert("Connexion réussie avec Google !");
+                    window.location.href = "index.html";  // Redirection après la connexion
                 })
                 .catch((error) => {
-                    // Afficher l'erreur dans une alerte
-                    alert("Erreur lors de l'inscription : " + error.message);
-                    console.error("Erreur lors de l'inscription : ", error);
+                    console.error("Erreur lors de la connexion avec Google :", error);
+                    alert("Erreur lors de la connexion : " + error.message);
                 });
         }
-
     </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        h2 {
+            font-family: Arial, sans-serif;
             text-align: center;
-            margin-bottom: 20px;
+            margin-top: 50px;
         }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
+        .btn-google {
+            padding: 10px 20px;
+            background-color: #4285F4;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
 
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        .message {
-            text-align: center;
-            margin-top: 20px;
+        .btn-google:hover {
+            background-color: #3367D6;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h2>Inscription</h2>
-        <!-- Utilisation du formulaire avec méthode POST -->
-        <form id="signup-form" method="POST" onsubmit="signUpUser(event)">
-            <div class="input-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="Entrez votre email" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
-            </div>
-            <button type="submit" class="btn">S'inscrire</button>
-        </form>
-        <div class="message">
-            <p>Vous avez déjà un compte ? <a href="#" onclick="showLogin()">Se connecter</a></p>
-        </div>
-    </div>
-
-    <script>
-        // Fonction pour afficher la page de connexion au lieu de l'inscription (si besoin)
-        function showLogin() {
-            window.location.href = "login.html";  // Remplace par l'URL de ta page de connexion
-        }
-    </script>
-
+    <h2>Connexion avec Google</h2>
+    <button class="btn-google" onclick="signInWithGoogle()">Se connecter avec Google</button>
 </body>
 </html>
