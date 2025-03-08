@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion avec Google</title>
 
-    <!-- Charger Firebase -->
+    <!-- Charger les scripts Firebase -->
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
 
-    <!-- Charger Google Platform API -->
+    <!-- Charger les API de Google pour le vrai bouton -->
     <script src="https://apis.google.com/js/platform.js" async defer></script>
 
     <script>
-        // Configuration de Firebase
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
             authDomain: "hzflix.firebaseapp.com",
@@ -28,22 +28,22 @@
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Fonction pour connecter l'utilisateur avec Google
+        // Fonction appelée après que l'utilisateur se connecte avec Google
         function onSignIn(googleUser) {
-            // Récupérer le token d'authentification de Google
+            // Récupère le token d'authentification Google
             const id_token = googleUser.getAuthResponse().id_token;
 
-            // Créer un credential Firebase avec ce token
+            // Créer un credential Firebase à partir de ce token
             const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
 
-            // Connexion avec Firebase
+            // Authentification avec Firebase
             auth.signInWithCredential(credential)
                 .then((result) => {
                     // Connexion réussie
                     const user = result.user;
                     console.log("Utilisateur connecté via Google : ", user);
                     alert('Connexion réussie avec Google !');
-                    window.location.href = "index.html"; // Remplacer par la page d'accueil
+                    window.location.href = "index.html"; // Page d'accueil ou autre
                 })
                 .catch((error) => {
                     console.error("Erreur lors de la connexion avec Google : ", error);
@@ -51,13 +51,13 @@
                 });
         }
 
-        // Initialiser Google Sign-In
+        // Initialisation du bouton de Google
         function renderButton() {
             gapi.load('auth2', function() {
                 gapi.auth2.init({
-                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Ton ID client Google
+                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com' // Remplace par ton ID client
                 }).then(function() {
-                    // Ajouter le bouton de Google sur la page
+                    // Attache le gestionnaire d'événements au bouton Google
                     const auth2 = gapi.auth2.getAuthInstance();
                     auth2.attachClickHandler(document.getElementById('google-signin-button'), {}, onSignIn);
                 });
@@ -71,8 +71,8 @@
 <body>
     <h2>Connexion avec Google</h2>
 
-    <!-- Bouton Google officiel -->
-    <div id="google-signin-button"></div> <!-- Google ajoutera ici le vrai bouton -->
+    <!-- Bouton Google sera ajouté ici -->
+    <div id="google-signin-button"></div>
 
 </body>
 </html>
