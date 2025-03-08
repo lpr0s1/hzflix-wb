@@ -132,8 +132,8 @@
 
     <div class="container">
         <h2>Inscription</h2>
-        <!-- Utilisation du formulaire -->
-        <form id="signup-form" onsubmit="signUpUser(event)">
+        <!-- Utilisation du formulaire avec méthode POST -->
+        <form id="signup-form" method="POST" onsubmit="signUpUser(event)">
             <div class="input-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" placeholder="Entrez votre email" required>
