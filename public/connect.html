@@ -37,8 +37,8 @@
       // Sign-in via Firebase avec les informations Google
       signInWithCredential(auth, credential)
         .then((result) => {
-          // Connexion réussie, rediriger l'utilisateur
-          window.location.href = "https://hzflix.online";
+          // Connexion réussie, rediriger l'utilisateur vers l'URL spécifiée
+          window.location.href = "https://hzflix.online"; // Changement ici
         })
         .catch((error) => {
           console.error(error);
