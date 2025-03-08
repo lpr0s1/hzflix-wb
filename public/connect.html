@@ -30,9 +30,17 @@
         function signUpUser() {
             const email = document.getElementById('email').value;
 
+            if (!email) {
+                alert("Veuillez entrer un email valide.");
+                console.log("L'email n'est pas valide.");
+                return;
+            }
+
+            console.log("Envoi du lien de confirmation pour l'email : " + email);
+
             const actionCodeSettings = {
                 // URL de redirection après que l'utilisateur ait cliqué sur le lien de confirmation
-                url: 'https://hzflix.online/confirmation',  // Remplace par la page de confirmation de ton choix
+                url: 'https://hzflix.firebaseapp.com/confirmation', // Remplace avec l'URL Firebase
                 handleCodeInApp: true,
             };
 
@@ -46,6 +54,7 @@
                 .catch((error) => {
                     const errorCode = error.code;
                     const errorMessage = error.message;
+                    console.error("Erreur lors de l'envoi du lien de confirmation : ", errorCode, errorMessage);
                     alert("Erreur: " + errorMessage);
                 });
         }
@@ -53,19 +62,25 @@
         // Fonction pour vérifier le lien de confirmation et connecter l'utilisateur
         function handleEmailLinkSignIn() {
             const email = window.localStorage.getItem('emailForSignIn');
-            if (isSignInWithEmailLink(auth, window.location.href)) {
+            const currentUrl = window.location.href;
+
+            if (isSignInWithEmailLink(auth, currentUrl)) {
+                console.log("Lien de confirmation valide.");
+
                 // Si le lien est valide, connecter l'utilisateur
-                signInWithEmailLink(auth, email, window.location.href)
+                signInWithEmailLink(auth, email, currentUrl)
                     .then((result) => {
                         alert("Vous êtes maintenant connecté !");
-                        // Rediriger vers la page d'accueil ou une autre page
                         window.location.href = "index.html";  // Remplace par ta page d'accueil
                     })
                     .catch((error) => {
                         const errorCode = error.code;
                         const errorMessage = error.message;
+                        console.error("Erreur lors de la connexion avec le lien : ", errorCode, errorMessage);
                         alert("Erreur: " + errorMessage);
                     });
+            } else {
+                console.log("Le lien de confirmation est invalide.");
             }
         }
     </script>
