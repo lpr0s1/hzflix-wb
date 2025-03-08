@@ -9,18 +9,18 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Configuration de Firebase
+        // Configuration Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
-            authDomain: "hzflix.firebaseapp.com",
-            projectId: "hzflix",
-            storageBucket: "hzflix.firebasestorage.app",
-            messagingSenderId: "626892229265",
-            appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
-            measurementId: "G-BJFG2DCVBF"
+            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q", // Ta clé API
+            authDomain: "hzflix.firebaseapp.com", // Auth domain pour l'authentification
+            projectId: "hzflix", // Identifiant du projet
+            storageBucket: "hzflix.firebasestorage.app", // Stockage des fichiers
+            messagingSenderId: "626892229265", // ID d'envoi des messages
+            appId: "1:626892229265:web:2a7148e39e2de1757bcd30", // ID de l'application
+            measurementId: "G-BJFG2DCVBF" // ID de mesure pour les analytics
         };
 
-        // Initialisation de Firebase
+        // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
@@ -49,6 +49,11 @@
                     alert("Erreur : " + errorMessage);
                     console.error("Erreur lors de l'inscription : ", errorCode, errorMessage);
                 });
+        }
+
+        // Log pour vérifier si Firebase est bien initialisé
+        window.onload = function() {
+            console.log("Firebase a bien été initialisé : ", app.name);
         }
     </script>
     <style>
