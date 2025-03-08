@@ -5,60 +5,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - hzflix</title>
     <script type="module">
-        // Importer les fonctions nécessaires de Firebase
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+        import { getAuth, sendSignInLinkToEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Configuration Firebase
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q", // Ta clé API
-            authDomain: "hzflix.firebaseapp.com", // Auth domain pour l'authentification
-            projectId: "hzflix", // Identifiant du projet
-            storageBucket: "hzflix.firebasestorage.app", // Stockage des fichiers
-            messagingSenderId: "626892229265", // ID d'envoi des messages
-            appId: "1:626892229265:web:2a7148e39e2de1757bcd30", // ID de l'application
-            measurementId: "G-BJFG2DCVBF" // ID de mesure pour les analytics
+            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+            authDomain: "hzflix.firebaseapp.com",
+            projectId: "hzflix",
+            storageBucket: "hzflix.firebasestorage.app",
+            messagingSenderId: "626892229265",
+            appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
+            measurementId: "G-BJFG2DCVBF"
         };
 
-        // Initialiser Firebase
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth();
 
-        // Fonction pour inscrire un utilisateur avec un email et un mot de passe
-        function signUpUser() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // Fonction pour envoyer un lien de confirmation par e-mail
+        function signUpUser(event) {
+            // Empêcher le rechargement de la page lors de la soumission du formulaire
+            event.preventDefault();
 
-            if (!email || !password) {
-                alert("Veuillez remplir tous les champs.");
+            const email = document.getElementById('email').value;
+
+            if (!email) {
+                alert("Veuillez entrer un email valide.");
+                console.log("L'email n'est pas valide.");
                 return;
             }
 
-            // Créer un utilisateur avec l'email et le mot de passe
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // L'utilisateur est inscrit avec succès
-                    const user = userCredential.user;
-                    console.log("Utilisateur inscrit : ", user);
-                    alert("Merci pour votre inscription ! Vous pouvez maintenant vous connecter.");
-                    window.location.href = "login.html";  // Redirection vers la page de connexion
+            console.log("Envoi du lien de confirmation pour l'email : " + email);
+
+            const actionCodeSettings = {
+                // URL de redirection après que l'utilisateur ait cliqué sur le lien de confirmation
+                url: 'https://hzflix.firebaseapp.com/confirmation', // Remplace avec l'URL Firebase
+                handleCodeInApp: true,
+            };
+
+            // Envoi du lien de confirmation par e-mail
+            sendSignInLinkToEmail(auth, email, actionCodeSettings)
+                .then(() => {
+                    // Sauvegarder l'email pour la vérification dans le localStorage
+                    window.localStorage.setItem('emailForSignIn', email);
+                    alert("Un email de confirmation a été envoyé ! Veuillez vérifier votre boîte de réception.");
                 })
                 .catch((error) => {
-                    // Afficher l'erreur dans une alerte
                     const errorCode = error.code;
                     const errorMessage = error.message;
-                    alert("Erreur : " + message.error); // Afficher l'erreur
-                    console.error("Erreur lors de l'inscription : ", errorCode, errorMessage);
+                    console.error("Erreur lors de l'envoi du lien de confirmation : ", errorCode, errorMessage);
+                    alert("Erreur: " + errorMessage);
                 });
         }
+
     </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div>
+
+    <div class="container">
         <h2>Inscription</h2>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Mot de passe" required>
-        <button onclick="signUpUser()">S'inscrire</button>
+        <!-- Utilisation du formulaire -->
+        <form id="signup-form" onsubmit="signUpUser(event)">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Entrez votre email" required>
+            </div>
+            <button type="submit" class="btn">S'inscrire</button>
+        </form>
+        <div class="message">
+            <p>Vous avez déjà un compte ? <a href="#" onclick="showLogin()">Se connecter</a></p>
+        </div>
     </div>
+
+    <script>
+        // Fonction pour afficher la page de connexion au lieu de l'inscription (si besoin)
+        function showLogin() {
+            window.location.href = "login.html";  // Remplace par l'URL de ta page de connexion
+        }
+    </script>
+
 </body>
 </html>
