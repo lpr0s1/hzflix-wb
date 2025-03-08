@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page d'inscription - hzflix</title>
-
-  <!-- Charger le script Google Sign-In -->
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  
+  <!-- Inclure le script de Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <!-- Intégration des SDKs Firebase -->
   <script type="module">
@@ -31,14 +31,10 @@
     const analytics = getAnalytics(app);
 
     // Fonction pour se connecter avec Google via Firebase
-    const onSignIn = (googleUser) => {
-      // Obtenir le token ID de Google
-      const idToken = googleUser.getAuthResponse().id_token;
+    const signInWithGoogle = (response) => {
+      const credential = GoogleAuthProvider.credential(response.credential);
 
-      // Créer une credentiel Google pour Firebase
-      const credential = GoogleAuthProvider.credential(idToken);
-
-      // Se connecter à Firebase avec le token Google
+      // Sign-in via Firebase avec les informations Google
       signInWithCredential(auth, credential)
         .then((result) => {
           // Connexion réussie, rediriger l'utilisateur
@@ -50,12 +46,48 @@
         });
     };
   </script>
+
 </head>
 <body>
   <h1>Bienvenue sur hzflix</h1>
 
-  <!-- Le bouton officiel Google -->
-  <div class="g-signin2" data-onsuccess="onSignIn"></div>
+  <!-- Conteneur pour le bouton Google -->
+  <div class="google-btn-container">
+    <div id="g_id_onload"
+         data-client_id="626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com"
+         data-login_uri="index.html"  <!-- Change ici pour l'URL où rediriger l'utilisateur après la connexion -->
+         data-auto_prompt="false">
+    </div>
+    
+    <!-- Bouton de connexion Google -->
+    <div class="g_id_signin" 
+         data-type="standard" 
+         data-shape="pill" 
+         data-theme="outline" 
+         data-text="signin_with" 
+         data-size="large" 
+         data-logo_alignment="left">
+    </div>
+  </div>
 
+  <script>
+    // Gère l'authentification avec Google
+    window.onload = function() {
+      google.accounts.id.initialize({
+        client_id: "626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com",
+        callback: signInWithGoogle
+      });
+
+      google.accounts.id.renderButton(
+        document.querySelector(".g_id_signin"),
+        {
+          theme: "outline",
+          size: "large",
+          shape: "pill",
+          text: "signin_with",
+        }
+      );
+    };
+  </script>
 </body>
 </html>
