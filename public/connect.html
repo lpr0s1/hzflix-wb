@@ -3,56 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion avec Google</title>
+    <title>Inscription et Connexion via Email</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    <!-- SDK Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+            authDomain: "hzflix.firebaseapp.com",
+            projectId: "hzflix",
+            storageBucket: "hzflix.firebasestorage.app",
+            messagingSenderId: "626892229265",
+            appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
+            measurementId: "G-BJFG2DCVBF"
+        };
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Fonction pour envoyer un email de confirmation
+        function sendEmailLink() {
+            const email = document.getElementById("emailInput").value;
+            const actionCodeSettings = {
+                // URL de redirection après la confirmation de l'email (ajoute ton URL de site)
+                url: 'https://hzflix.online/confirm-email', 
+                handleCodeInApp: true,
+            };
+
+            sendSignInLinkToEmail(auth, email, actionCodeSettings)
+                .then(() => {
+                    // Sauvegarder l'email dans le stockage local pour une connexion future
+                    window.localStorage.setItem('emailForSignIn', email);
+                    alert('Vérifie ton email pour confirmer ton inscription !');
+                })
+                .catch((error) => {
+                    console.error('Erreur lors de l\'envoi de l\'email :', error);
+                    alert('Erreur lors de l\'envoi de l\'email : ' + error.message);
+                });
         }
 
+        // Fonction pour vérifier si l'email est vérifié après le clic sur le lien
+        function handleEmailConfirmation() {
+            const email = window.localStorage.getItem('emailForSignIn');
+            if (isSignInWithEmailLink(auth, window.location.href)) {
+                signInWithEmailLink(auth, email, window.location.href)
+                    .then((result) => {
+                        // Connexion réussie
+                        alert('Inscription confirmée avec succès !');
+                        window.localStorage.removeItem('emailForSignIn');
+                    })
+                    .catch((error) => {
+                        console.error('Erreur lors de la confirmation :', error);
+                        alert('Erreur de confirmation : ' + error.message);
+                    });
+            }
+        }
+
+        window.onload = function () {
+            // Vérifie si l'utilisateur vient de cliquer sur le lien d'email
+            if (window.location.href.includes("confirm-email")) {
+                handleEmailConfirmation();
+            }
+        };
+    </script>
+    <style>
         body {
+            font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f5f5f5;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        .container {
+            width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 10px;
+            color: #007BFF;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <!-- Initialisation du SDK et gestion de la connexion -->
-    <div id="g_id_onload"
-         data-client_id="626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
+    <div class="container">
+        <h2>Inscription</h2>
+        <input type="email" id="emailInput" placeholder="Email" />
+        <button onclick="sendEmailLink()">Envoyer le lien de confirmation</button>
     </div>
-
-    <!-- Bouton officiel Google -->
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="outline"
-         data-text="signin_with"
-         data-size="large">
-    </div>
-
-    <script>
-        function handleCredentialResponse(response) {
-            console.log("ID Token: ", response.credential);
-            alert("Connexion réussie !");
-            // Ici, tu peux envoyer le token à ton backend pour l'authentification.
-        }
-    </script>
 
 </body>
 </html>
