@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion avec Google</title>
+    <script src="https://apis.google.com/js/platform.js" async defer></script> <!-- Importation du script Google -->
     <script type="module">
         // Importation des modules Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -27,7 +28,7 @@
         // Fonction de connexion avec Google
         function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
-
+            
             signInWithPopup(auth, provider)
                 .then((result) => {
                     // L'utilisateur est connecté
@@ -41,9 +42,32 @@
                     alert("Erreur : " + error.message);
                 });
         }
+
+        // Fonction d'initialisation du bouton Google
+        function initGoogleButton() {
+            gapi.load('auth2', function() {
+                gapi.auth2.init({
+                    client_id: '626892229265-oi8nnc53cjv6gj49h2tdofn2aen3us6c.apps.googleusercontent.com'
+                }).then(function() {
+                    // Attacher le bouton Google au DOM
+                    gapi.signin2.render('google-signin-button', {
+                        'scope': 'profile email',
+                        'longtitle': true,
+                        'theme': 'dark',
+                        'onsuccess': signInWithGoogle,
+                        'onfailure': function(error) {
+                            alert("Erreur d'authentification avec Google : " + error);
+                        }
+                    });
+                });
+            });
+        }
     </script>
 </head>
-<body>
-    <button onclick="signInWithGoogle()">Se connecter avec Google</button>
+<body onload="initGoogleButton()"> <!-- Appel de la fonction pour initialiser le bouton Google -->
+    <h2>Connexion à Hzflix</h2>
+    <!-- Bouton Google -->
+    <div id="google-signin-button"></div>
+
 </body>
 </html>
