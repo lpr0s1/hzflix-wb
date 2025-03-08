@@ -8,7 +8,7 @@
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-        import { getAuth, sendSignInLinkToEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -26,39 +26,35 @@
         const analytics = getAnalytics(app);
         const auth = getAuth();
 
-        // Fonction pour envoyer un lien de confirmation par e-mail
+        // Fonction pour inscrire un utilisateur
         function signUpUser(event) {
             // Empêcher le rechargement de la page lors de la soumission du formulaire
             event.preventDefault();
 
             const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            if (!email) {
-                alert("Veuillez entrer un email valide.");
-                console.log("L'email n'est pas valide.");
+            // Validation des champs
+            if (!email || !password) {
+                alert("Veuillez entrer un email et un mot de passe valide.");
                 return;
             }
 
-            console.log("Envoi du lien de confirmation pour l'email : " + email);
+            console.log("Inscription de l'utilisateur avec l'email : " + email);
 
-            const actionCodeSettings = {
-                // URL de redirection après que l'utilisateur ait cliqué sur le lien de confirmation
-                url: 'https://hzflix.firebaseapp.com/confirmation', // Remplace avec l'URL Firebase
-                handleCodeInApp: true,
-            };
-
-            // Envoi du lien de confirmation par e-mail
-            sendSignInLinkToEmail(auth, email, actionCodeSettings)
-                .then(() => {
-                    // Sauvegarder l'email pour la vérification dans le localStorage
-                    window.localStorage.setItem('emailForSignIn', email);
-                    alert("Un email de confirmation a été envoyé ! Veuillez vérifier votre boîte de réception.");
+            // Création de l'utilisateur
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Inscription réussie
+                    const user = userCredential.user;
+                    alert("Inscription réussie !");
+                    console.log("Utilisateur inscrit : ", user);
+                    window.location.href = "index.html";  // Redirection vers la page d'accueil
                 })
                 .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.error("Erreur lors de l'envoi du lien de confirmation : ", errorCode, errorMessage);
-                    alert("Erreur: " + errorMessage);
+                    // Afficher l'erreur dans une alerte
+                    alert("Erreur lors de l'inscription : " + error.message);
+                    console.error("Erreur lors de l'inscription : ", error);
                 });
         }
 
@@ -141,6 +137,10 @@
             <div class="input-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" placeholder="Entrez votre email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
             </div>
             <button type="submit" class="btn">S'inscrire</button>
         </form>
