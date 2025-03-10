@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat en Temps Réel</title>
-  
+
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
@@ -149,9 +149,14 @@
 
     // Lorsque l'utilisateur clique sur "Continuer"
     continueButton.addEventListener("click", function() {
-      pseudoPopup.style.display = "none"; // Cacher le popup
-      chatContainer.style.display = "flex"; // Afficher le chat
-      loadMessages(); // Charger les messages existants
+      // Vérification de la valeur du pseudo avant de continuer
+      if (pseudoInput.value.trim() !== "") {
+        pseudoPopup.style.display = "none"; // Cacher le popup
+        chatContainer.style.display = "flex"; // Afficher le chat
+        loadMessages(); // Charger les messages existants
+      } else {
+        alert("Veuillez entrer un pseudo valide.");
+      }
     });
 
     // Fonction pour afficher les messages
