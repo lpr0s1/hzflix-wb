@@ -228,6 +228,7 @@
         function goBack() {
             document.querySelector('.movie-grid').style.display = 'flex';
             document.getElementById('videoContainer').style.display = 'none';
+            window.location.reload();
         }
 
         loadMovies();
