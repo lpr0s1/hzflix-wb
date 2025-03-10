@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat en temps réel - hzflix</title>
+
+  <!-- Script Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+
+  <script type="module">
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+      authDomain: "hzflix.firebaseapp.com",
+      projectId: "hzflix",
+      storageBucket: "hzflix.firebasestorage.app",
+      messagingSenderId: "626892229265",
+      appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
+      measurementId: "G-BJFG2DCVBF"
+    };
+
+    // Initialisation Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Fonction de connexion avec Google (exemple d'authentification)
+    const signInWithGoogle = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then((result) => {
+        console.log('Utilisateur connecté :', result.user);
+      }).catch((error) => {
+        console.error('Erreur de connexion:', error);
+      });
+    };
+
+    // WebSocket pour gérer le chat en temps réel
+    let socket;
+    const initWebSocket = () => {
+      socket = new WebSocket('ws://localhost:8080'); // Assurez-vous que votre serveur WebSocket fonctionne sur ce port
+
+      socket.onopen = () => {
+        console.log('Connexion WebSocket ouverte');
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        displayMessage(message.username, message.text);
+      };
+
+      socket.onclose = () => {
+        console.log('Connexion WebSocket fermée');
+      };
+
+      socket.onerror = (error) => {
+        console.error('Erreur WebSocket:', error);
+      };
+    };
+
+    const sendMessage = () => {
+      const messageText = document.getElementById('messageText').value;
+      if (messageText.trim() !== '') {
+        const message = {
+          username: auth.currentUser ? auth.currentUser.displayName : 'Anonyme',
+          text: messageText,
+        };
+        
+        // Envoi du message via WebSocket
+        socket.send(JSON.stringify(message));
+        
+        // Sauvegarde dans Firestore pour persistence
+        db.collection('messages').add({
+          username: message.username,
+          text: message.text,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        document.getElementById('messageText').value = ''; // Effacer l'input
+      }
+    };
+
+    const displayMessage = (username, text) => {
+      const messageContainer = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.innerHTML = `<strong>${username}:</strong> ${text}`;
+      messageContainer.appendChild(messageElement);
+      messageContainer.scrollTop = messageContainer.scrollHeight; // Défilement automatique
+    };
+
+    // Surveiller les messages en temps réel de Firestore
+    db.collection('messages').orderBy('timestamp').onSnapshot((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        const messageData = doc.data();
+        displayMessage(messageData.username, messageData.text);
+      });
+    });
+
+    window.onload = function() {
+      initWebSocket();
+    };
+  </script>
+</head>
+<body>
+  <h1>Chat en temps réel</h1>
+
+  <!-- Zone de connexion -->
+  <button onclick="signInWithGoogle()">Se connecter avec Google</button>
+
+  <div id="messages" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 10px;">
+    <!-- Les messages seront affichés ici -->
+  </div>
+
+  <input type="text" id="messageText" placeholder="Tapez un message..." style="width: 80%; padding: 10px;" />
+  <button onclick="sendMessage()">Envoyer</button>
+</body>
+</html>
