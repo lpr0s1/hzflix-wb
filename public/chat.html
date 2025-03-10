@@ -92,9 +92,6 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #continueButton:disabled {
-      background-color: #ccc;
-    }
   </style>
 </head>
 <body>
@@ -103,7 +100,7 @@
     <div id="pseudoPopupContent">
       <h2>Entrez votre pseudo</h2>
       <input type="text" id="pseudoInput" placeholder="Entrez votre pseudo">
-      <button id="continueButton" disabled>Continuer</button>
+      <button id="continueButton">Continuer</button>
     </div>
   </div>
 
@@ -140,23 +137,17 @@
     const messagesContainer = document.getElementById("messages");
     const messageInput = document.getElementById("messageInput");
 
-    // Activer ou désactiver le bouton "Continuer" en fonction de la saisie de l'utilisateur
-    pseudoInput.addEventListener("input", function() {
-      const pseudoVal = pseudoInput.value.trim();
-      userPseudo = pseudoVal || userPseudo; // Si un pseudo est entré, l'utiliser, sinon conserver l'aléatoire.
-      continueButton.disabled = pseudoVal === ""; // Désactiver si vide
-    });
-
     // Lorsque l'utilisateur clique sur "Continuer"
     continueButton.addEventListener("click", function() {
-      // Vérification de la valeur du pseudo avant de continuer
-      if (pseudoInput.value.trim() !== "") {
-        pseudoPopup.style.display = "none"; // Cacher le popup
-        chatContainer.style.display = "flex"; // Afficher le chat
-        loadMessages(); // Charger les messages existants
-      } else {
-        alert("Veuillez entrer un pseudo valide.");
-      }
+      // Si un pseudo a été saisi, on l'utilise, sinon on génère un pseudo automatiquement
+      userPseudo = pseudoInput.value.trim() || userPseudo;
+
+      // Cacher le popup et afficher le chat
+      pseudoPopup.style.display = "none";
+      chatContainer.style.display = "flex";
+
+      // Charger les messages existants
+      loadMessages();
     });
 
     // Fonction pour afficher les messages
