@@ -1,301 +1,259 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hzflix - Serveur hzflix pour les films. Adapter a tout type d'appareil.">
-    <title>Hzflix - Serveur Hzflix - Films 2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hzflix - Serveur hzflix pour les films. Adapter à tout type d'appareil.">
+    <title>Hzflix - Serveur - Films 2025</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <script src="https://cdn.tailwindcss.com"></script>
-
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
     <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: 'Poppins', sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            overflow-y: hidden;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            padding: 15px 20px;
+            background-color: #222;
+            padding: 20px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-        }
-
-        header .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #00FFFF;
-            cursor: pointer;
-        }
-
-        @media screen and (min-width: 768px) {
-    body {
-        max-width: 55%; 
-      width: 55%;
-      font-size: 40px;
-        margin: 0 auto;
-    }
-  header{
-    max-width: 55%;
-    width: 55%;
-    margin: 0 auto;
-  }
-            footer{
-                font-size: 40px;
-            }
-        }
-
-        header .search-wrapper {
-            position: relative;
-        }
-
-        header input {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background-color: #333;
-            color: #fff;
-            opacity: 0;
-            position: absolute;
-            top: 0;
-            right: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            transform: translateY(-50px);
-        }
-
-        header .search-icon {
-            color: #00FFFF;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        header .search-wrapper.active input {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .section-2025 {
-            padding: 80px 20px 40px;
-            background-color: black;
-        }
-
-        .section-2025 h2 {
             text-align: center;
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: #f39c12;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: #ccc;
+        }
+
+        .search-box {
+            margin-top: 20px;
+            width: 80%;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            border-radius: 30px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-box input {
+            width: 90%;
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.2em;
+            padding: 8px;
+            border-radius: 30px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        .movie-grid {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            justify-content: flex-start;
         }
 
         .movie-card {
-            position: relative;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            width: 400px;
+            transform: translateX(1.3);
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeInCard 1s forwards;
             cursor: pointer;
-            transition: transform 0.3s ease, border 0.3s ease;
         }
 
-        
+        .movie-card:hover {
+            opacity: 85%;
+            transform: translateY(-10px);
+        }
 
         .movie-card img {
-            width: 60%;
-            height: 300px;
+            width: 200px;
+            height: 305px;
+            object-fit: cover;
+            border-radius: 5px;
+            border-bottom: 3px solid #444;
         }
 
         .movie-card h3 {
-            text-align: center;
-            font-size: 1.6rem;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.6);
-            margin-top: -10px;
-            color: white;
+            font-size: 1.5em;
+            margin: 15px;
         }
 
-        .swiper-container {
-            margin-top: 20px;
-            overflow-x: auto;
+        .movie-card p {
+            color: #ccc;
+            font-size: 1em;
+            margin: 0 15px 15px;
         }
 
-        
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            width: 80%;
-            max-width: 1000px;
-            padding: 20px;
-            border-radius: 12px;
-            z-index: 10000;
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: scale(0.93);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .video-container {
             display: none;
-            justify-content: center;
-            align-items: center;
+            padding: 20px;
+            text-align: center;
+            background-color: #222;
         }
 
-        .modal .blur-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: -1;
-        }
-
-        .modal video {
-            width: 100%;
+        .video-container video {
+            max-width: 100%;
             height: auto;
-            border-radius: 15px;
+            border-radius: 10px;
         }
 
-    
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        footer i {
-            font-size: 28px;
-            color: white;
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.8em;
+            color: #f39c12;
             cursor: pointer;
-            transition: color 0.3s ease;
         }
 
-        footer i:hover {
-            color: #00FFFF;
-        }
-
-        
-        @media screen and (max-width: 768px) {
-            .movie-card {
-                width: 270px;
-            }
-        }
-
-        @media screen and (max-width: 480px) {
-            .movie-card {
-                width: 240px;
-            }
+        .back-button:hover {
+            color: #fff;
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div onclick="window.location.href='index.html'">   
-        <div data-aos="zoom-out-right" data-aos-duration="1100">
-      
-        <img src="https://i.ibb.co/235QsyqX/Background-Eraser.png" srcset="https://i.ibb.co/235QsyqX/Background-Eraser.png" style="height: 30px; margin-left: 10px; transform: scale(3.5);" alt="hzflix.online"></img>
+    <header>
+        <img src="https://i.ibb.co/235QsyqX/Background-Eraser.png" style="height: 65px;"/>
+        <p>Tout les films récemment sortis en 2025 se trouvent ici.</p>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Rechercher un film..." oninput="searchMovies()">
         </div>
+    </header>
+
+    <div class="movie-grid" id="movieGrid"></div>
+
+    <div class="video-container" id="videoContainer">
+        <div class="back-button" onclick="goBack()" style="color: darkcyan">
+            <i class="fas fa-arrow-left"></i> Retour
+        </div>
+        <video id="movieVideo" controls>
+            <source id="videoSource" src="" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
     </div>
-    
-    <div class="search-wrapper">
-        <span class="search-icon" onclick="toggleSearchInput()"><i class="fas fa-search"></i></span>
-        <input type="text" id="searchInput" placeholder="Rechercher un film..." oninput="searchMovies()">
-    </div>
-</header>
 
-<section class="section-2025" id="section2025">
-    <h2>Films 2025</h2>
-    <div class="swiper-container">
-        <div class="swiper-wrapper" id="movieList"></div>
-    </div>
-</section>
+    <script>
+        const movies = [
+            { name: "Captain America - Brave New World", categorie: "action, drame", url: "captain.mp4", img: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" },
 
-<div class="modal" id="movieModal">
-    <div class="blur-background" onclick="closeModal()"></div>
-    <video controls id="modalVideo"></video>
-</div>
+           // j ajouterais les autres films plus tard
+           
+        ];
 
-<footer>
-    <a href="https://hzflix.online"><i class="fas fa-home"></i></a>
-    <i class="fas fa-search"></i>
-    <i class="fas fa-star"></i>
-</footer>
+        function loadMovies() {
+            const movieGrid = document.getElementById('movieGrid');
+            movies.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+                movieCard.setAttribute('onclick', `showVideo('${movie.name}')`);
 
-<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+                const movieImg = document.createElement('img');
+                movieImg.src = movie.img;
+                movieImg.alt = movie.name;
 
-<script>
-    const movies = [
-        { title: "Captain America - Brave New World", videoSrc: "captain-america.mp4", imgSrc: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" }
-    ];
+                const movieInfo = document.createElement('div');
+                movieInfo.classList.add('movie-info');
 
-    function displayMovies(filteredMovies = movies) {
-        const movieList = document.getElementById('movieList');
-        movieList.innerHTML = '';
-        filteredMovies.forEach(movie => {
-            const movieCard = document.createElement('div');
-            movieCard.classList.add('swiper-slide', 'movie-card');
-            movieCard.setAttribute('tabindex', 0);
-            movieCard.innerHTML = `
-                <img src="${movie.imgSrc}" alt="${movie.title}">
-                <h3>${movie.title}</h3>
-            `;
-            movieCard.onclick = function() {
-                openModal(movie.videoSrc);
-            };
-            movieList.appendChild(movieCard);
-        });
-    }
+                const movieTitle = document.createElement('h3');
+                movieTitle.textContent = movie.name;
 
-    function openModal(videoSrc) {
-        const modal = document.getElementById('movieModal');
-        const modalVideo = document.getElementById('modalVideo');
-        modal.style.display = 'flex';
-        modalVideo.src = videoSrc;
-        modalVideo.play();
-    }
+                const movieCategory = document.createElement('p');
+                movieCategory.textContent = movie.categorie;
 
-    function closeModal() {
-        const modal = document.getElementById('movieModal');
-        const modalVideo = document.getElementById('modalVideo');
-        modal.style.display = 'none';
-        modalVideo.pause();
-        modalVideo.src = '';
-    }
+                movieInfo.appendChild(movieTitle);
+                movieInfo.appendChild(movieCategory);
 
-    function searchMovies() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
-        displayMovies(filteredMovies);
-    }
+                movieCard.appendChild(movieImg);
+                movieCard.appendChild(movieInfo);
 
-    function toggleSearchInput() {
-        document.querySelector('.search-wrapper').classList.toggle('active');
-    }
+                movieGrid.appendChild(movieCard);
+            });
+        }
 
-    const swiper = new Swiper('.swiper-container', {
-        slidesPerView: 'auto',
-        spaceBetween: 20,
-        freeMode: true,
-    });
+        function searchMovies() {
+            const searchQuery = document.getElementById('search').value.toLowerCase();
+            const movieGrid = document.getElementById('movieGrid');
+            const movieCards = movieGrid.getElementsByClassName('movie-card');
 
-    AOS.init();
-    displayMovies();
-</script>
+            for (let card of movieCards) {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+
+                if (title.includes(searchQuery)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        }
+
+        function showVideo(movieName) {
+            const videoContainer = document.getElementById('videoContainer');
+            const movieVideo = document.getElementById('movieVideo');
+            const videoSource = document.getElementById('videoSource');
+
+            const movie = movies.find(m => m.name === movieName);
+            videoSource.src = movie.url;
+
+            movieVideo.load();
+            movieVideo.play();
+
+            document.querySelector('.movie-grid').style.display = 'none';
+            videoContainer.style.display = 'block';
+        }
+
+        function goBack() {
+            document.querySelector('.movie-grid').style.display = 'flex';
+            document.getElementById('videoContainer').style.display = 'none';
+        }
+
+        loadMovies();
+    </script>
+
 </body>
 </html>
