@@ -28,11 +28,17 @@
     let socket;
     let username = "";
 
-    // Fonction de démarrage : demander un pseudo
+    // Affichage du pop-up pour entrer un pseudo
+    const showPopup = () => {
+      const popup = document.getElementById('popup');
+      popup.style.display = 'block';
+    };
+
     const startChat = () => {
-      const userInput = prompt("Veuillez choisir un pseudo :");
+      const userInput = document.getElementById('pseudoInput').value;
       if (userInput && userInput.trim() !== "") {
         username = userInput.trim();
+        document.getElementById('popup').style.display = 'none'; // Masquer le pop-up
         document.getElementById("chat-container").style.display = "block"; // Afficher la zone de chat
         document.getElementById("pseudo").innerText = username;
         initWebSocket(); // Initialiser WebSocket
@@ -102,22 +108,77 @@
     });
 
     window.onload = function() {
-      startChat(); // Demander un pseudo lorsque la page est chargée
+      showPopup(); // Afficher le pop-up pour choisir le pseudo au chargement de la page
     };
   </script>
+
+  <style>
+    /* Style du pop-up */
+    #popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #popupContent {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    #chat-container {
+      display: none;
+    }
+
+    #messages {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      margin-top: 10px;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
   <h1>Chat en temps réel</h1>
 
-  <!-- Afficher après que l'utilisateur ait choisi un pseudo -->
-  <div id="chat-container" style="display: none;">
+  <!-- Pop-up pour entrer le pseudo -->
+  <div id="popup">
+    <div id="popupContent">
+      <h2>Entrez votre pseudo</h2>
+      <input type="text" id="pseudoInput" placeholder="Votre pseudo" />
+      <br />
+      <button onclick="startChat()">Continuer</button>
+    </div>
+  </div>
+
+  <!-- Zone de chat -->
+  <div id="chat-container">
     <p><strong>Vous êtes connecté en tant que : <span id="pseudo"></span></strong></p>
 
-    <div id="messages" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 10px;">
+    <div id="messages">
       <!-- Les messages seront affichés ici -->
     </div>
 
-    <input type="text" id="messageText" placeholder="Tapez un message..." style="width: 80%; padding: 10px;" />
+    <input type="text" id="messageText" placeholder="Tapez un message..." />
     <button onclick="sendMessage()">Envoyer</button>
   </div>
 </body>
