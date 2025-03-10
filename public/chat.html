@@ -7,7 +7,6 @@
 
   <!-- Script Firebase -->
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
 
   <script type="module">
@@ -24,21 +23,25 @@
 
     // Initialisation Firebase
     const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Fonction de connexion avec Google (exemple d'authentification)
-    const signInWithGoogle = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then((result) => {
-        console.log('Utilisateur connecté :', result.user);
-      }).catch((error) => {
-        console.error('Erreur de connexion:', error);
-      });
+    let socket;
+    let username = "";
+
+    // Fonction de démarrage : demander un pseudo
+    const startChat = () => {
+      const userInput = prompt("Veuillez choisir un pseudo :");
+      if (userInput && userInput.trim() !== "") {
+        username = userInput.trim();
+        document.getElementById("chat-container").style.display = "block"; // Afficher la zone de chat
+        document.getElementById("pseudo").innerText = username;
+        initWebSocket(); // Initialiser WebSocket
+      } else {
+        alert("Vous devez entrer un pseudo valide.");
+      }
     };
 
     // WebSocket pour gérer le chat en temps réel
-    let socket;
     const initWebSocket = () => {
       socket = new WebSocket('ws://localhost:8080'); // Assurez-vous que votre serveur WebSocket fonctionne sur ce port
 
@@ -64,14 +67,14 @@
       const messageText = document.getElementById('messageText').value;
       if (messageText.trim() !== '') {
         const message = {
-          username: auth.currentUser ? auth.currentUser.displayName : 'Anonyme',
+          username: username,
           text: messageText,
         };
-        
+
         // Envoi du message via WebSocket
         socket.send(JSON.stringify(message));
-        
-        // Sauvegarde dans Firestore pour persistence
+
+        // Sauvegarde dans Firestore pour persistance
         db.collection('messages').add({
           username: message.username,
           text: message.text,
@@ -99,21 +102,23 @@
     });
 
     window.onload = function() {
-      initWebSocket();
+      startChat(); // Demander un pseudo lorsque la page est chargée
     };
   </script>
 </head>
 <body>
   <h1>Chat en temps réel</h1>
 
-  <!-- Zone de connexion -->
-  <button onclick="signInWithGoogle()">Se connecter avec Google</button>
+  <!-- Afficher après que l'utilisateur ait choisi un pseudo -->
+  <div id="chat-container" style="display: none;">
+    <p><strong>Vous êtes connecté en tant que : <span id="pseudo"></span></strong></p>
 
-  <div id="messages" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 10px;">
-    <!-- Les messages seront affichés ici -->
+    <div id="messages" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 10px;">
+      <!-- Les messages seront affichés ici -->
+    </div>
+
+    <input type="text" id="messageText" placeholder="Tapez un message..." style="width: 80%; padding: 10px;" />
+    <button onclick="sendMessage()">Envoyer</button>
   </div>
-
-  <input type="text" id="messageText" placeholder="Tapez un message..." style="width: 80%; padding: 10px;" />
-  <button onclick="sendMessage()">Envoyer</button>
 </body>
 </html>
