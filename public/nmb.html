@@ -3,26 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page de Connexion - hzflix</title>
+  <title>Inscription - hzflix</title>
+
+  <!-- Script Firebase -->
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
-</head>
-<body>
-  <h1>Connexion avec numéro de téléphone</h1>
-  
-  <div id="recaptcha-container"></div>
-  <div>
-    <input type="text" id="phoneNumber" placeholder="Numéro de téléphone" />
-    <button id="sendCodeBtn">Envoyer le code</button>
-  </div>
-  
-  <div>
-    <input type="text" id="verificationCode" placeholder="Code de vérification" />
-    <button id="verifyCodeBtn">Vérifier le code</button>
-  </div>
 
-  <script>
-    // Configurer Firebase
+  <!-- Script reCAPTCHA -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase.js"></script>
+
+  <script type="module">
+    // Configuration Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
       authDomain: "hzflix.firebaseapp.com",
@@ -33,47 +24,83 @@
       measurementId: "G-BJFG2DCVBF"
     };
 
-    // Initialiser Firebase
+    // Initialisation de Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Initialiser ReCaptcha
+    // Création de l'instance reCAPTCHA
     const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      size: 'invisible', // Choisissez 'invisible' pour un reCAPTCHA invisible
+      size: 'normal',
       callback: function(response) {
-        console.log("reCAPTCHA validé!");
+        console.log('reCAPTCHA validé');
       }
     });
 
-    // Envoyer le code de vérification
-    document.getElementById('sendCodeBtn').addEventListener('click', function () {
+    // Fonction pour envoyer le code par SMS
+    function sendVerificationCode() {
       const phoneNumber = document.getElementById('phoneNumber').value;
       const appVerifier = recaptchaVerifier;
 
+      // Envoi du code par SMS
       auth.signInWithPhoneNumber(phoneNumber, appVerifier)
-        .then(function (confirmationResult) {
-          window.confirmationResult = confirmationResult; // Stocke le résultat pour la vérification ultérieure
-          alert("Code de vérification envoyé !");
-        }).catch(function (error) {
-          console.error(error);
-          alert("Erreur lors de l'envoi du code.");
+        .then((confirmationResult) => {
+          // Récupérer le résultat de la confirmation
+          window.confirmationResult = confirmationResult;
+          alert('Code envoyé !');
+        })
+        .catch((error) => {
+          console.error("Erreur d'envoi du code", error);
+          alert('Erreur d\'envoi du code. Veuillez essayer à nouveau.');
         });
-    });
+    }
 
-    // Vérifier le code de vérification
-    document.getElementById('verifyCodeBtn').addEventListener('click', function () {
-      const verificationCode = document.getElementById('verificationCode').value;
+    // Fonction pour vérifier le code envoyé
+    function verifyCode() {
+      const code = document.getElementById('verificationCode').value;
 
-      window.confirmationResult.confirm(verificationCode)
-        .then(function (result) {
+      // Vérification du code
+      window.confirmationResult.confirm(code)
+        .then((result) => {
           const user = result.user;
-          console.log("Utilisateur connecté avec succès:", user);
-          window.location.href = "https://hzflix.online"; // Rediriger après la connexion réussie
-        }).catch(function (error) {
-          console.error(error);
-          alert("Code de vérification incorrect.");
+          alert('Inscription réussie !');
+          window.location.href = "https://hzflix.online"; // Redirection après succès
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la vérification du code", error);
+          alert('Code incorrect. Veuillez réessayer.');
         });
-    });
+    }
   </script>
+</head>
+<body>
+  <h1>Inscription à hzflix</h1>
+
+  <!-- Zone pour le numéro de téléphone -->
+  <div>
+    <label for="phoneNumber">Numéro de téléphone :</label>
+    <input type="text" id="phoneNumber" placeholder="+33 6 12 34 56 78" required />
+  </div>
+
+  <!-- Bouton pour envoyer le code -->
+  <div>
+    <button onclick="sendVerificationCode()">Envoyer le code</button>
+  </div>
+
+  <!-- Zone pour entrer le code SMS -->
+  <div>
+    <label for="verificationCode">Code de vérification :</label>
+    <input type="text" id="verificationCode" placeholder="Entrez le code" required />
+  </div>
+
+  <!-- Bouton pour vérifier le code -->
+  <div>
+    <button onclick="verifyCode()">Vérifier le code</button>
+  </div>
+
+  <!-- Zone pour afficher le reCAPTCHA -->
+  <div id="recaptcha-container"></div>
+
+  <!-- Zone pour l'affichage des erreurs -->
+  <div id="error-message"></div>
 </body>
 </html>
