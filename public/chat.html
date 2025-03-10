@@ -3,13 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat en temps réel - hzflix</title>
+  <title>Chat en Temps Réel</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 
-  <!-- Script Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #chatContainer {
+      display: none;
+      width: 80%;
+      max-width: 600px;
+      height: 80%;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    #messageInput {
+      margin-top: auto;
+      padding: 10px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    #messages {
+      overflow-y: auto;
+      flex: 1;
+      padding-bottom: 10px;
+    }
+    .message {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      background-color: #e1e1e1;
+      max-width: 70%;
+    }
+    .message.user {
+      background-color: #a1c4fd;
+      margin-left: auto;
+    }
+    .message.other {
+      background-color: #f1f1f1;
+    }
+    #pseudoPopup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    #pseudoPopupContent {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 300px;
+    }
+    #pseudoPopup input {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    #continueButton {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #continueButton:disabled {
+      background-color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <!-- Popup pour entrer le pseudo -->
+  <div id="pseudoPopup">
+    <div id="pseudoPopupContent">
+      <h2>Entrez votre pseudo</h2>
+      <input type="text" id="pseudoInput" placeholder="Entrez votre pseudo">
+      <button id="continueButton" disabled>Continuer</button>
+    </div>
+  </div>
 
-  <script type="module">
+  <!-- Chat -->
+  <div id="chatContainer">
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Écrivez un message...">
+  </div>
+
+  <script>
     // Configuration Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
@@ -25,107 +129,58 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let username = generateUsername(); // Générer un pseudo automatiquement
+    // Générer un pseudo si l'utilisateur n'en fournit pas
+    let userPseudo = "User" + Math.floor(Math.random() * 1000);
 
-    // Fonction pour générer un pseudo unique
-    function generateUsername() {
-      return "User_" + Math.floor(Math.random() * 10000); // Générer un pseudo unique simple
-    }
+    // Afficher le popup pour entrer le pseudo
+    const pseudoInput = document.getElementById("pseudoInput");
+    const continueButton = document.getElementById("continueButton");
+    const pseudoPopup = document.getElementById("pseudoPopup");
+    const chatContainer = document.getElementById("chatContainer");
+    const messagesContainer = document.getElementById("messages");
+    const messageInput = document.getElementById("messageInput");
 
-    // Afficher les messages en temps réel via Firestore
-    const displayMessage = (username, text) => {
-      const messageContainer = document.getElementById('messages');
-      const messageElement = document.createElement('div');
-      messageElement.innerHTML = `<strong>${username}:</strong> ${text}`;
-      messageContainer.appendChild(messageElement);
-      messageContainer.scrollTop = messageContainer.scrollHeight; // Défilement automatique
-    };
-
-    // Envoi d'un message
-    const sendMessage = () => {
-      const messageText = document.getElementById('messageText').value;
-      if (messageText.trim() !== '') {
-        const message = {
-          username: username,
-          text: messageText,
-        };
-
-        // Envoi du message à Firestore
-        db.collection('messages').add({
-          username: message.username,
-          text: message.text,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-
-        // Effacer l'input du message
-        document.getElementById('messageText').value = '';
-      }
-    };
-
-    // Surveiller les messages en temps réel de Firestore
-    db.collection('messages').orderBy('timestamp').onSnapshot((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        const messageData = doc.data();
-        displayMessage(messageData.username, messageData.text);
-      });
+    // Dès qu'un pseudo est entré, activer le bouton de continuer
+    pseudoInput.addEventListener("input", function() {
+      userPseudo = pseudoInput.value.trim() || userPseudo; // Utilise le pseudo entré ou un pseudo généré
+      continueButton.disabled = !userPseudo;
     });
 
-    window.onload = function() {
-      // Afficher le pseudo généré
-      document.getElementById("pseudo").innerText = username;
-    };
+    // Quand l'utilisateur clique sur "Continuer"
+    continueButton.addEventListener("click", function() {
+      pseudoPopup.style.display = "none"; // Cacher le popup
+      chatContainer.style.display = "flex"; // Afficher le chat
+      loadMessages(); // Charger les messages existants
+    });
+
+    // Fonction pour afficher les messages
+    function loadMessages() {
+      db.collection("messages").orderBy("timestamp").onSnapshot(function(snapshot) {
+        messagesContainer.innerHTML = ""; // Réinitialiser l'affichage des messages
+        snapshot.forEach(function(doc) {
+          const data = doc.data();
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add("message");
+          messageDiv.classList.add(data.user === userPseudo ? "user" : "other");
+          messageDiv.textContent = `${data.user}: ${data.text}`;
+          messagesContainer.appendChild(messageDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll vers le bas
+        });
+      });
+    }
+
+    // Envoyer un message
+    messageInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter" && messageInput.value.trim()) {
+        const messageText = messageInput.value.trim();
+        db.collection("messages").add({
+          user: userPseudo,
+          text: messageText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        messageInput.value = ""; // Réinitialiser l'input
+      }
+    });
   </script>
-
-  <style>
-    /* Style de la zone de chat */
-    #chat-container {
-      display: block;
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      background-color: #f9f9f9;
-    }
-
-    #messages {
-      border: 1px solid #ccc;
-      padding: 10px;
-      height: 300px;
-      overflow-y: scroll;
-      margin-top: 10px;
-      background-color: #fff;
-    }
-
-    input[type="text"] {
-      width: 80%;
-      padding: 10px;
-    }
-
-    button {
-      padding: 10px 15px;
-      margin-top: 10px;
-    }
-
-    /* Style de l'entête */
-    h1 {
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h1>Chat en temps réel - Bienvenue sur hzflix</h1>
-
-  <!-- Zone de chat -->
-  <div id="chat-container">
-    <p><strong>Vous êtes connecté en tant que : <span id="pseudo"></span></strong></p>
-
-    <div id="messages">
-      <!-- Les messages seront affichés ici -->
-    </div>
-
-    <input type="text" id="messageText" placeholder="Tapez un message..." />
-    <button style="padding: 10px 60px; font-size: 22px; background-color: white; color: black; border-radius: 5px; " onclick="sendMessage()">Envoyer</button>
-  </div>
 </body>
 </html>
