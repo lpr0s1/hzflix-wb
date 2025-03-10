@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page de Connexion - hzflix</title>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+</head>
+<body>
+  <h1>Connexion avec numéro de téléphone</h1>
+  
+  <div id="recaptcha-container"></div>
+  <div>
+    <input type="text" id="phoneNumber" placeholder="Numéro de téléphone" />
+    <button id="sendCodeBtn">Envoyer le code</button>
+  </div>
+  
+  <div>
+    <input type="text" id="verificationCode" placeholder="Code de vérification" />
+    <button id="verifyCodeBtn">Vérifier le code</button>
+  </div>
+
+  <script>
+    // Configurer Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-Fy4lvfX-Nr6F640Jmeur7y2uHBpli3Q",
+      authDomain: "hzflix.firebaseapp.com",
+      projectId: "hzflix",
+      storageBucket: "hzflix.firebasestorage.app",
+      messagingSenderId: "626892229265",
+      appId: "1:626892229265:web:2a7148e39e2de1757bcd30",
+      measurementId: "G-BJFG2DCVBF"
+    };
+
+    // Initialiser Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Initialiser ReCaptcha
+    const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible', // Choisissez 'invisible' pour un reCAPTCHA invisible
+      callback: function(response) {
+        console.log("reCAPTCHA validé!");
+      }
+    });
+
+    // Envoyer le code de vérification
+    document.getElementById('sendCodeBtn').addEventListener('click', function () {
+      const phoneNumber = document.getElementById('phoneNumber').value;
+      const appVerifier = recaptchaVerifier;
+
+      auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+        .then(function (confirmationResult) {
+          window.confirmationResult = confirmationResult; // Stocke le résultat pour la vérification ultérieure
+          alert("Code de vérification envoyé !");
+        }).catch(function (error) {
+          console.error(error);
+          alert("Erreur lors de l'envoi du code.");
+        });
+    });
+
+    // Vérifier le code de vérification
+    document.getElementById('verifyCodeBtn').addEventListener('click', function () {
+      const verificationCode = document.getElementById('verificationCode').value;
+
+      window.confirmationResult.confirm(verificationCode)
+        .then(function (result) {
+          const user = result.user;
+          console.log("Utilisateur connecté avec succès:", user);
+          window.location.href = "https://hzflix.online"; // Rediriger après la connexion réussie
+        }).catch(function (error) {
+          console.error(error);
+          alert("Code de vérification incorrect.");
+        });
+    });
+  </script>
+</body>
+</html>
