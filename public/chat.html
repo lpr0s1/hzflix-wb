@@ -129,10 +129,10 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Générer un pseudo si l'utilisateur n'en fournit pas
+    // Déclaration de la variable userPseudo
     let userPseudo = "User" + Math.floor(Math.random() * 1000);
 
-    // Afficher le popup pour entrer le pseudo
+    // Sélection des éléments DOM
     const pseudoInput = document.getElementById("pseudoInput");
     const continueButton = document.getElementById("continueButton");
     const pseudoPopup = document.getElementById("pseudoPopup");
@@ -140,13 +140,14 @@
     const messagesContainer = document.getElementById("messages");
     const messageInput = document.getElementById("messageInput");
 
-    // Dès qu'un pseudo est entré, activer le bouton de continuer
+    // Activer ou désactiver le bouton "Continuer" en fonction de la saisie de l'utilisateur
     pseudoInput.addEventListener("input", function() {
-      userPseudo = pseudoInput.value.trim() || userPseudo; // Utilise le pseudo entré ou un pseudo généré
-      continueButton.disabled = !userPseudo;
+      const pseudoVal = pseudoInput.value.trim();
+      userPseudo = pseudoVal || userPseudo; // Si un pseudo est entré, l'utiliser, sinon conserver l'aléatoire.
+      continueButton.disabled = pseudoVal === ""; // Désactiver si vide
     });
 
-    // Quand l'utilisateur clique sur "Continuer"
+    // Lorsque l'utilisateur clique sur "Continuer"
     continueButton.addEventListener("click", function() {
       pseudoPopup.style.display = "none"; // Cacher le popup
       chatContainer.style.display = "flex"; // Afficher le chat
