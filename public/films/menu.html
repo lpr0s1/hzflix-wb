@@ -250,6 +250,7 @@
         function showVideo(movieName) {
             const videoContainer = document.getElementById('videoContainer');
             const movie = movies.find(m => m.name === movieName);
+            videoContainer.style.transition = "all 0.4s ease";
 
             if (movie) {
                 videoContainer.innerHTML = `
