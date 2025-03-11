@@ -73,7 +73,9 @@
   
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     
@@ -85,7 +87,7 @@ transition: all 0.4s ease-in-out;
           scroll-behavior: smooth;
           align-items: center;
             padding: 0;
-            font-family: "Playfair Display", seri;
+            font-family: "Black Ops One", system-ui;
             height: 100%;
            background-color: black;
 background-size: cover;
@@ -233,6 +235,7 @@ backdrop-filter: blur(10px);
 
 input::placeholder{
 color: lightgrey;
+  font-family: "Black Ops One", system-ui;
 transition: all 0.3s ease;
 }
 
@@ -245,6 +248,7 @@ backdrop-filter: blur(1px);
 
         .search-container input {
             width: 100%;
+          font-family: "Black Ops One", system-ui;
 color: white;
           font-weight: bold;
             padding: 17px;
@@ -256,23 +260,9 @@ background-color: transparent;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .search-container button {
-            position: absolute;
-            right: 0;
-            top: 0;
-            padding: 15px 30px;
-            background-color: #008b8b;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.3s ease;
-        }
+      
 
-        .search-container button:hover {
-            background-color: #005757;
-        }
+        
 
         .results {
             margin-top: 30px;
