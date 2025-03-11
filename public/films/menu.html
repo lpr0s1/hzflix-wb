@@ -49,7 +49,11 @@
 
         ::selection{
             cursor: progress;
+            -webkit-cursor: progress;
+            border-radius: 4px;
+            -webkit-border-radius: 4px;
             background-color: darkcyan;
+            -webkit-background-color: darkcyan;
         }
 
         .search-box {
@@ -161,11 +165,13 @@
     <header>
         <img src="https://i.ibb.co/235QsyqX/Background-Eraser.png" style="height: 65px;"/>
         <p>Les derniers films de 2025 sont ici.</p>
+        <br>
+        <br>
         <div class="search-box">
             <input type="text" id="search" placeholder="Rechercher un film..." oninput="searchMovies()"><i class="fas fa-search"></i>
         </div>
     </header>
-
+<h2 style="color: white;">Ajouter récement <i class="fas fa-star"></i></h2>
     <div class="movie-grid" id="movieGrid"></div>
 
     <div class="video-container" id="videoContainer"></div>
