@@ -103,15 +103,19 @@
         }
 
         .movie-card {
-            box-shadow: 0 0 0 5px transparent, 
-              0 0 0 10px linear-gradient(45deg, red, blue);
+            border: solid 3px white;
             background-color: #2a2a2a;
             border-radius: 10px;
             width: 180px;
             transition: all 0.4s ease;
             opacity: 0;
-            animation: fadeInCard 1s forwards;
+            animation: fadeInCard 1s forwards, bor 2s infinite;
             text-align: center;
+        }
+
+        @keyframes bor{
+            from{border: solid 3px white}
+            to{border: solid 3px cyan}
         }
 
         .movie-card:hover {
