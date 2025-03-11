@@ -2,22 +2,20 @@
 <html lang="fr" translate="no">
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Hzflix - Serveur hzflix pour les films. Adapté à tout type d'appareil.">
     <title>Hzflix - Serveur - Films 2025</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             user-zoom: none;
             -webkit-user-zoom: none;
@@ -32,7 +30,6 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-
         header {
             background: linear-gradient(black, #222);
             padding: 20px;
@@ -42,19 +39,29 @@
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
         header h1 {
             font-size: 3em;
             color: #f39c12;
             margin-bottom: 10px;
         }
-
         header p {
             font-size: 1.2em;
             color: #ccc;
         }
-
-        ::selection{
+        nav {
+            margin-top: 10px;
+            display: flex;
+            gap: 15px;
+        }
+        nav a {
+            color: #f39c12;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        nav a:hover {
+            color: #fff;
+        }
+        ::selection {
             cursor: progress;
             -webkit-cursor: progress;
             border-radius: 4px;
@@ -62,7 +69,6 @@
             background-color: darkcyan;
             -webkit-background-color: darkcyan;
         }
-
         .search-box {
             margin-top: 20px;
             position: sticky;
@@ -76,10 +82,8 @@
             padding: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
         .search-box input {
             width: 90%;
-            top: 0;
             background-color: transparent;
             border: none;
             transition: all 0.3s ease;
@@ -89,11 +93,9 @@
             border-radius: 30px;
             outline: none;
         }
-
         .search-box input::placeholder {
             color: grey;
         }
-
         .movie-grid {
             background-color: #222;
             display: flex;
@@ -104,7 +106,6 @@
             justify-content: flex-start;
             flex-wrap: wrap;
         }
-
         .movie-card {
             border: solid 3px darkcyan;
             background-color: #2a2a2a;
@@ -112,48 +113,33 @@
             width: 180px;
             transition: all 0.4s ease;
             opacity: 0;
-            animation: fadeInCard 1s forwards, bor 5s infinite;
+            animation: fadeInCard 1s forwards, borderAnimation 5s infinite;
             text-align: center;
         }
-
-        @keyframes bor{
-            0%{border: solid 3px darkcyan}
-            50%{border: solid 3px cyan}
-            100%{border: solid 3px darkcyan}
+        @keyframes borderAnimation {
+            0% { border-color: darkcyan; }
+            50% { border-color: cyan; }
+            100% { border-color: darkcyan; }
         }
-
         .movie-card:hover {
-            transition: all 0.5s ease;
-            opacity: 60%;
-            -webkit-opacity: 60%;
+            opacity: 0.8;
             transform: translateY(-5px);
         }
-
-        .movie-card:active {
-            transition: all 0.5s ease;
-            opacity: 60%;
-            -webkit-opacity: 60%;
-            transform: translateY(-5px);
-        }
-
         .movie-card img {
             width: 100%;
             height: 240px;
             object-fit: cover;
             border-radius: 5px;
         }
-
         .movie-card h3 {
             font-size: 1em;
             margin: 10px;
         }
-
         .movie-card p {
             color: #ccc;
             font-size: 0.9em;
             margin-bottom: 10px;
         }
-
         @keyframes fadeInCard {
             from {
                 opacity: 0;
@@ -164,45 +150,76 @@
                 transform: scale(1);
             }
         }
-
         .video-container {
             display: none;
             padding: 20px;
             text-align: center;
             background-color: #222;
         }
-
         .back-button {
             font-size: 1.8em;
             color: #f39c12;
             cursor: pointer;
             margin-bottom: 20px;
         }
-
         .back-button:hover {
+            color: #fff;
+        }
+        footer {
+            background-color: #111;
+            padding: 20px;
+            text-align: center;
+            margin-top: auto;
+        }
+        footer a {
+            color: #f39c12;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        footer a:hover {
             color: #fff;
         }
     </style>
 </head>
 <body>
-
     <header>
-        <img src="https://i.ibb.co/235QsyqX/Background-Eraser.png" style="height: 65px;"/>
+        <img src="https://i.ibb.co/235QsyqX/Background-Eraser.png" style="height: 65px;" alt="Hzflix Logo"/>
+        <h1>Hzflix</h1>
         <p>Les derniers films de 2025 sont ici.</p>
         <p style="font-weight: bold; color: red">Cette page est en travaux pour le moment ! <i class="fas fa-server"></i></p>
-        <br>
+        <nav>
+            <a href="#films">Films</a>
+            <a href="#politique-confidentialite">Politique de Confidentialité </a>
+                    </nav>
         <br>
         <div class="search-box">
-            <input type="text" id="search" placeholder="Rechercher un film..." oninput="searchMovies()"><i class="fas fa-search"></i>
+            <input type="text" id="search" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <i class="fas fa-search"></i>
         </div>
     </header>
-    <br>
-    <br>
-    <ul>
-<h2 style="color: white; font-size: 28px; margin-left: 30px;">Ajouter récement <i class="fas fa-film"></i></h2></ul>
-    <div class="movie-grid" id="movieGrid"></div>
 
-    <div style="transition: all 0.5s ease; opacity: 0;" class="video-container" id="videoContainer"></div>
+    <section id="films">
+        <h2 style="color: white; font-size: 28px; margin-left: 30px;">Ajoutés récemment <i class="fas fa-film"></i></h2>
+        <div class="movie-grid" id="movieGrid"></div>
+    </section>
+
+    <div class="video-container" id="videoContainer"></div>
+
+    <footer>
+        <p>&copy; 2025 Hzflix. Tous droits réservés.</p>
+        <a href="#politique-confidentialite">Politique de confidentialité</a>
+        <a href="#contact">Contact</a>
+    </footer>
+
+    <section id="politique-confidentialite" style="padding: 20px; background-color: #222; color: #ccc;">
+        <h2 style="color: white;">Politique de confidentialité</h2>
+        <p>Nous respectons votre vie privée et nous nous engageons à protéger vos données personnelles. Toutes les informations collectées sur notre site sont utilisées uniquement pour améliorer votre expérience.</p>
+    </section>
+
+    <section id="contact" style="padding: 20px; background-color: #222; color: #ccc;">
+        <h2 style="color: white;">Contact</h2>
+        <p>Pour toute question ou demande, veuillez nous contacter à l'adresse suivante : <a href="mailto:support@hzflix.com" style="color: #f39c12;">support@hzflix.com</a></p>
+    </section>
 
     <script>
         const movies = [
@@ -212,7 +229,24 @@
                 url: "https://ufile.io/8ycuy7jw", 
                 img: "https://m.media-amazon.com/images/M/MV5BNTNlNjZlNTUtMjc3YS00OWU1LTk5NDQtMWQ1MzNkOWU5YWYyXkEyXkFqcGc@._V1_FMjpg_UX1013_.jpg" 
             },
-            // j ajouterais des autres films ici
+            { 
+                name: "Terrible Jungle", 
+                categorie: "Comédie, Aventure", 
+                url: "https://ufile.io/example", 
+                img: "https://tse1.mm.bing.net/th?id=OIP.UbxFZz3Ht7b4R1xWPScM1wHaKD&pid=Api" 
+            },
+            { 
+                name: "Quand on crie au loup", 
+                categorie: "Comédie, Famille", 
+                url: "https://ufile.io/example", 
+                img: "https://tse1.mm.bing.net/th?id=OIP.MURYVLui4t6l8X1pZbnGzwHaKD&pid=Api" 
+            },
+            { 
+                name: "Le Sens de la famille", 
+                categorie: "Comédie", 
+                url: "https://ufile.io/example", 
+                img: "https://tse3.mm.bing.net/th?id=OIP.VmvZgzZHndfO95KY7FPBQAHaKF&pid=Api" 
+            }
         ];
 
         function loadMovies() {
@@ -259,31 +293,21 @@
                     <div class="back-button" onclick="goBack()">
                         <i class="fas fa-arrow-left"></i> Retour
                     </div>
-                    <iframe src="${movie.url}" allowfullscreen frameborder="0" style="width: 200px; height: 200px; border-radius: 10px;"></iframe>
-                    <br>
+                    <iframe src="${movie.url}" allowfullscreen frameborder="0" style="width: 100%; max-width: 600px; height: 350px; border-radius: 10px;"></iframe>
                     <br>
                     <label for='strs' style='color: darkcyan;'>Ajouter en favoris</label> <i id='strs' style='color: yellow' class='fas fa-star'></i>
                 `;
                 document.querySelector('.movie-grid').style.display = 'none';
-                videoContainer.style.opacity = '1';
-                videoContainer.style.transition = "all 0.4s ease";
+                videoContainer.style.display = 'block';
             }
         }
 
         function goBack() {
             document.querySelector('.movie-grid').style.display = 'flex';
-            document.getElementById('videoContainer').style.opacity = '0';
-            window.location.reload();
+            document.getElementById('videoContainer').style.display = 'none';
         }
 
         loadMovies();
     </script>
-
-    
-
 </body>
-
-
-    
-    
 </html>
