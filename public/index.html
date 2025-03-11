@@ -126,8 +126,7 @@ background-repeat: no-repeat;
     height: 295px;
   }
   .vedette{
-    border-bottom-radius: 60px;
-    height: 2000px;
+    height: 2050px;
   }
 }
 
@@ -532,6 +531,7 @@ menu.style.backdropFilter = "blur(0px)";
 <style>
 .vedette{
   border: solid 1px cyan;
+  animation: vdt 5s infinite;
 height: 510px;
   border-bottom-radius: 50px;
 width: 100%;
@@ -540,6 +540,18 @@ margin-top: -75px;
   -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
     mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
 }
+
+  @keyframes vdt{
+    0%{border: solid 1px cyan}
+    50%{border: solid 1px darkcyan}
+    100%{border: solid 1px cyan}
+  }
+
+  @keyframes rgrdb{
+    0%{border-bottom: solid 2px cyan; border-top: solid 2px darkcyan}
+    50%{border-bottom: solid 2px darkcyan; border-top: solid 2px cyan}
+    100%{border-bottom: solid 2px cyan; border-top: solid 2px darkcyan}
+  }
 
 </style>
 
@@ -574,7 +586,7 @@ margin-top: -75px;
         <div class="hero-content">
 
      
-            <h1 style="color: darkcyan; padding: 10px 20px; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); border-radius: 20px; border-bottom: solid 2px cyan; border-top: solid 2px darkcyan;">Regardez les films les plus récents<br>Sorties en 2025</h1>
+            <h1 style="animation: rgrdb 4s infinite; color: darkcyan; padding: 10px 20px; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); border-radius: 20px; border-bottom: solid 2px cyan; border-top: solid 2px darkcyan;">Regardez les films les plus récents<br>Sorties en 2025</h1>
 
             <p>Recherchez ci-dessous <i class="fas fa-magnifying-glass"></i></p>
 
