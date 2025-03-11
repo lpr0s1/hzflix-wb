@@ -199,7 +199,7 @@
 <h2 style="color: white; font-size: 28px; margin-left: 30px;">Ajouter récement <i class="fas fa-film"></i></h2></ul>
     <div class="movie-grid" id="movieGrid"></div>
 
-    <div style="transition: all 0.5s ease" class="video-container" id="videoContainer"></div>
+    <div style="transition: all 0.5s ease; opacity: 0;" class="video-container" id="videoContainer"></div>
 
     <script>
         const movies = [
@@ -250,7 +250,6 @@
         function showVideo(movieName) {
             const videoContainer = document.getElementById('videoContainer');
             const movie = movies.find(m => m.name === movieName);
-            videoContainer.style.transition = "all 0.4s ease";
 
             if (movie) {
                 videoContainer.innerHTML = `
@@ -263,13 +262,14 @@
                     <label for='strs' style='color: darkcyan;'>Ajouter en favoris</label> <i id='strs' style='color: yellow' class='fas fa-star'></i>
                 `;
                 document.querySelector('.movie-grid').style.display = 'none';
-                videoContainer.style.display = 'block';
+                videoContainer.style.opacity = '1';
+                videoContainer.style.transition = "all 0.4s ease";
             }
         }
 
         function goBack() {
             document.querySelector('.movie-grid').style.display = 'flex';
-            document.getElementById('videoContainer').style.display = 'none';
+            document.getElementById('videoContainer').style.opacity = '0';
             window.location.reload();
         }
 
