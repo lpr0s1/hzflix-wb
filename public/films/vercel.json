@@ -1,10 +1,10 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     {
-      "source": "menu",
-      "destination": "menu.html"
+      "source": "/films/:slug",
+      "destination": "/films/:slug.html"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
