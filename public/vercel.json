@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/films/:slug",
+      "destination": "/films/:slug.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/films/:slug.html",
+      "destination": "/films/:slug",
+      "permanent": true
+    }
+  ],
+  "cleanUrls": true
+}
