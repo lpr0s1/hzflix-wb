@@ -3,8 +3,8 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/films/:slug",
-      "destination": "/films/:slug.html"
+      "source": "/:slug",
+      "destination": "/:slug.html"
     }
   ]
 }
