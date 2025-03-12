@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "cleanUrls": true, 
+  "trailingSlash": false,
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/films/menu",
+      "destination": "/films/menu.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/old-page",
+      "destination": "/new-page",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "error": {
+    "404": "/404.html",
+    "403": "/403.html",
+    "500": "/500.html"
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
