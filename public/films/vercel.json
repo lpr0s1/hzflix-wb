@@ -5,6 +5,6 @@
       "destination": "menu.html"
     }
   ],
-  "cleanUrls": false,
+  "cleanUrls": true,
   "trailingSlash": false
 }
