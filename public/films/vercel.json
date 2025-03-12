@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/menu",
-      "destination": "/menu.html"
+      "source": "menu",
+      "destination": "menu.html"
     },
     {
-      "source": "/other-page",
-      "destination": "/other-page.html"
+      "source": "other-page",
+      "destination": "other-page.html"
     }
   ],
   "cleanUrls": false,
