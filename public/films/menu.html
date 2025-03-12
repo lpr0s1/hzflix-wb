@@ -99,12 +99,13 @@
         .movie-grid {
     background-color: #222;
     display: flex;
-    overflow-x: auto; 
+    overflow-x: auto;
     gap: 20px;
     padding: 20px;
     margin-top: 20px;
     justify-content: flex-start;
     flex-wrap: nowrap; 
+    width: 100%; 
 }
 
 .movie-card {
@@ -113,7 +114,7 @@
     border-radius: 10px;
     width: 180px;
     transition: all 0.4s ease;
-    opacity: 0;
+    opacity: 1;
     animation: fadeInCard 1s forwards, borderAnimation 5s infinite;
     text-align: center;
 }
