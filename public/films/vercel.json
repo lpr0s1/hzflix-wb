@@ -5,12 +5,6 @@
       "destination": "/:slug.html"
     }
   ],
-  "redirects": [
-    {
-      "source": "/:slug.html",
-      "destination": "/:slug",
-      "permanent": true
-    }
-  ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "trailingSlash": false
 }
