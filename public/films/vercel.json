@@ -1,14 +1,14 @@
 {
   "rewrites": [
     {
-      "source": "menu",
-      "destination": "menu.html"
+      "source": "menu.html",
+      "destination": "menu"
     },
     {
-      "source": "other-page",
-      "destination": "other-page.html"
+      "source": "other-page.html",
+      "destination": "other-page"
     }
   ],
-  "cleanUrls": false,
+  "cleanUrls": true,
   "trailingSlash": false
 }
