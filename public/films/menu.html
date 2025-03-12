@@ -97,27 +97,27 @@
             color: grey;
         }
         .movie-grid {
-    background-color: #222;
-    display: flex;
-    overflow-x: auto;
-    gap: 20px;
-    padding: 20px;
-    margin-top: 20px;
-    justify-content: flex-start;
-    flex-wrap: nowrap; 
-    width: 100%; 
-}
+            background-color: #222;
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
 
-.movie-card {
-    border: solid 3px darkcyan;
-    background-color: #2a2a2a;
-    border-radius: 10px;
-    width: 180px;
-    transition: all 0.4s ease;
-    opacity: 1;
-    animation: fadeInCard 1s forwards, borderAnimation 5s infinite;
-    text-align: center;
-}
+        .movie-card {
+            border: solid 3px darkcyan;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            width: 180px;
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeInCard 1s forwards, bor 5s infinite;
+            text-align: center;
+        }
+        
         @keyframes borderAnimation {
             0% { border-color: darkcyan; }
             50% { border-color: cyan; }
@@ -179,6 +179,17 @@
             margin: 0 10px;
         }
         footer a:hover {
+            color: #fff;
+        }
+
+        .back-button {
+            font-size: 1.8em;
+            color: darkcyan;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
             color: #fff;
         }
 
@@ -297,7 +308,7 @@
 
             if (movie) {
                 videoContainer.innerHTML = `
-                    <div class="back-button" onclick="goBack()">
+                     <div class="back-button" onclick="goBack()">
                         <i class="fas fa-arrow-left"></i> Retour
                     </div>
                     <video controls><source src="${movie.url}" allowfullscreen frameborder="1" style="width: 100%; border-radius: 10px;" type="video/mp4"></video>
