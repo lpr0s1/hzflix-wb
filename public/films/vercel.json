@@ -5,6 +5,6 @@
       "destination": "/films/menu.html"
     }
   ],
-  "cleanUrls": true,
+  "cleanUrls": false,
   "trailingSlash": false
 }
