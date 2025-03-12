@@ -1,42 +1,24 @@
-# Activer le module mod_rewrite
 RewriteEngine On
 
-# Rediriger les requêtes pour des fichiers .html sans afficher l'extension
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)$ $1.html [L]
 
-# Optionnel : Rediriger les anciennes URL avec .html vers la nouvelle version sans .html (SEO friendly)
 RewriteCond %{THE_REQUEST} \s([^.]+)\.html[\s?] [NC]
 RewriteRule ^ %1 [R=301,L]
 
-# Page d'erreur 404 (Non trouvé)
 ErrorDocument 404 /404.html
-
-# Page d'erreur 403 (Interdit)
 ErrorDocument 403 /403.html
-
-# Page d'erreur 500 (Erreur interne du serveur)
 ErrorDocument 500 /500.html
-
-# Page d'erreur 400 (Mauvaise requête)
 ErrorDocument 400 /400.html
-
-# Page d'erreur 401 (Non autorisé)
 ErrorDocument 401 /401.html
-
-# Page d'erreur 502 (Mauvaise passerelle)
 ErrorDocument 502 /502.html
-
-# Page d'erreur 503 (Service indisponible)
 ErrorDocument 503 /503.html
 
-# Activer la compression Gzip
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
 </IfModule>
 
-# Activer le cache
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresDefault "access plus 1 month"
@@ -54,12 +36,10 @@ ErrorDocument 503 /503.html
     Deny from all
 </Files>
 
-# Empêcher l'accès aux fichiers sensibles
 <FilesMatch "\.(env|json|ini|log|sh|bash|sql)$">
     Require all denied
 </FilesMatch>
 
-# Bloquer l'exécution des scripts PHP dans certains dossiers (ex. uploads)
 <Directory "/var/www/uploads">
     php_flag engine off
 </Directory>
