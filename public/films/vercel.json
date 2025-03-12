@@ -3,7 +3,7 @@
     {
       "source": "/films/menu",
       "destination": "/films/menu.html"
-    }
+    },
   ],
   "cleanUrls": false,
   "trailingSlash": false
