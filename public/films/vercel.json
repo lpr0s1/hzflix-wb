@@ -1,12 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "menu.html",
-      "destination": "menu"
-    },
-    {
-      "source": "other-page.html",
-      "destination": "other-page"
+      "source": "/films/menu",
+      "destination": "/films/menu.html"
     }
   ],
   "cleanUrls": true,
