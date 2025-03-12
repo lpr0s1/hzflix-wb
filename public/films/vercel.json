@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/menu",
-      "destination": "/menu.html"
+      "source": "menu",
+      "destination": "menu.html"
     }
   ],
   "cleanUrls": false,
