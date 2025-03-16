@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Hzflix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-black text-white flex items-center justify-center min-h-screen">
+    
+    <div class="bg-gray-900 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-3xl font-bold text-cyan-400 text-center mb-6">Formulaire Hzflix</h2>
+        
+        <form id="hzflixForm">
+            <div class="mb-4">
+                <label class="block text-cyan-300 font-semibold mb-1">Nom :</label>
+                <input type="text" id="nom" class="input-field" placeholder="Votre nom" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-cyan-300 font-semibold mb-1">Email :</label>
+                <input type="email" id="email" class="input-field" placeholder="Votre email" required>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Envoyer
+            </button>
+        </form>
+
+        <p id="message" class="text-center text-cyan-400 mt-4 hidden"></p>
+    </div>
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    background-color: #1e293b;
+    color: white;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    border-color: darkcyan;
+    background-color: #27374f;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: cyan;
+    color: black;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: darkcyan;
+}
+
+</style>
+
+    <script>
+
+document.getElementById("hzflixForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    let nom = document.getElementById("nom").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let message = document.getElementById("message");
+
+    if (nom === "" || email === "") {
+        message.textContent = "Veuillez remplir tous les champs.";
+        message.classList.remove("hidden", "text-cyan-400");
+        message.classList.add("text-red-400");
+        return;
+    }
+
+    fetch("https://script.google.com/macros/s/AKfycbwK0shLXkPFL7a6rpcilaz6kseyHmTAkTAsK4PfmZwZDFO3C9jXzhSfgKDdcLH2cOuG/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nom, email })
+    })
+    .then(response => response.text())
+    .then(data => {
+        message.textContent = "Données envoyées avec succès !";
+        message.classList.remove("hidden", "text-red-400");
+        message.classList.add("text-cyan-400");
+
+        document.getElementById("hzflixForm").reset();
+    })
+    .catch(error => {
+        message.textContent = "Erreur lors de l'envoi.";
+        message.classList.remove("hidden", "text-cyan-400");
+        message.classList.add("text-red-400");
+        console.error("Erreur :", error);
+    });
+});
+
+</script>
+</body>
+</html>
