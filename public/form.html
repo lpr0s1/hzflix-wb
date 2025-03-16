@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Hzflix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: black;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            background-color: #27374f;
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: cyan;
+            background-color: #1e293b;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: cyan;
+            color: black;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: darkcyan;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="text-3xl font-bold text-cyan-400">Formulaire Hzflix</h2>
+
+        <!-- Formulaire HTML -->
+        <form id="hzflixForm">
+            <div>
+                <label class="block text-cyan-300 font-semibold mt-4">Nom :</label>
+                <input type="text" id="nom" name="nom" class="input-field" placeholder="Votre nom" required>
+            </div>
+
+            <div>
+                <label class="block text-cyan-300 font-semibold mt-4">Email :</label>
+                <input type="email" id="email" name="email" class="input-field" placeholder="Votre email" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Envoyer</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("hzflixForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Récupère les valeurs du formulaire
+            var nom = document.getElementById("nom").value;
+            var email = document.getElementById("email").value;
+
+            // Prépare les données en format JSON
+            var formData = {
+                "nom": nom,
+                "email": email
+            };
+
+            // Envoie les données au script Google Apps en JSON via POST
+            fetch("https://script.google.com/macros/s/AKfycbySyFNz3KbpZZnPQpcyvbS9f5JbR6Ds4UIvaIMCdmaNkaajTrOAQaSkxIdTp028OKG8/exec", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert("Données envoyées avec succès!");
+                console.log(data);
+            })
+            .catch(error => {
+                alert("Erreur lors de l'envoi.");
+                console.error(error);
+            });
+        });
+    </script>
+
+</body>
+</html>
