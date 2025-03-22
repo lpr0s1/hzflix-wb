@@ -120,7 +120,7 @@
                     data.forEach(item => {
                         const messageDiv = document.createElement('div');
                         messageDiv.classList.add('message');
-                        messageDiv.innerHTML = `<strong>${item.timestamp}</strong>: ${item.message}`;
+                        messageDiv.innerHTML = `<strong>${new Date(row.timestamp).toLocaleString('fr-FR')}</strong>: ${item.message}`;
                         chatBox.appendChild(messageDiv);
                     });
                     chatBox.scrollTop = chatBox.scrollHeight;
