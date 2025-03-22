@@ -106,7 +106,7 @@
             .then(data => {
                 const chatBox = document.getElementById("chat-box");
                 chatBox.innerHTML = "";
-                data.slice(1).reverse().forEach(row => {
+                data.reverse().forEach(row => {
                     chatBox.innerHTML += `<div class="message"><strong>Anon${userid}:</strong> ${row.message}</div>`;
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
