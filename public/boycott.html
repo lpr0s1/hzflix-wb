@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boycotting & Liberté d'Expression</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #002395, #ffffff, #ED2939);
+            text-align: center;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        input, textarea {
+            background: #fff;
+            color: #000;
+        }
+        button {
+            background-color: #ED2939;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #C42727;
+        }
+        .chat-box {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .message {
+            border-bottom: 1px solid #ccc;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1><i class="fas fa-flag"></i> Boycotting & Liberté d'Expression</h1>
+    
+    <div class="container">
+        <h2>Exprimez-vous librement</h2>
+        <div class="chat-box" id="chat-box">
+            <p>Chargement des messages...</p>
+        </div>
+        
+        <form action="VOTRE_SCRIPT_DEPLOYE_URL" method="POST" target="hidden_iframe" onsubmit="resetForm()">
+            <input type="text" name="name" placeholder="Votre prénom" required>
+            <textarea name="message" placeholder="Votre message..." required></textarea>
+            <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
+        </form>
+
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
+    </div>
+
+    <script>
+        function resetForm() {
+            setTimeout(() => {
+                document.querySelector("form").reset();
+            }, 1000);
+        }
+
+        function loadMessages() {
+            fetch("VOTRE_SCRIPT_DEPLOYE_URL")
+            .then(response => response.json())
+            .then(data => {
+                const chatBox = document.getElementById("chat-box");
+                chatBox.innerHTML = "";
+                data.slice(1).reverse().forEach(row => {
+                    chatBox.innerHTML += `<div class="message"><strong>${row[1]}:</strong> ${row[2]}</div>`;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => console.error("Erreur:", error));
+        }
+
+        setInterval(loadMessages, 1000);
+        loadMessages();
+    </script>
+
+</body>
+</html>
