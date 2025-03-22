@@ -27,7 +27,7 @@
         }
         input, textarea, button {
             width: 90%;
-            font-size: 18px;
+            font-size: 15px;
             padding: 10px;
             margin: 10px 0;
             border: none;
@@ -68,13 +68,14 @@
     
     <div class="container">
         <h2>Exprimez-vous librement</h2>
-        <p style="color: grey">Partagez vos idées de façon anonyme. <i class="fas fa-fantom"></i></p>
+        <p style="color: white">Partagez vos idées de façon anonyme. <i class="fas fa-ghost"></i></p>
         <div class="chat-box" id="chat-box">
             <p>Chargement des messages...</p>
         </div>
         
         <form action="VOTRE_SCRIPT_DEPLOYE_URL" method="POST" target="hidden_iframe" onsubmit="resetForm()">
-            <textarea name="message" placeholder="Votre message..." required></textarea>
+            <textarea maxlength="900" name="message" placeholder="Votre message..." required></textarea>
+            <p class="char-counter" id="textCounter">900 caractères restants</p>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </form>
 
@@ -87,6 +88,16 @@
                 document.querySelector("form").reset();
             }, 1000);
         }
+
+        function updateCounter(field, counter, max) {
+            field.addEventListener("input", () => {
+                let remaining = max - field.value.length;
+                counter.textContent = remaining + " caractères restants";
+            });
+        }
+
+        updateCounter(document.getElementById("inputText"), document.getElementById("inputCounter"), 10);
+        updateCounter(document.getElementById("textArea"), document.getElementById("textCounter"), 900);
 
         var userid = Math.floor(Math.random() * 99) + 10;
 
