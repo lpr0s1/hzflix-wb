@@ -96,8 +96,7 @@
             });
         }
 
-        updateCounter(document.getElementById("inputText"), document.getElementById("inputCounter"), 10);
-        updateCounter(document.getElementById("textArea"), document.getElementById("textCounter"), 900);
+        updateCounter(document.querySelector("textarea"), document.getElementById("textCounter"), 900);
 
         var userid = Math.floor(Math.random() * 99) + 10;
 
@@ -108,7 +107,7 @@
                 const chatBox = document.getElementById("chat-box");
                 chatBox.innerHTML = "";
                 data.slice(1).reverse().forEach(row => {
-                    chatBox.innerHTML += `<div class="message"><Anon${userid}><strong>${row[1]}:</strong> ${row[2]}</div>`;
+                    chatBox.innerHTML += `<div class="message"><strong>Anon${userid}:</strong> ${row[2]}</div>`;
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
             })
