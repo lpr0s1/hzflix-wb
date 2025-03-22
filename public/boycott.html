@@ -71,7 +71,6 @@
         </div>
         
         <form action="VOTRE_SCRIPT_DEPLOYE_URL" method="POST" target="hidden_iframe" onsubmit="resetForm()">
-            <input type="text" name="name" placeholder="Votre prénom" required>
             <textarea name="message" placeholder="Votre message..." required></textarea>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </form>
@@ -86,6 +85,8 @@
             }, 1000);
         }
 
+        var userid = Math.floor(Math.random() * 99) + 10;
+
         function loadMessages() {
             fetch("VOTRE_SCRIPT_DEPLOYE_URL")
             .then(response => response.json())
@@ -93,7 +94,7 @@
                 const chatBox = document.getElementById("chat-box");
                 chatBox.innerHTML = "";
                 data.slice(1).reverse().forEach(row => {
-                    chatBox.innerHTML += `<div class="message"><strong>${row[1]}:</strong> ${row[2]}</div>`;
+                    chatBox.innerHTML += `<div class="message"><Anon${userid}><strong>${row[1]}:</strong> ${row[2]}</div>`;
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
             })
