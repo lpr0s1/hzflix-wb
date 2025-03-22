@@ -73,45 +73,59 @@
             <p>Chargement des messages...</p>
         </div>
         
-        <form action="https://script.google.com/macros/s/AKfycbzcw8h4-RntnjK-9hnVvxp0W16s-Fs3_wmSabAlzFFOBwo7f1fve-rZMi1_xJrQ9K5hVw/exec" method="POST" target="hidden_iframe" onsubmit="resetForm()">
-            <textarea maxlength="900" name="message" placeholder="Votre message..." required></textarea>
+        <form id="message-form" action="https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec" method="POST" onsubmit="resetForm(event)">
+            <textarea id="message" name="message" maxlength="900" placeholder="Votre message..." required></textarea>
             <p class="char-counter" id="textCounter">900 caractères restants</p>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </form>
-
-        <iframe name="hidden_iframe" style="display:none;"></iframe>
     </div>
 
     <script>
-        function resetForm() {
-            setTimeout(() => {
-                document.querySelector("form").reset();
-            }, 1000);
+        const form = document.getElementById("message-form");
+        const messageInput = document.getElementById("message");
+        const chatBox = document.getElementById("chat-box");
+        const textCounter = document.getElementById("textCounter");
+
+        function updateCounter() {
+            const remaining = 900 - messageInput.value.length;
+            textCounter.textContent = `${remaining} caractères restants`;
         }
 
-        function updateCounter(field, counter, max) {
-            field.addEventListener("input", () => {
-                let remaining = max - field.value.length;
-                counter.textContent = remaining + " caractères restants";
+        messageInput.addEventListener("input", updateCounter);
+
+        function resetForm(event) {
+            event.preventDefault();
+
+            const message = messageInput.value;
+
+            fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'message': message
+                })
+            })
+            .then(response => response.text())
+            .then(() => {
+                messageInput.value = ''; 
+                updateCounter();
+                loadMessages();
             });
         }
 
-        updateCounter(document.querySelector("textarea"), document.getElementById("textCounter"), 900);
-
-        var userid = Math.floor(Math.random() * 99) + 10;
-
         function loadMessages() {
-            fetch("https://script.google.com/macros/s/AKfycbzcw8h4-RntnjK-9hnVvxp0W16s-Fs3_wmSabAlzFFOBwo7f1fve-rZMi1_xJrQ9K5hVw/exec")
-            .then(response => response.json())
-            .then(data => {
-                const chatBox = document.getElementById("chat-box");
-                chatBox.innerHTML = "";
-                data.reverse().forEach(row => {
-                    chatBox.innerHTML += `<div class="message"><strong>Anon${userid}:</strong> ${row.message}</div>`;
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
-            .catch(error => console.error("Erreur:", error));
+            fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec')
+                .then(response => response.json())
+                .then(data => {
+                    chatBox.innerHTML = '';
+                    data.forEach(item => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        messageDiv.innerHTML = `<strong>${item.timestamp}</strong>: ${item.message}`;
+                        chatBox.appendChild(messageDiv);
+                    });
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => console.error('Erreur:', error));
         }
 
         setInterval(loadMessages, 1000);
