@@ -73,7 +73,7 @@
             <p>Chargement des messages...</p>
         </div>
         
-        <form action="VOTRE_SCRIPT_DEPLOYE_URL" method="POST" target="hidden_iframe" onsubmit="resetForm()">
+        <form action="https://script.google.com/macros/s/AKfycbzcw8h4-RntnjK-9hnVvxp0W16s-Fs3_wmSabAlzFFOBwo7f1fve-rZMi1_xJrQ9K5hVw/exec" method="POST" target="hidden_iframe" onsubmit="resetForm()">
             <textarea maxlength="900" name="message" placeholder="Votre message..." required></textarea>
             <p class="char-counter" id="textCounter">900 caractères restants</p>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
@@ -101,13 +101,13 @@
         var userid = Math.floor(Math.random() * 99) + 10;
 
         function loadMessages() {
-            fetch("VOTRE_SCRIPT_DEPLOYE_URL")
+            fetch("https://script.google.com/macros/s/AKfycbzcw8h4-RntnjK-9hnVvxp0W16s-Fs3_wmSabAlzFFOBwo7f1fve-rZMi1_xJrQ9K5hVw/exec")
             .then(response => response.json())
             .then(data => {
                 const chatBox = document.getElementById("chat-box");
                 chatBox.innerHTML = "";
                 data.slice(1).reverse().forEach(row => {
-                    chatBox.innerHTML += `<div class="message"><strong>Anon${userid}:</strong> ${row[2]}</div>`;
+                    chatBox.innerHTML += `<div class="message"><strong>Anon${userid}:</strong> ${row.message}</div>`;
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
             })
