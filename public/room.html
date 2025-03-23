@@ -81,43 +81,25 @@
     </div>
 
     <script>
- (function(){
-    var _0xabc1=["\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x44"]; // 'getElementById'
-    var _0x2345=["\x66\x6F\x72\x6D","\x69\x6E\x70\x75\x74","\x74\x65\x78\x74\x43\x6F\x75\x6E\x74"]; // 'form', 'input', 'textCounter'
-    var _0x3456=document[_0xabc1[0]]("message-form"),
-        _0x4567=document[_0xabc1[0]]("message"),
-        _0x5678=document[_0xabc1[0]]("chat-box"),
-        _0x6789=document[_0xabc1[0]]("textCounter");
+function loadMessages() {
+            fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec')
+                .then(response => response.json())
+                .then(data => {
+                    chatBox.innerHTML = '';
+                    data.forEach(item => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        messageDiv.innerHTML = `<strong>${item.timestamp}</strong>: <br>${item.message}`;
+                        chatBox.appendChild(messageDiv);
+                    });
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
 
-    function _0x7890(){
-        var _0x9abc=900-_0x4567.value.length;
-        _0x6789.textContent=`${_0x9abc} \x63\x61\x72\x61\x63\x74\x65\x73 \x72\x65\x73\x74\x61\x6E\x74\x73`;
-    }
-
-    _0x4567.addEventListener(_0x2345[1],_0x7890);
-
-    function _0x9abc(event){
-        event.preventDefault();
-        var _0x0abc=_0x4567.value;
-
-        fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec',{
-            method:_0x2345[0],
-            body:new URLSearchParams({
-                'message':_0x0abc
-            })
-        })
-        .then(function(_0x1abc){return _0x1abc.text()})
-        .then(function(){
-            _0x4567.value=''; 
-            _0x7890();
-            loadMessages();
-        });
-    }
-})();
-
-        (function(){
-    var _0x2345=["\x66\x65\x74\x63\x68","\x74\x68\x65\x6E","\x72\x65\x73\x70\x6F\x6E\x73\x65","\x6A\x73\x6F\x6E","\x74\x68\x65\x6E","\x63\x61\x74\x63\x68\x42\x6F\x78","\x73\x63\x72\x6F\x6C\x6C\x48\x65\x69\x67\x68\x74","\x63\x6F\x6E\x73\x6F\x6C\x65\x72","\x65\x72\x72\x6F\x72"];
-    function _0x3456(){fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec').then(_0x2345[2]).then(function(_0x11a4){chatBox.innerHTML='';_0x11a4.forEach(function(_0x5d60){var _0x6f4f=document.createElement(_0x2345[5]);_0x6f4f.classList.add(_0x2345[6]);_0x6f4f.innerHTML=`<strong>${_0x5d60.timestamp}</strong>: <br>${_0x5d60.message}`;chatBox.appendChild(_0x6f4f)});chatBox.scrollTop=chatBox.scrollHeight}).catch(function(_0x48a6){console.error(_0x2345[8],_0x48a6})}setInterval(_0x3456,1000);_0x3456()})();
+        setInterval(loadMessages, 1000);
+        loadMessages();
+})(); 
     </script>
 
     <script>
