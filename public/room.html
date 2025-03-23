@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat room</title>
+    <title>Boycotting & Liberté d'Expression</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
@@ -67,23 +67,52 @@
     <h1><i class="fas fa-flag"></i> Boycotting & Liberté d'Expression</h1>
     
     <div class="container">
-        <h2>Un genre de irc, mais sans vos informations.</h2>
-        <p style="color: white">Discutez de façon complètement anonyme. <i class="fas fa-ghost"></i></p>
+        <h2>Exprimez-vous librement</h2>
+        <p style="color: white">Partagez vos idées de façon anonyme. <i class="fas fa-ghost"></i></p>
         <div class="chat-box" id="chat-box">
-            <p class="chrgm">Chargement des messages...</p>
+            <p>Chargement des messages...</p>
         </div>
         
-        <form id="message-form" action="https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec" method="POST" target="hidd"onsubmit="resetForm(event)">
+        <form id="message-form" action="https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec" method="POST" onsubmit="resetForm(event)">
             <textarea id="message" name="message" maxlength="900" placeholder="Votre message..." required></textarea>
             <p class="char-counter" id="textCounter">900 caractères restants</p>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </form>
-
-        <iframe id="hidd" display="none"></iframe>
     </div>
 
     <script>
-function loadMessages() {
+        const form = document.getElementById("message-form");
+        const messageInput = document.getElementById("message");
+        const chatBox = document.getElementById("chat-box");
+        const textCounter = document.getElementById("textCounter");
+
+        function updateCounter() {
+            const remaining = 900 - messageInput.value.length;
+            textCounter.textContent = `${remaining} caractères restants`;
+        }
+
+        messageInput.addEventListener("input", updateCounter);
+
+        function resetForm(event) {
+            event.preventDefault();
+
+            const message = messageInput.value;
+
+            fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'message': message
+                })
+            })
+            .then(response => response.text())
+            .then(() => {
+                messageInput.value = ''; 
+                updateCounter();
+                loadMessages();
+            });
+        }
+
+        function loadMessages() {
             fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec')
                 .then(response => response.json())
                 .then(data => {
@@ -91,7 +120,7 @@ function loadMessages() {
                     data.forEach(item => {
                         const messageDiv = document.createElement('div');
                         messageDiv.classList.add('message');
-                        messageDiv.innerHTML = `<strong>${item.timestamp}</strong>: <br>${item.message}`;
+                        messageDiv.innerHTML = `<small>${item.timestamp}</small>:<br> ${item.message}`;
                         chatBox.appendChild(messageDiv);
                     });
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -101,12 +130,7 @@ function loadMessages() {
 
         setInterval(loadMessages, 1000);
         loadMessages();
-})(); 
     </script>
-
-    <script>
-  (function(){var _0xabc9=["\x66\x6F\x72\x65\x61\x63\x68","\x70\x72\x65\x76\x65\x6E\x74\x44\x65\x66\x61\x75\x6C\x74"];var f=function(_0xd5bcx2){_0xd5bcx2[_0xabc9[1]]();};document[_0xabc9[0]](_0xabc9[1],f);(function(){var _0xd5bcx3=false;Object[_0xabc9[0]](console,'\x6C\x6F\x67',{get:function(){return _0xd5bcx3?undefined:Function[_0xabc9[1]];},set:function(){}})})();
-</script>
 
 </body>
 </html>
