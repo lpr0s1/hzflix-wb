@@ -73,11 +73,13 @@
             <p class="chrgm">Chargement des messages...</p>
         </div>
         
-        <form id="message-form" action="https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec" method="POST" onsubmit="resetForm(event)">
+        <form id="message-form" action="https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec" method="POST" target="hidd"onsubmit="resetForm(event)">
             <textarea id="message" name="message" maxlength="900" placeholder="Votre message..." required></textarea>
             <p class="char-counter" id="textCounter">900 caractères restants</p>
             <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </form>
+
+        <iframe id="hidd" display="none"></iframe>
     </div>
 
     <script>
