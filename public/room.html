@@ -81,37 +81,35 @@
     </div>
 
     <script>
-     (function(){
-    var _0xabc1 = ["https", "://", "script", ".", "google", ".", "com", "/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec"];
-    var _0x2345 = _0xabc1[0] + _0xabc1[1] + _0xabc1[2] + _0xabc1[3] + _0xabc1[4] + _0xabc1[5] + _0xabc1[6] + _0xabc1[7];
+ (function(){
+    var _0xabc1=["\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x44"]; // 'getElementById'
+    var _0x2345=["\x66\x6F\x72\x6D","\x69\x6E\x70\x75\x74","\x74\x65\x78\x74\x43\x6F\x75\x6E\x74"]; // 'form', 'input', 'textCounter'
+    var _0x3456=document[_0xabc1[0]]("message-form"),
+        _0x4567=document[_0xabc1[0]]("message"),
+        _0x5678=document[_0xabc1[0]]("chat-box"),
+        _0x6789=document[_0xabc1[0]]("textCounter");
 
-    const form = document.getElementById("message-form");
-    const messageInput = document.getElementById("message");
-    const chatBox = document.getElementById("chat-box");
-    const textCounter = document.getElementById("textCounter");
-
-    function updateCounter() {
-        const remaining = 900 - messageInput.value.length;
-        textCounter.textContent = `${remaining} caractères restants`;
+    function _0x7890(){
+        var _0x9abc=900-_0x4567.value.length;
+        _0x6789.textContent=`${_0x9abc} \x63\x61\x72\x61\x63\x74\x65\x73 \x72\x65\x73\x74\x61\x6E\x74\x73`;
     }
 
-    messageInput.addEventListener("input", updateCounter);
+    _0x4567.addEventListener(_0x2345[1],_0x7890);
 
-    function resetForm(event) {
+    function _0x9abc(event){
         event.preventDefault();
+        var _0x0abc=_0x4567.value;
 
-        const message = messageInput.value;
-
-        fetch(_0x2345, {
-            method: 'POST',
-            body: new URLSearchParams({
-                'message': message
+        fetch('https://script.google.com/macros/s/AKfycby_NLlhYhMaNlSqZsdoBjrmNXQ1TjMIfnjDFjxjNIWpusUZyxYN5d4h-fXC-IB82SRuKw/exec',{
+            method:_0x2345[0],
+            body:new URLSearchParams({
+                'message':_0x0abc
             })
         })
-        .then(response => response.text())
-        .then(() => {
-            messageInput.value = ''; 
-            updateCounter();
+        .then(function(_0x1abc){return _0x1abc.text()})
+        .then(function(){
+            _0x4567.value=''; 
+            _0x7890();
             loadMessages();
         });
     }
