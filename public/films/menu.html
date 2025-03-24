@@ -445,10 +445,8 @@ name:"Wolf Man", categorie:"Horreur, Thriller", url:"https://dl.dropboxuserconte
 
             if (movie) {
     videoContainer.innerHTML = `
-        <div class="back-button" onclick="goBack()">
-            <i class="fas fa-arrow-left"></i> Retour
-        </div>
-        <video style="height: 300px;" autoplay poster="${movie.img}" controls>
+        
+        <video style="height: 280px; border-radius: 5px; border: solid 3px darkcyan;" autoplay poster="${movie.img}" controls>
             <source src="${movie.url}" allowfullscreen frameborder="1" style="width: 100%; border-radius: 10px;" type="video/mp4">
         </video>
         <br><br>
@@ -506,10 +504,7 @@ color: white;
             }
         }
 
-        function goBack() {
-            document.querySelector('.movie-grid').style.display = 'flex';
-            document.getElementById('videoContainer').style.display = 'none';
-        }
+        
 
         loadMovies();
     </script>
