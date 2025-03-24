@@ -218,9 +218,9 @@ text-align: center;
 
 <div style="display: flex; width: 100%; gap: 30px;">
 
-<button tabindex="0" id="hom" onclick="menuu()" style="font-size: 22px; opacity: 0.8; border: none; height: 30px; color: white; padding: 1px 10px; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-bottom: solid 2px cyan; border-radius: 20px; transition: all 0.4s ease;">Menu<i class="fas fa-home"></i></button>
+<button tabindex="1" id="hom" onclick="menuu()" style="font-size: 22px; opacity: 0.8; border: none; height: 30px; color: white; padding: 1px 10px; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-bottom: solid 2px cyan; border-radius: 20px; transition: all 0.4s ease;">Menu<i class="fas fa-home"></i></button>
 
-<button tabindex="0" id="btquali" onclick="btq()" style="font-size: 22px; height: 30px; padding: 1px 10px; color: white; border: none; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-radius: 20px; transition: all 0.4s ease;"> Qualité <i class="fas fa-image"></i></button>
+<button tabindex="1" id="btquali" onclick="btq()" style="font-size: 22px; height: 30px; padding: 1px 10px; color: white; border: none; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-radius: 20px; transition: all 0.4s ease;"> Qualité <i class="fas fa-image"></i></button>
 
 </div>
 
@@ -237,7 +237,7 @@ btqual.style.opacity = "0.8";
 hme.style.opacity = "1";
 hme.style.color = "white";
 hme.style.borderBottom = "none";
-btqual.style.transition = "all 0.4s ease";
+btqual.style.transition = "all 0.9s ease";
 btqual.style.borderBottom = "solid 2px cyan";
 
 document.getElementById("ing").style.opacity = "1";
@@ -253,14 +253,14 @@ document.getElementById("srchbx").style.opacity = "0";
 
 document.getElementById("srchbx").style.filter = "blur(8px)";
 
-document.getElementById("films").style.transition = "all 0.4s ease";
+document.getElementById("films").style.transition = "all 0.8s ease";
 }
 
 function menuu(){
 
 hme.style.opacity = "0.8";
 hme.style.borderBottom = "solid 2px cyan";
-hme.style.transition = "all 0.4s ease";
+hme.style.transition = "all 0.9s ease";
 btqual.style.opacity = "1";
 btqual.style.color = "white";
 btqual.style.borderBottom = "none";
@@ -277,7 +277,7 @@ document.getElementById("srchbx").style.opacity = "1";
 
 document.getElementById("srchbx").style.filter = "blur(0px)";
 
-document.getElementById("films").style.transition = "all 0.4s ease";
+document.getElementById("films").style.transition = "all 0.8s ease";
 }
 
 
@@ -309,15 +309,25 @@ document.addEventListener("keydown", function(event) {
 <hr/>
 <p style="color: white; text-align: left;"><i class="fas fa-gear"></i> Rdv dans les paramètres de votre appareil si la qualité est trop basse.</p>
 <br/>
-    <a href="https://www.tiktok.com/@hanzo_x65?_t=ZN-8uxWXpBd1mQ&_r=1" style="color: cyan; border-radius: 3px; box-shadow: 0px 0px 3px; padding: 10px 20px; animation: clrch 2s infinite;">Help</a>
+    <a href="https://www.tiktok.com/@hanzo_x65?_t=ZN-8uxWXpBd1mQ&_r=1" style="color: cyan; border-radius: 3px; box-shadow: 0px 0px 3px; padding: 10px 20px; animation: clrch 3s infinite;">Help</a>
 
 </div>
+
+        <style>
+            @keyframes clrch{
+                0%{color: cyan}
+                30%{color:darkcyan}
+                50%{color: orange}
+                80%{color: darkcyan}
+                100%{color: cyan}
+            }
+            </style>
 
             
         <br>
         <div class="search-box" id="srchbx">
 <i class="fas fa-search" style="margin-top: -10px;"></i>
-            <input tabindex="0" type="text" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <input tabindex="1" type="text" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
         </div>
     </header>
 
