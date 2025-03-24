@@ -5,22 +5,7 @@
     <meta poperty="description" content="Essay d ajouter un message">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Message</title>
-    <style>
-        .crg::after {
-            animation: rot 1s infinite;
-            content: "/";
-            color: white;
-        }
-
-        @keyframes rot {
-            0% { content: "-"; }
-            30% { content: "/"; }
-            50% { content: "-"; }
-            68% { content: "-"; }
-            88% { content: "|"; }
-            100% { content: "/"; }
-        }
-    </style>
+    
 </head>
 <body>
 
@@ -31,7 +16,9 @@
 
     <form id="commentForm" action="https://script.google.com/macros/s/AKfycbx_p6cPM2osUamgropLCOgaNfJCricLFL99WIx6TJH4Yh2CdfXRVCHKC3uytJl7WR5U8w/exec" method="POST" target="hidden-iframe">
         <input type="text" name="name" id="name" placeholder="Votre nom" tabIndex="0" required>
+        <br>
         <textarea name="comment" id="comment" rows="3" tabIndex="0" placeholder="Votre commentaire" required></textarea>
+        <br>
         <button id="ibt" type="submit" disabled style="font-size: 24px">Envoyer</button>
     </form>
 
