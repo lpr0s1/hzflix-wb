@@ -122,8 +122,14 @@ overflow-y: hidden;
             transform: translateX(1.3);
             transition: all 0.4s ease;
             opacity: 0;
-            animation: fadeInCard 1s forwards;
+            animation: fadeInCard 1s forwards, bxcrd 3s infinite;
             cursor: pointer;
+        }
+
+        @keyframes bxcrd{
+            0%{}
+            50%{box-shadow: 0px 0px 9px cyan}
+            100%{}
         }
 
         .movie-card:hover {
