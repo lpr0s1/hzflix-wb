@@ -339,9 +339,28 @@ document.addEventListener("keydown", function(event) {
 
             
         <br>
-        <div class="search-box" id="srchbx">
+        <div id="srchbx">
 <i class="fas fa-search" style="margin-top: -10px;"></i>
-            <input tabindex="1" type="text" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <input tabindex="1" type="text" class="inpsr" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
+
+
+            <style>
+                .inpsr {
+            width: 90%;
+          font-family: "Black Ops One", system-ui;
+color: white;
+          font-weight: bold;
+            padding: 17px;
+background-color: transparent;
+            font-size: 18px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+            </style>
+
+            
         </div>
     </header>
 
