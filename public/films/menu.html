@@ -202,9 +202,9 @@ text-align: center;
 
 <div style="display: flex; width: 100%; gap: 30px;">
 
-<button tabindex="1" id="hom" onclick="menuu()" style="font-size: 22px; opacity: 0.8; border: none; height: 30px; color: white; padding: 1px 10px; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-bottom: solid 2px cyan; border-radius: 20px; transition: all 0.4s ease;">Menu<i class="fas fa-home"></i></button>
+<button id="hom" onclick="menuu()" style="font-size: 22px; opacity: 0.8; border: none; height: 30px; color: white; padding: 1px 10px; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-bottom: solid 2px cyan; border-radius: 20px; transition: all 0.4s ease;">Menu<i class="fas fa-home"></i></button>
 
-<button tabindex="1" id="btquali" onclick="btq()" style="font-size: 22px; height: 30px; padding: 1px 10px; color: white; border: none; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-radius: 20px; transition: all 0.4s ease;"> Qualité <i class="fas fa-image"></i></button>
+<button id="btquali" onclick="btq()" style="font-size: 22px; height: 30px; padding: 1px 10px; color: white; border: none; background-color: transparent; border-right: solid 2px white; border-left: solid 2px white; border-radius: 20px; transition: all 0.4s ease;"> Qualité <i class="fas fa-image"></i></button>
 
 </div>
 
@@ -316,7 +316,7 @@ document.addEventListener("keydown", function(event) {
         <br>
         <div class="search-box" id="srchbx">
 <i class="fas fa-search" style="margin-top: -10px;"></i>
-            <input tabindex="1" type="text" class="inpsr" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <input type="text" class="inpsr" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
 
 
             <style>
@@ -357,8 +357,8 @@ background-color: transparent;
 
     <footer style="position: fixed; margin-top: -230px; border-top-right-radius: 50px; border-bottom-right-radius: 20px; background: rgba(0,0,0, 0.5); box-shadow: 0px 2px 4px cyan; backdrop-filter: blur(8px); z-index: 999999;">
         <p>&copy; 2025 Hzflix. Tous droits réservés.</p>
-        <a href="https://hzflix.online/films/privacy" tabindex="0">Politique de confidentialité</a>
-        <a href="https://t.me/hzx552" tabindex="0">Contact</a>
+        <a href="https://hzflix.online/films/privacy">Politique de confidentialité</a>
+        <a href="https://t.me/hzx552">Contact</a>
     </footer>
 
     <section id="politique-confidentialite" style="padding: 20px; box-shadow: 0px 0px 7px cyan; background-color: #222; color: #ccc;">
