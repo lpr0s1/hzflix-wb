@@ -76,10 +76,27 @@ padding: 0;
         }
         .search-box {
             margin-top: 20px;
+            display: flex;
             border-radius: 30px;
             align-items: center;
             justify-content: center;
             box-shadow: 0px 0px 50px black;
+        }
+
+        .search-box input{
+            width: 95%;
+          font-family: "Black Ops One", system-ui;
+color: white;
+          font-weight: bold;
+            padding: 19px;
+                    z-index: 99;
+background-color: transparent;
+            font-size: 18px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        
         }
 
         .movie-grid {
@@ -322,24 +339,11 @@ document.addEventListener("keydown", function(event) {
         <br>
         <div class="search-box" id="srchbx">
 <i class="fas fa-search" style="margin-top: -10px;"></i>
-            <input class="inpsr" type="text" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
+            <input type="text" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
 
-
-            <style>
-                .inpsr {
-            width: 95%;
-          font-family: "Black Ops One", system-ui;
-color: white;
-          font-weight: bold;
-            padding: 19px;
-                    z-index: 9999999999999999;
-background-color: transparent;
-            font-size: 18px;
-            border-radius: 30px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-            </style>
+                
+            
+            
 
             
         </div>
