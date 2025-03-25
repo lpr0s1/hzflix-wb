@@ -77,37 +77,11 @@ padding: 0;
         .search-box {
             margin-top: 20px;
             position: sticky;
-           font-size: 20px;
-            max-width: 400px;
-            display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #333;
-            border-radius: 30px;
-            padding: 10px;
             box-shadow: 0px 0px 50px black;
         }
-        .search-box input {
-            width: 90%;
-color: cyan;
-            background-color: transparent;
-            border: none;
-            transition: all 0.3s ease;
-        
-            font-size: 1.2em;
-            padding: 8px;
-            border-radius: 30px;
-            outline: none;
-        }
 
- .search-box:hover {
-transition: all 0.4s ease;
-box-shadow: 0px 0px 50px cyan;
-}
-
-        .search-box input::placeholder {
-            color: grey;
-        }
         .movie-grid {
 display: flex;
 gap: 22px;
@@ -339,7 +313,7 @@ document.addEventListener("keydown", function(event) {
 
             
         <br>
-        <div id="srchbx">
+        <div class="search-box" id="srchbx">
 <i class="fas fa-search" style="margin-top: -10px;"></i>
             <input tabindex="1" type="text" class="inpsr" id="search" style="height: 15px;" placeholder="Rechercher un film..." oninput="searchMovies()">
 
