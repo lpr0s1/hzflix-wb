@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web3 Play to Earn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+  <style>
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 1s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ad-container {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #2d2d2d;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+  <header class="flex justify-between items-center p-5 border-b border-gray-800">
+    <h1 class="text-3xl font-bold">Play to Earn</h1>
+    <button id="connectButton" class="bg-blue-500 text-white py-2 px-4 rounded-lg transition transform hover:scale-105">Connect Wallet</button>
+  </header>
+
+  <main class="p-5">
+    <section id="gameArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    </section>
+    <section id="rewards" class="mt-10">
+      <h2 class="text-xl">Vos Récompenses</h2>
+      <div id="rewardDisplay" class="mt-5">
+      </div>
+    </section>
+    <div class="ad-container">
+      <h2 class="text-xl">Publicité : Gagnez des Crypto-Monnaies en Regardant !</h2>
+      <button id="startAdButton" class="bg-green-500 text-white py-2 px-4 rounded-lg mt-3">Commencer la Publicité</button>
+      <div id="adContainer" class="mt-5 hidden">
+        <iframe id="adFrame" src="https://coinzilla.com/advertisement-iframe" width="100%" height="250px" frameborder="0" scrolling="no"></iframe>
+        <p id="timer" class="mt-3">Temps écoulé : 0s</p>
+        <button id="claimRewardButton" class="bg-blue-500 text-white py-2 px-4 rounded-lg mt-3 hidden">Réclamer Récompense</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="p-5 mt-10 bg-gray-800 text-center">
+    <p>&copy; 2025 Web3 Play to Earn</p>
+  </footer>
+
+  <script>
+    let web3;
+    let userAccount;
+    let adTimer;
+    let secondsWatched = 0;
+
+    const connectButton = document.getElementById('connectButton');
+    const startAdButton = document.getElementById('startAdButton');
+    const adContainer = document.getElementById('adContainer');
+    const claimRewardButton = document.getElementById('claimRewardButton');
+    const timerDisplay = document.getElementById('timer');
+    const rewardDisplay = document.getElementById('rewardDisplay');
+
+    connectButton.addEventListener('click', async () => {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        try {
+          await ethereum.request({ method: 'eth_requestAccounts' });
+          userAccount = (await web3.eth.getAccounts())[0];
+          connectButton.textContent = `Connected: ${userAccount.slice(0, 5)}...`;
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        alert('Veuillez installer MetaMask!');
+      }
+    });
+
+    startAdButton.addEventListener('click', () => {
+      adContainer.classList.remove('hidden');
+      startAdButton.classList.add('hidden');
+      startAdTimer();
+    });
+
+    function startAdTimer() {
+      adTimer = setInterval(() => {
+        secondsWatched++;
+        timerDisplay.textContent = `Temps écoulé : ${secondsWatched}s`;
+      }, 1000);
+    }
+
+    claimRewardButton.addEventListener('click', async () => {
+      if (!userAccount) {
+        alert("Veuillez connecter votre portefeuille d'abord!");
+        return;
+      }
+
+      const rewardAmount = secondsWatched * 0.0001;  // Gagner 0.0001 ETH par seconde (exemple)
+      rewardDisplay.innerHTML = `
+        <h3>Récompense Réclamée</h3>
+        <p>Vous avez gagné ${rewardAmount} ETH pour avoir regardé la publicité pendant ${secondsWatched} secondes !</p>
+      `;
+
+      const transactionParameters = {
+        from: userAccount,
+        to: '0xVOTRE_ADRESSE_WALLET',
+        value: web3.utils.toWei(rewardAmount.toString(), 'ether'),
+        gas: '21000',
+      };
+
+      try {
+        await web3.eth.sendTransaction(transactionParameters);
+        alert("Récompense envoyée avec succès !");
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi de la transaction:', error);
+      }
+      resetAd();
+    });
+
+    function resetAd() {
+      clearInterval(adTimer);
+      secondsWatched = 0;
+      timerDisplay.textContent = 'Temps écoulé : 0s';
+      claimRewardButton.classList.add('hidden');
+      startAdButton.classList.remove('hidden');
+    }
+
+    window.addEventListener('scroll', () => {
+      document.querySelectorAll('.fade-in').forEach((element) => {
+        const elementPosition = element.getBoundingClientRect().top;
+        const screenPosition = window.innerHeight / 1.3;
+        if (elementPosition < screenPosition) {
+          element.classList.add('visible');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
