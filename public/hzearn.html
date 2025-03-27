@@ -96,6 +96,9 @@
       adTimer = setInterval(() => {
         secondsWatched++;
         timerDisplay.textContent = `Temps écoulé : ${secondsWatched}s`;
+        if (secondsWatched >= 10) {
+          claimRewardButton.classList.remove('hidden');
+        }
       }, 1000);
     }
 
