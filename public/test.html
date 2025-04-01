@@ -3,33 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Update</title>
+    <title>Auto-Refresh HTML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Modification en temps réel</h1>
-    <pre id="content">l..</pre>
 
-    <script async>
-        let fileHandle;
+    <h2>Cette page se met à jour automatiquement !</h2>
+    <p id="content">Modifiez le fichier HTML et voyez le changement en direct.</p>
 
-        async function readFile() {
-            if (!fileHandle) return;
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            document.getElementById("content").textContent = text;
+    <script>
+        let lastHTML = document.documentElement.innerHTML;
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch(location.href, { cache: "no-cache" });
+                const newHTML = await response.text();
+                
+                if (newHTML !== lastHTML) {
+                    document.documentElement.innerHTML = newHTML;
+                    console.log("Mise à jour détectée !");
+                }
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour :", error);
+            }
+
+            requestAnimationFrame(checkForUpdates); // Appelle la fonction de manière asynchrone
         }
 
-        document.getElementById("chooseFile").addEventListener("click", async () => {
-            try {
-                [fileHandle] = await window.showOpenFilePicker();
-                readFile();
-
-                // Surveiller les changements du fichier
-                setInterval(readFile, 1000); // Vérification automatique (pas besoin d'actualiser)
-            } catch (err) {
-                console.error("Erreur:", err);
-            }
-        });
+        requestAnimationFrame(checkForUpdates); // Démarrage du processus
     </script>
+
 </body>
 </html>
