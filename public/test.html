@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Update Page</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        #content { padding: 20px; border: 1px solid #ccc; display: inline-block; }
-    </style>
+    <title>Live Update</title>
 </head>
 <body>
-
-    <div id="content">bonjour</div>
+    <h1>Modification en temps réel</h1>
+    <button id="chooseFile">Choisir un fichier</button>
+    <pre id="content">Aucune donnée pour le moment...</pre>
 
     <script>
-        let lastContent = ""; // Stocke le dernier contenu chargé
+        let fileHandle;
 
-        async function checkForUpdates() {
-            try {
-                const response = await fetch("index.html?nocache=" + new Date().getTime()); // Empêcher la mise en cache
-                const newContent = await response.text();
-
-                if (newContent !== lastContent) { // Vérifier si le fichier a changé
-                    document.body.innerHTML = newContent; // Remplacer tout le body
-                    console.log("Mise à jour appliquée !");
-                    lastContent = newContent;
-                }
-            } catch (error) {
-                console.error("Erreur lors de la vérification de la mise à jour :", error);
-            }
+        async function readFile() {
+            if (!fileHandle) return;
+            const file = await fileHandle.getFile();
+            const text = await file.text();
+            document.getElementById("content").textContent = text;
         }
 
-        // Vérifier toutes les 2 secondes
-        setInterval(checkForUpdates, 2000);
-    </script>
+        document.getElementById("chooseFile").addEventListener("click", async () => {
+            try {
+                [fileHandle] = await window.showOpenFilePicker();
+                readFile();
 
+                // Surveiller les changements du fichier
+                setInterval(readFile, 1000); // Vérification automatique (pas besoin d'actualiser)
+            } catch (err) {
+                console.error("Erreur:", err);
+            }
+        });
+    </script>
 </body>
 </html>
