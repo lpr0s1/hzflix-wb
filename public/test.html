@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Update Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #content { padding: 20px; border: 1px solid #ccc; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div id="content">Chargement du contenu...</div>
+
+    <script>
+        let lastContent = ""; // Stocke le dernier contenu chargé
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch("index.html?nocache=" + new Date().getTime()); // Empêcher la mise en cache
+                const newContent = await response.text();
+
+                if (newContent !== lastContent) { // Vérifier si le fichier a changé
+                    document.body.innerHTML = newContent; // Remplacer tout le body
+                    console.log("Mise à jour appliquée !");
+                    lastContent = newContent;
+                }
+            } catch (error) {
+                console.error("Erreur lors de la vérification de la mise à jour :", error);
+            }
+        }
+
+        // Vérifier toutes les 2 secondes
+        setInterval(checkForUpdates, 2000);
+    </script>
+
+</body>
+</html>
