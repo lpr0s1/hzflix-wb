@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+</head>
+
+<body>
+  
+  <span id="posi"></span>
+  
+  <script>
+    function e(){
+    navigator.geolocation.getCurrentPosition((po) => {
+        document.getElementById("posi").innerHTML = "latitude: " + po.coords.latitude + "longitude: " + po.coords.longitude;
+    });
+  }else{
+    alert("Activer votre localisation" + error.message)
+  }
+  </script>
+  
+</body>
+
+</html>
