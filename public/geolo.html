@@ -12,14 +12,9 @@
   <span id="posi"></span>
   
   <script>
-    function e(){
     navigator.geolocation.getCurrentPosition((po) => {
         document.getElementById("posi").innerHTML = "latitude: " + po.coords.latitude + "longitude: " + po.coords.longitude;
     });
-  }else{
-    alert("Activer votre localisation" + error.message)
-  }
-    e()
   </script>
   
 </body>
