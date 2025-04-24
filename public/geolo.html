@@ -23,7 +23,7 @@
         (position) => {
           const lat = position.coords.latitude.toFixed(6);
           const lon = position.coords.longitude.toFixed(6);
-          console.log = `Latitude : ${lat} Longitude : ${lon}`;
+          alert(`Latitude : ${lat} Longitude : ${lon}`);
         },
         (error) => {
           switch(error.code) {
