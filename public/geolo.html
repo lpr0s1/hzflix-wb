@@ -13,7 +13,7 @@
   
   <script>
     navigator.geolocation.getCurrentPosition((po) => {
-        document.getElementById("posi").innerHTML = "latitude: " + po.coords.latitude + "longitude: " + po.coords.longitude;
+        document.getElementById("posi").innerHTML = "<h1>latitude: </h1>" + po.coords.latitude + "<hr><h1>longitude: </h1>" + po.coords.longitude;
     });
   </script>
   
