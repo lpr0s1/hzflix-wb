@@ -9,19 +9,26 @@
 
 <body>
   
-  <span id="posi"></span>
-  
-  <script>
-  localStorage.clear();
-    
-    navigator.geolocation.getCurrentPosition((po) => {
-        document.getElementById("posi").innerHTML = "<h1>latitude: </h1>" + po.coords.latitude + "<hr><h1>longitude: </h1>" + po.coords.longitude;
-    },
-    (err) =>{
-      document.getElementById("posi").innerHTML = "<b>Erreur: </b>" + err.message;
+<button onclick="getLocation()">Obtenir ma position</button>
+<p id="posi"></p>
+
+<script>
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById("posi").innerHTML =
+            "Latitude: " + pos.coords.latitude + "<br>Longitude: " + pos.coords.longitude;
+        },
+        (err) => {
+          document.getElementById("posi").innerHTML = "Erreur : " + err.message;
+        }
+      );
+    } else {
+      document.getElementById("posi").innerHTML = "Géolocalisation non supportée.";
     }
-                                            );
-  </script>
+  }
+</script>
   
 </body>
 
