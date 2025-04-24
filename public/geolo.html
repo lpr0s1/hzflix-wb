@@ -1,37 +1,49 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+  <title>Ma position</title>
 </head>
-
 <body>
 
-  <button onclick="getLocation()">Obtenir ma position</button>
-  <p id="posi"></p>
+  <h2>Obtenir ma position :</h2>
+  <button id="btn">Localise-moi</button>
+  <div id="posi" style="margin-top: 20px;"></div>
 
   <script>
-    function getLocation() {
+    document.getElementById("btn").addEventListener("click", () => {
       const posi = document.getElementById("posi");
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            posi.innerHTML = `Latitude: ${position.coords.latitude}<br>Longitude: ${position.coords.longitude}`;
-          },
-          (error) => {
-            posi.innerHTML = "Erreur : " + error.message;
-          }
-        );
-      } else {
-        posi.innerHTML = "La géolocalisation n'est pas supportée par ce navigateur.";
+      if (!navigator.geolocation) {
+        posi.innerHTML = "Géolocalisation non supportée par ce navigateur.";
+        return;
       }
-    }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+          posi.innerHTML = `<strong>Latitude :</strong> ${lat}<br><strong>Longitude :</strong> ${lon}`;
+        },
+        (error) => {
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              posi.innerHTML = "Accès à la localisation refusé.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              posi.innerHTML = "Position indisponible.";
+              break;
+            case error.TIMEOUT:
+              posi.innerHTML = "Délai d'attente dépassé.";
+              break;
+            default:
+              posi.innerHTML = "Erreur inconnue.";
+              break;
+          }
+        }
+      );
+    });
   </script>
 
-  
 </body>
-
 </html>
