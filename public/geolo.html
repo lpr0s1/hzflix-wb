@@ -8,27 +8,29 @@
 </head>
 
 <body>
-  
-<button onclick="getLocation()">Obtenir ma position</button>
-<p id="posi"></p>
 
-<script>
-  function getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          document.getElementById("posi").innerHTML =
-            "Latitude: " + pos.coords.latitude + "<br>Longitude: " + pos.coords.longitude;
-        },
-        (err) => {
-          document.getElementById("posi").innerHTML = "Erreur : " + err.message;
-        }
-      );
-    } else {
-      document.getElementById("posi").innerHTML = "Géolocalisation non supportée.";
+  <button onclick="getLocation()">Obtenir ma position</button>
+  <p id="posi"></p>
+
+  <script>
+    function getLocation() {
+      const posi = document.getElementById("posi");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            posi.innerHTML = `Latitude: ${position.coords.latitude}<br>Longitude: ${position.coords.longitude}`;
+          },
+          (error) => {
+            posi.innerHTML = "Erreur : " + error.message;
+          }
+        );
+      } else {
+        posi.innerHTML = "La géolocalisation n'est pas supportée par ce navigateur.";
+      }
     }
-  }
-</script>
+  </script>
+
   
 </body>
 
