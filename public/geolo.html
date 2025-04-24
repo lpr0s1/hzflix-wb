@@ -1,14 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Ma position</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    #posi {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
 </head>
 <body>
 
   <h2>Obtenir ma position :</h2>
   <button id="btn">Localise-moi</button>
-  <div id="posi" style="margin-top: 20px;"></div>
+  <div id="posi"></div>
 
   <script>
     document.getElementById("btn").addEventListener("click", () => {
@@ -23,10 +33,13 @@
         (position) => {
           const lat = position.coords.latitude.toFixed(6);
           const lon = position.coords.longitude.toFixed(6);
-          posi.innerHTML = "Latitude : " + lat + " Longitude : " + lon;
+          posi.innerHTML = `
+            <strong>Latitude :</strong> ${lat}<br>
+            <strong>Longitude :</strong> ${lon}
+          `;
         },
         (error) => {
-          switch(error.code) {
+          switch (error.code) {
             case error.PERMISSION_DENIED:
               posi.innerHTML = "Accès à la localisation refusé.";
               break;
@@ -38,7 +51,6 @@
               break;
             default:
               posi.innerHTML = "Erreur inconnue.";
-              break;
           }
         }
       );
