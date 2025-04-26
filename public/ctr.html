@@ -90,9 +90,9 @@ break;
 }
 }
 if (match) {
-totalScore += site.conf / 4;
+totalScore += site.conf / 4.5;
 matches++;
-sourcesHTML += `<div class="mt-2">✅ ${site.url} (+${Math.round(site.conf/4)}%)</div>`;
+sourcesHTML += `<div class="mt-2">✅ ${site.url} (+${Math.round(site.conf/4.5)}%)</div>`;
 } else {
 sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${site.url}</div>`;
 }
@@ -106,10 +106,10 @@ if (heure >= 6 && heure <= 9) totalScore += 6;
 if (heure >= 16 && heure <= 19) totalScore += 8;
 if (heure >= 21 || heure <= 5) totalScore += 12;
 const jour = now.getDay();
-if (jour === 5 || jour === 6) totalScore += 10;
+if (jour === 5 || jour === 6) totalScore += 8;
 if (matches < 5) totalScore -= 10;
 if (matches > 10) totalScore += 10;
-totalScore += 20;
+totalScore += 15;
 if (totalScore > 100) totalScore = 100;
 if (totalScore < 0) totalScore = 0;
 document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
