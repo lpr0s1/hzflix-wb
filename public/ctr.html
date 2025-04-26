@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title></title>
+<title>Risque de Contrôle</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-red-500 min-h-screen flex flex-col items-center justify-start p-4 space-y-6">
@@ -20,140 +20,126 @@
 <option value="bethune">Béthune</option>
 <option value="hazebrouck">Hazebrouck</option>
 </select>
-
-  
-<h1 class="text-4xl font-bold">Risque de Contrôle de police</h1>
-<p id="riskPercent" style="background: linear-gradient(34deg, blue, lightgrey, red); color: transparent; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;" class="text-6xl mt-4">Calcul en cours...</p>
+<h1 class="text-4xl font-bold">Risque de Contrôle</h1>
+<p id="riskPercent" class="text-7xl mt-4"></p>
 <p id="dateTime" class="text-sm text-gray-400 mt-2"></p>
 <p id="riskLevel" class="text-xl mt-2"></p>
 <div id="sources" class="mt-6 text-left space-y-2"></div>
 </div>
 <script>
 const cityUrls = {
-  "lille": [
-    'https://www.lavoixdunord.fr/region/lille-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/lille',
-    'https://actu.fr/hauts-de-france/lille',
-    'https://radars.securite-routiere.gouv.fr/lille',
-    'https://www.lavoixdunord.fr/region/lens-et-environs',
-  ],
-  "valenciennes": [
-    'https://www.lavoixdunord.fr/region/valenciennes-et-environs',
-    'https://www.lavoixdunord.fr/region/valenciennes',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/valenciennes',
-    'https://radars.securite-routiere.gouv.fr/valenciennes',
-  ],
-  "dunkerque": [
-    'https://www.lavoixdunord.fr/region/dunkerque-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/dunkerque',
-    'https://actu.fr/hauts-de-france/dunkerque',
-    'https://radars.securite-routiere.gouv.fr/dunkerque',
-  ],
-  "arras": [
-    'https://www.lavoixdunord.fr/region/arras-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/arras',
-    'https://actu.fr/hauts-de-france/arras',
-    'https://radars.securite-routiere.gouv.fr/arras',
-  ],
-  "roubaix": [
-    'https://www.lavoixdunord.fr/region/roubaix-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/roubaix',
-    'https://actu.fr/hauts-de-france/roubaix',
-    'https://radars.securite-routiere.gouv.fr/roubaix',
-  ],
-  "tourcoing": [
-    'https://www.lavoixdunord.fr/region/tourcoing-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/tourcoing',
-    'https://actu.fr/hauts-de-france/tourcoing',
-    'https://radars.securite-routiere.gouv.fr/tourcoing',
-  ],
-  "douai": [
-    'https://www.lavoixdunord.fr/region/douai-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/douai',
-    'https://actu.fr/hauts-de-france/douai',
-    'https://radars.securite-routiere.gouv.fr/douai',
-  ],
-  "lens": [
-    'https://www.lavoixdunord.fr/region/lens-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/lens',
-    'https://actu.fr/hauts-de-france/lens',
-    'https://radars.securite-routiere.gouv.fr/lens',
-  ],
-  "bethune": [
-    'https://www.lavoixdunord.fr/region/bethune-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/bethune',
-    'https://actu.fr/hauts-de-france/bethune',
-    'https://radars.securite-routiere.gouv.fr/bethune',
-  ],
-  "hazebrouck": [
-    'https://www.lavoixdunord.fr/region/hazebrouck-et-environs',
-    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/hazebrouck',
-    'https://actu.fr/hauts-de-france/hazebrouck',
-    'https://radars.securite-routiere.gouv.fr/hazebrouck',
-  ],
+"lille": [
+"https://www.lavoixdunord.fr/region/lille-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/lille",
+"https://actu.fr/hauts-de-france/lille"
+],
+"valenciennes": [
+"https://www.lavoixdunord.fr/region/valenciennes-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/valenciennes",
+"https://actu.fr/hauts-de-france/valenciennes"
+],
+"dunkerque": [
+"https://www.lavoixdunord.fr/region/dunkerque-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/dunkerque",
+"https://actu.fr/hauts-de-france/dunkerque"
+],
+"arras": [
+"https://www.lavoixdunord.fr/region/arras-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/arras",
+"https://actu.fr/hauts-de-france/arras"
+],
+"roubaix": [
+"https://www.lavoixdunord.fr/region/roubaix-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/roubaix",
+"https://actu.fr/hauts-de-france/roubaix"
+],
+"tourcoing": [
+"https://www.lavoixdunord.fr/region/tourcoing-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/tourcoing",
+"https://actu.fr/hauts-de-france/tourcoing"
+],
+"douai": [
+"https://www.lavoixdunord.fr/region/douai-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/douai",
+"https://actu.fr/hauts-de-france/douai"
+],
+"lens": [
+"https://www.lavoixdunord.fr/region/lens-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/lens",
+"https://actu.fr/hauts-de-france/lens"
+],
+"bethune": [
+"https://www.lavoixdunord.fr/region/bethune-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/bethune",
+"https://actu.fr/hauts-de-france/bethune"
+],
+"hazebrouck": [
+"https://www.lavoixdunord.fr/region/hazebrouck-et-environs",
+"https://www.france3-regions.francetvinfo.fr/hauts-de-france/hazebrouck",
+"https://actu.fr/hauts-de-france/hazebrouck"
+]
 };
-
 const motsCles = ['contrôle','police','barrage','radar','filtrage','sécurité routière','opération de contrôle','alcoolémie','intervention','contrôle routier','vérifications','opération anti-drogue','patrouille','poursuite','poste de contrôle'];
-
+let scrapInProgress = false;
 async function scrapSites() {
-  const city = document.getElementById('citySelect').value;
-  const urls = cityUrls[city] || [];
-  let totalScore = 0;
-  let sourcesHTML = '';
-  for (let siteUrl of urls) {
-    try {
-      const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(siteUrl));
-      const text = await response.text();
-      let match = false;
-      for (let mot of motsCles) {
-        if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(city)) {
-          match = true;
-          break;
-        }
-      }
-      if (match) {
-        totalScore += 10;
-        sourcesHTML += `<div class="mt-2">✅ ${siteUrl} (+10%)</div>`;
-      } else {
-        sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl}</div>`;
-      }
-    } catch (e) {
-      sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl} (Erreur d'accès)</div>`;
-    }
-  }
-  
-  const now = new Date();
-  const heure = now.getHours();
-  if (heure >= 7 && heure <= 9) totalScore += 5;
-  if (heure >= 16 && heure <= 19) totalScore += 5;
-  if (heure >= 22 || heure <= 4) totalScore += 10;
-  const jour = now.getDay();
-  if (jour === 5 || jour === 6) totalScore += 10;
-  
-  totalScore += 20;
-  if (totalScore > 100) totalScore = 100;
-  document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
-  
-  const dateTime = now.toLocaleString('fr-FR', { hour: 'numeric', minute: 'numeric', second: 'numeric', day: 'numeric', month: 'numeric', year: 'numeric' });
-  document.getElementById('dateTime').innerText = `Mise à jour le : ${dateTime}`;
-  
-  let riskLevel = '';
-  if (totalScore <= 25) {
-    riskLevel = 'Pas d\'inquiétude';
-  } else if (totalScore <= 50) {
-    riskLevel = 'Peu probable';
-  } else if (totalScore <= 75) {
-    riskLevel = 'Fort probable';
-  } else {
-    riskLevel = 'Risque très élevé';
-  }
-  document.getElementById('riskLevel').innerText = `Niveau de risque : ${riskLevel}`;
-  
-  document.getElementById('sources').innerHTML = sourcesHTML;
+if (scrapInProgress) return;
+scrapInProgress = true;
+document.getElementById('riskPercent').innerText = '';
+document.getElementById('dateTime').innerText = '';
+document.getElementById('riskLevel').innerText = '';
+document.getElementById('sources').innerHTML = '';
+const city = document.getElementById('citySelect').value;
+const urls = cityUrls[city] || [];
+let totalScore = 0;
+for (let siteUrl of urls) {
+try {
+const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(siteUrl));
+const text = await response.text();
+let match = false;
+for (let mot of motsCles) {
+if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(city)) {
+match = true;
+break;
 }
-
+}
+if (match) {
+totalScore += 10;
+document.getElementById('sources').innerHTML += `<div class="mt-2">✅ ${siteUrl} (+10%)</div>`;
+} else {
+document.getElementById('sources').innerHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl}</div>`;
+}
+} catch (e) {
+document.getElementById('sources').innerHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl} (Erreur accès)</div>`;
+}
+await new Promise(r => setTimeout(r, 200));
+}
+const now = new Date();
+const heure = now.getHours();
+if (heure >= 7 && heure <= 9) totalScore += 5;
+if (heure >= 16 && heure <= 19) totalScore += 5;
+if (heure >= 22 || heure <= 4) totalScore += 10;
+const jour = now.getDay();
+if (jour === 5 || jour === 6) totalScore += 10;
+totalScore += 20;
+if (totalScore > 100) totalScore = 100;
+document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
+const dateTime = now.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+document.getElementById('dateTime').innerText = `Mise à jour le : ${dateTime}`;
+let riskLevel = '';
+if (totalScore <= 25) {
+riskLevel = 'Pas d\'inquiétude';
+} else if (totalScore <= 50) {
+riskLevel = 'Peu probable';
+} else if (totalScore <= 75) {
+riskLevel = 'Fort probable';
+} else {
+riskLevel = 'Risque très élevé';
+}
+document.getElementById('riskLevel').innerText = `Niveau de risque : ${riskLevel}`;
+scrapInProgress = false;
+}
+document.getElementById('citySelect').addEventListener('change', scrapSites);
 scrapSites();
-setInterval(scrapSites, 60000);
 </script>
 </body>
 </html>
