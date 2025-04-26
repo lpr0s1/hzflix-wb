@@ -78,7 +78,8 @@ const city = document.getElementById('citySelect').value;
 let totalScore = 0;
 let matches = 0;
 let sourcesHTML = '';
-for (let site of sites) {
+for (let i = 0; i < sites.length; i++) {
+const site = sites[i];
 try {
 const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(site.url));
 const text = await response.text();
@@ -96,8 +97,10 @@ sourcesHTML += `<div class="mt-2 text-green-500">✅ ${site.url} (+${Math.round(
 } else {
 sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${site.url}</div>`;
 }
+document.getElementById('sources').innerHTML = sourcesHTML; // Ajoute les résultats au fur et à mesure
 } catch (e) {
 sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${site.url} (Erreur d'accès)</div>`;
+document.getElementById('sources').innerHTML = sourcesHTML; // Ajoute les résultats au fur et à mesure
 }
 }
 const now = new Date();
@@ -113,7 +116,6 @@ totalScore += 20;
 if (totalScore > 100) totalScore = 100;
 if (totalScore < 0) totalScore = 0;
 document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
-document.getElementById('sources').innerHTML = sourcesHTML;
 }
 
 document.getElementById('refresh').addEventListener('click', () => {
