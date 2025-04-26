@@ -2,16 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Risque de Contrôle en Temps Réel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Risque de Contrôle - Temps Réel</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
-  <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-3xl text-center">
-    <h1 class="text-4xl font-bold mb-6">Contrôles Police - Temps Réel</h1>
-    <div class="mb-4">
-      <label for="city" class="block text-xl font-semibold mb-2">Choisis ta ville :</label>
-      <select id="city" class="border border-gray-400 rounded p-2 w-full text-lg">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+  <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-2xl text-center">
+    <h1 class="text-4xl font-bold mb-4">Contrôles en Temps Réel</h1>
+
+    <div class="mb-6">
+      <select id="citySelect" class="p-2 rounded border">
         <option value="lille">Lille</option>
         <option value="valenciennes">Valenciennes</option>
         <option value="douai">Douai</option>
@@ -19,99 +19,106 @@
         <option value="lens">Lens</option>
       </select>
     </div>
-    <p id="status" class="text-gray-700 text-xl mb-4">Chargement...</p>
-    <div id="risk" class="text-8xl font-bold text-blue-600 mb-6"></div>
-    <div id="sources" class="text-left mt-6">
-      <h2 class="text-2xl font-bold mb-2">Sources :</h2>
-      <ul id="sourcesList" class="list-disc list-inside text-gray-700"></ul>
+
+    <p id="status" class="text-gray-700 mb-4 text-2xl">Chargement des données...</p>
+    <div id="risk" class="text-9xl font-bold text-blue-600 mb-6"></div>
+
+    <div id="sources" class="text-left">
+      <h2 class="text-xl font-bold mb-2">Sources analysées :</h2>
+      <ul id="sourceList" class="list-disc list-inside text-gray-700"></ul>
     </div>
   </div>
 
 <script>
+const citySelect = document.getElementById('citySelect');
+const status = document.getElementById('status');
+const riskDisplay = document.getElementById('risk');
+const sourceList = document.getElementById('sourceList');
+
 const sources = [
-  { name: "Radarbot", url: "https://corsproxy.io/?https://www.radarbot.net/fr/reportes-en-directo/" },
-  { name: "TomTom Traffic", url: "https://corsproxy.io/?https://www.tomtom.com/fr_fr/trafic/" },
-  { name: "Waze Live Map", url: "https://corsproxy.io/?https://www.waze.com/live-map" },
-  { name: "InfoTrafic Nord", url: "https://corsproxy.io/?https://www.infotrafic.com/" },
-  { name: "France Bleu Nord", url: "https://corsproxy.io/?https://www.francebleu.fr/nord" },
-  { name: "France 3 Hauts-de-France", url: "https://corsproxy.io/?https://france3-regions.francetvinfo.fr/hauts-de-france/nord-0" },
-  { name: "La Voix du Nord", url: "https://corsproxy.io/?https://www.lavoixdunord.fr/" },
-  { name: "Twitter Lille", url: "https://corsproxy.io/?https://twitter.com/search?q=controle%20police%20lille" },
-  { name: "Twitter Valenciennes", url: "https://corsproxy.io/?https://twitter.com/search?q=controle%20police%20valenciennes" },
-  { name: "Google News Lille", url: "https://corsproxy.io/?https://news.google.com/search?q=contrôle%20police%20lille" },
-  // Ajoute encore 20+ si tu veux après
+  "https://www.radars-auto.com/",
+  "https://www.francebleu.fr/",
+  "https://www.infotrafic.com/",
+  "https://www.autoroutes.fr/fr/etat-du-trafic.htm",
+  "https://www.rocade-lille.fr/",
+  "https://www.lavoixdunord.fr/",
+  "https://www.waze.com/fr/live-map/",
+  "https://www.tomtom.com/fr_fr/traffic-index/",
+  "https://www.linternaute.com/auto/accident/",
+  "https://www.ouest-france.fr/",
+  "https://actu.fr/",
+  "https://www.franceinfo.fr/faits-divers/",
+  "https://www.lavoixdunord.fr/recherche?query=police",
+  "https://twitter.com/PoliceNat59",
+  "https://twitter.com/gendarmerie",
+  "https://www.google.com/search?q=contrôle+police+lille",
+  "https://www.google.com/search?q=radar+mobile+lille",
+  "https://www.google.com/search?q=controle+police+valenciennes",
+  "https://www.google.com/search?q=radar+mobile+valenciennes",
+  "https://www.lobservateur.fr/",
+  "https://www.20minutes.fr/",
+  "https://www.leparisien.fr/faits-divers/",
+  "https://www.lunion.fr/",
+  "https://www.futura-sciences.com/sciences/actualites/faits-divers",
+  "https://www.europe1.fr/faits-divers",
+  "https://www.bfmtv.com/faits-divers/",
+  "https://www.francetvinfo.fr/faits-divers/",
+  "https://www.lavoixdunord.fr/",
+  "https://www.sudouest.fr/faits-divers/",
+  "https://www.nicematin.com/faits-divers"
 ];
 
-const keywords = ["contrôle", "police", "radar", "gendarmerie", "CRS", "alcoolémie", "radar mobile", "patrouille"];
-const baseRiskJeunePermis = 20; // 20% de base pour ton profil
-const cityMapping = {
-  lille: ["lille", "hauts-de-france"],
-  valenciennes: ["valenciennes", "nord"],
-  douai: ["douai", "nord"],
-  arras: ["arras", "pas-de-calais"],
-  lens: ["lens", "pas-de-calais"]
-};
+async function fetchAndAnalyze(city) {
+  status.innerText = 'Scraping en cours...';
+  sourceList.innerHTML = '';
+  let detectionCount = 0;
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  
+  const keywords = ["contrôle", "police", "gendarmerie", "radar", "barrage", "filtrage"];
+  const proxy = "https://corsproxy.io/?" ;
 
-async function fetchData(url) {
-  try {
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    console.error(`Erreur en récupérant ${url}`);
-    return null;
-  }
-}
+  for (let src of sources) {
+    try {
+      const response = await fetch(proxy + encodeURIComponent(src));
+      const text = await response.text();
+      const cityLower = city.toLowerCase();
+      const isDetected = keywords.some(keyword => text.toLowerCase().includes(keyword) && text.toLowerCase().includes(cityLower));
+      
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${new URL(src).hostname}</strong> (${now.toLocaleTimeString()}): ${isDetected ? '✅ Détection' : '❌ Rien'}`;
+      sourceList.appendChild(li);
 
-async function analyzeCity(city) {
-  document.getElementById('status').innerText = "Analyse en cours...";
-  document.getElementById('risk').innerText = "...";
-  document.getElementById('sourcesList').innerHTML = "";
-
-  let totalScore = 0;
-  const detectedSources = [];
-  const cityKeywords = cityMapping[city];
-
-  const fetches = sources.map(async (source) => {
-    const html = await fetchData(source.url);
-    if (!html) return;
-
-    const lowerHTML = html.toLowerCase();
-    let matchCity = cityKeywords.some(keyword => lowerHTML.includes(keyword));
-    let matchKeyword = keywords.some(keyword => lowerHTML.includes(keyword));
-
-    if (matchCity && matchKeyword) {
-      totalScore += 10;
-      detectedSources.push(source.name);
+      if (isDetected) detectionCount++;
+    } catch (err) {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${new URL(src).hostname}</strong>: ⚠️ Erreur d'accès`;
+      sourceList.appendChild(li);
     }
-  });
-
-  await Promise.all(fetches);
-
-  if (totalScore === 0) {
-    totalScore = 5; // Minimum si rien trouvé
   }
 
-  totalScore += baseRiskJeunePermis;
+  let baseRisk = (detectionCount / sources.length) * 100;
+  if (baseRisk > 100) baseRisk = 100;
 
-  // Cap le résultat à 100 max
-  if (totalScore > 100) totalScore = 100;
+  // Ajustements selon ton profil jeune permis
+  baseRisk += 20; // jeune permis boost
+  if (day === 5 || day === 6) baseRisk += 10; // vendredi/samedi
+  if (hour >= 7 && hour <= 9 || hour >= 16 && hour <= 19) baseRisk += 5; // heures de pointe
+  
+  baseRisk = Math.min(Math.round(baseRisk), 100);
 
-  document.getElementById('risk').innerText = totalScore + "%";
-  document.getElementById('status').innerText = "Données analysées.";
-
-  detectedSources.slice(0, 3).forEach(source => {
-    const li = document.createElement('li');
-    li.innerText = source;
-    document.getElementById('sourcesList').appendChild(li);
-  });
+  riskDisplay.innerText = `${baseRisk}%`;
+  status.innerText = 'Mise à jour effectuée.';
 }
 
-document.getElementById('city').addEventListener('change', (e) => {
-  analyzeCity(e.target.value);
+citySelect.addEventListener('change', () => {
+  fetchAndAnalyze(citySelect.value);
 });
 
-// Lancer au démarrage
-analyzeCity(document.getElementById('city').value);
+fetchAndAnalyze(citySelect.value);
+setInterval(() => fetchAndAnalyze(citySelect.value), 60000);
 </script>
+
 </body>
 </html>
