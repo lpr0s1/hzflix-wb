@@ -22,7 +22,6 @@
 </select>
 <h1 class="text-4xl font-bold">Risque de Contrôle</h1>
 <p id="riskPercent" class="text-7xl mt-4">Calcul du risque...</p>
-<button id="refresh" class="bg-red-600 text-white p-2 mt-4 rounded">Actualiser Maintenant</button>
 <div id="sources" class="mt-6 text-left space-y-2"></div>
 </div>
 <script>
@@ -117,10 +116,6 @@ if (totalScore > 100) totalScore = 100;
 if (totalScore < 0) totalScore = 0;
 document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
 }
-
-document.getElementById('refresh').addEventListener('click', () => {
-scrapSites();
-});
 
 scrapSites();
 setInterval(scrapSites,60000);
