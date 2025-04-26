@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Risque de Contrôle</title>
+<title></title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-red-500 min-h-screen flex flex-col items-center justify-start p-4 space-y-6">
@@ -20,8 +20,20 @@
 <option value="bethune">Béthune</option>
 <option value="hazebrouck">Hazebrouck</option>
 </select>
-<h1 class="text-4xl font-bold">Risque de Contrôle</h1>
-<p id="riskPercent" class="text-7xl mt-4">Calcul du risque...</p>
+
+  <style>
+    #riskPercent::after{
+      animation: ch 2s infinite;
+    }
+
+    @keyframes ch{
+      0%{content: "Calcul en cours."}
+      50%{content: "Calcul en cours.."}
+      100%{content: "Calcul en cours..."}
+    }
+  </style>
+<h1 class="text-4xl font-bold">Risque de Contrôle de police</h1>
+<p id="riskPercent" class="text-4xl mt-4">Calcul en cours...</p>
 <p id="dateTime" class="text-sm text-gray-400 mt-2"></p>
 <p id="riskLevel" class="text-xl mt-2"></p>
 <div id="sources" class="mt-6 text-left space-y-2"></div>
