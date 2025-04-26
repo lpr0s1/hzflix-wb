@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="[FR]Vente de comptes de réseau sociaux et d’engagement.  [EN]Sale of social media and engagement accounts.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DigiPremium - Premium Accounts & Social Media</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #8e2de2;
+            --secondary: #4a00e0;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f8f9fa;
+            --transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        *{
+            user-select: none;
+            max-width: 100%;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .bg-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            transition: var(--transition);
+            transform: translateY(0);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.2), rgba(255,255,255,0));
+            transition: all 0.6s ease;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(142, 45, 226, 0.4);
+        }
+        
+        .card {
+            background-color: var(--darker);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: var(--transition);
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .card::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+            pointer-events: none;
+        }
+        
+        .card:hover::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+        }
+        
+        .page-transition {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .page-transition.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            backdrop-filter: blur(5px);
+        }
+        
+        .popup.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .popup-content {
+            background-color: var(--darker);
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: scale(0.8) translateY(30px);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(142, 45, 226, 0.3);
+        }
+        
+        .popup.active .popup-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, var(--darker) 0%, #333 50%, var(--darker) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background-color: var(--darker);
+            height: 45px;
+            width: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform: scale(0.8);
+        }
+        
+        .back-btn.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+        
+        .back-btn:hover {
+            background-color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1rem;
+            border-radius: 0.5rem;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .notification.active {
+            transform: translateX(0) scale(1.05);
+        }
+        
+        .bitcoin-address {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            font-family: monospace;
+            word-break: break-all;
+            transition: all 0.3s ease;
+        }
+        
+        .bitcoin-address:hover {
+            background-color: #252525;
+            border-color: var(--primary);
+        }
+        
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 7px 17px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover .price-tag {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .counter button {
+            background-color: var(--darker);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .counter button:hover {
+            background-color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .counter span {
+            margin: 0 20px;
+            font-size: 1.8rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 160px;
+            object-fit: contain;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 0.5rem;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .product-image.large {
+            height: 200px;
+        }
+        
+        .card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .text-glow {
+            text-shadow: 0 0 10px rgba(142, 45, 226, 0.5);
+        }
+
+        nav a {
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .logo-pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .floating {
+            animation: floating 3s infinite ease-in-out;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.8s forwards;
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.8s forwards;
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-icon:hover {
+            transform: rotate(5deg) scale(1.1);
+        }
+        
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+            
+            .product-image {
+                height: 140px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-image.large {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+      
+        <div class="back-btn" id="backBtn">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+
+        
+        <div class="notification shadow-lg" id="notification">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span id="notificationText">Action réussie!</span>
+            </div>
+        </div>
+
+        
+        <header class="bg-gradient p-4 shadow-lg sticky top-0 z-10">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="text-xl md:text-2xl font-bold tracking-wider flex items-center">
+                    <i class="fas fa-bolt mr-2 logo-pulse"></i>
+                    <span>DigiPremium</span>
+                </div>
+                <nav class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="hover:text-purple-300 transition-colors" data-navigate="home">Accueil</a></li>
+                        <li><a href="#" class="hover:text-purple-300 transition-colors" data-navigate="products">Produits</a></li>
+                        <li><a href="#" class="hover:text-purple-300 transition-colors" data-navigate="faq">FAQ</a></li>
+                        <li><a href="#" class="hover:text-purple-300 transition-colors" data-navigate="contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <button class="md:hidden text-xl" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+
+     
+        <div class="fixed inset-0 bg-black bg-opacity-90 z-50 transform translate-x-full transition-transform duration-500" id="mobileMenu">
+            <div class="flex justify-end p-4">
+                <button class="text-xl" id="closeMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex flex-col items-center justify-center h-full">
+                <ul class="text-center space-y-8 text-xl">
+                    <li><a href="#" class="block py-2 hover:text-purple-300 transition-colors" data-navigate="home" data-mobile>Accueil</a></li>
+                    <li><a href="#" class="block py-2 hover:text-purple-300 transition-colors" data-navigate="products" data-mobile>Produits</a></li>
+                    <li><a href="#" class="block py-2 hover:text-purple-300 transition-colors" data-navigate="faq" data-mobile>FAQ</a></li>
+                    <li><a href="#" class="block py-2 hover:text-purple-300 transition-colors" data-navigate="contact" data-mobile>Contact</a></li>
+                </ul>
+            </div>
+        </div>
+
+      
+        <main>
+          
+            <section id="home" class="page-transition active min-h-screen">
+                <div class="container mx-auto px-4 py-8">
+                    <div class="flex flex-col md:flex-row items-center justify-between py-12">
+                        <div class="md:w-1/2 md:pr-8 mb-8 md:mb-0 slide-in-left">
+                            <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight text-glow">
+                                Débloquez l'accès à des <span class="text-purple-400">services premium</span> en un clic
+                            </h1>
+                            <p class="text-lg opacity-80 mb-8">
+                                Comptes Disney+, applications CapCut Pro, et services de commentaires pour booster votre présence sur les réseaux sociaux. Paiement sécurisé en Bitcoin.
+                            </p>
+                            <div class="flex flex-wrap gap-4">
+                                <button class="btn-primary px-6 py-3 rounded-lg font-semibold shadow-lg" data-navigate="products">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Voir les produits
+                                </button>
+                                <button class="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105" data-navigate="contact">
+                                    <i class="fas fa-headset mr-2"></i> Nous contacter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 flex justify-center slide-in-right">
+                            <div class="relative w-full max-w-md floating">
+                                <div class="absolute inset-0 bg-gradient rounded-3xl transform rotate-6 opacity-30"></div>
+                                <div class="card relative p-6 flex flex-col items-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+" class="w-full h-48 object-contain mb-4 p-4">
+                                    <div class="w-3/4 h-6 shimmer rounded-full mb-3"></div>
+                                    <div class="w-1/2 h-6 shimmer rounded-full mb-6"></div>
+                                    <div class="flex space-x-4">
+                                        <div class="w-20 h-8 shimmer rounded-lg"></div>
+                                        <div class="w-20 h-8 shimmer rounded-lg"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12 mb-16">
+                        <h2 class="text-3xl font-bold mb-8 text-center text-glow">Nos services populaires</h2>
+                        <div class="product-grid">
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">14.99€</div>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Disney+ Premium</h3>
+                                <p class="text-gray-400 mb-4">Accès complet à Disney+, Star et National Geographic</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="disney" data-price="14.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Acheter maintenant
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">9.99€</div>
+                                <img src="https://seekvectors.com/files/download/79f8e099e4e0e304d6f9862fbddfefe0.svg" alt="CapCut Pro" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">CapCut Pro</h3>
+                                <p class="text-gray-400 mb-4">Application de montage vidéo professionnelle débloquée</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="capcut" data-price="9.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Acheter maintenant
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">19.99€</div>
+                                <img src="https://www.social-provider.com/store/images/product/large-produit-71.jpg?cache=491" alt="Social Media" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Pack Commentaires TikTok</h3>
+                                <p class="text-gray-400 mb-4">500 commentaires réels pour vos vidéos TikTok</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="tiktok_comments" data-price="19.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Acheter maintenant
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-center mt-8">
+                            <button class="btn-primary px-6 py-3 rounded-lg font-semibold shadow-lg transform transition-all hover:scale-105" data-navigate="products">
+                                Voir tous les produits <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="py-12 bg-gray-900 bg-opacity-50 rounded-2xl p-8 mb-16">
+                        <h2 class="text-3xl font-bold mb-8 text-center text-glow">Pourquoi nous choisir?</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="flex flex-col items-center text-center hover-lift">
+                                <div class="bg-gradient w-16 h-16 rounded-full flex items-center justify-center mb-4 feature-icon">
+                                    <i class="fas fa-bolt text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Livraison instantanée</h3>
+                                <p class="text-gray-400">Recevez vos produits immédiatement après confirmation du paiement</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center hover-lift">
+                                <div class="bg-gradient w-16 h-16 rounded-full flex items-center justify-center mb-4 feature-icon">
+                                    <i class="fas fa-shield-alt text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Paiement sécurisé</h3>
+                                <p class="text-gray-400">Transactions en Bitcoin pour une sécurité et confidentialité maximales</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center hover-lift">
+                                <div class="bg-gradient w-16 h-16 rounded-full flex items-center justify-center mb-4 feature-icon">
+                                    <i class="fas fa-headset text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Support 24/7</h3>
+                                <p class="text-gray-400">Notre équipe est disponible à tout moment pour vous aider</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+          
+            <section id="products" class="page-transition min-h-screen hidden">
+                <div class="container mx-auto px-4 py-12">
+                    <h1 class="text-4xl font-bold mb-8 text-center text-glow">Nos Produits</h1>
+                    
+                    <div class="mb-12">
+                        <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                            <i class="fas fa-tv mr-3 text-purple-400"></i> Services de Streaming
+                        </h2>
+                        <div class="product-grid">
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">14.99€</div>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Disney+ Premium</h3>
+                                <p class="text-gray-400 mb-4">Accès complet pendant 1 mois, sans restrictions</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="disney" data-price="14.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">12.99€</div>
+                                <img src="https://pic.clubic.com/v1/images/1877885/raw" alt="Spotify Premium" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Spotify Premium IPA</h3>
+                                <p class="text-gray-400 mb-4">Application iOS modifiée avec fonctions premium débloquées</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="spotify" data-price="12.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-12">
+                        <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                            <i class="fas fa-mobile-alt mr-3 text-purple-400"></i> Applications Premium
+                        </h2>
+                        <div class="product-grid">
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">9.99€</div>
+                                <img src="https://seekvectors.com/files/download/79f8e099e4e0e304d6f9862fbddfefe0.svg" alt="CapCut Pro" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">CapCut Pro</h3>
+                                <p class="text-gray-400 mb-4">Application de montage vidéo professionnelle débloquée</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="capcut" data-price="9.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                
+
+                    <div class="mb-12">
+                        <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                            <i class="fas fa-comments mr-3 text-purple-400"></i> Services pour Réseaux Sociaux
+                        </h2>
+                        <div class="product-grid">
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">19.99€</div>
+                                <img src="https://www.social-provider.com/store/images/product/large-produit-71.jpg?cache=491" alt="TikTok" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Pack Commentaires TikTok</h3>
+                                <p class="text-gray-400 mb-4">500 commentaires réels pour vos vidéos TikTok</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="tiktok_comments" data-price="19.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">24.99€</div>
+                                <img src="https://www.jean-jaures.org/wp-content/uploads/2020/12/BigTunaOnline-BD-945x630.jpg" alt="Instagram" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Pack Engagement Instagram</h3>
+                                <p class="text-gray-400 mb-4">1000 likes + 100 commentaires pour vos posts Instagram</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="instagram_pack" data-price="24.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                            <div class="card p-5 relative transform transition-all hover:z-10">
+                                <div class="price-tag">17.99€</div>
+                                <img src="https://www.tweeteraser.com/fr/resources/wp-content/uploads/2023/06/mariia-shalabaieva-88XcHKPLe3E-unsplash-1.jpg" alt="Twitter" class="product-image mb-4">
+                                <h3 class="text-xl font-semibold mb-2">Pack Retweets X (Twitter)</h3>
+                                <p class="text-gray-400 mb-4">300 retweets de comptes réels pour vos tweets</p>
+                                <button class="btn-primary w-full py-2 rounded-lg font-semibold" data-product="twitter_retweets" data-price="17.99">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Commander
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+          
+            <section id="faq" class="page-transition min-h-screen hidden">
+                <div class="container mx-auto px-4 py-12">
+                    <h1 class="text-4xl font-bold mb-8 text-center text-glow">Questions Fréquentes</h1>
+                    
+                    <div class="max-w-3xl mx-auto">
+                        <div class="card p-5 mb-4 transform transition-all hover:scale-[1.02]">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="fas fa-chevron-right mr-2 transform transition-transform duration-300"></i>
+                                Comment fonctionne le paiement en Bitcoin?
+                            </h3>
+                            <div class="text-gray-400 pl-6 hidden animate__animated animate__fadeIn">
+                                <p>Après avoir sélectionné votre produit, vous recevrez une adresse Bitcoin pour effectuer le paiement. Une fois le paiement confirmé sur la blockchain (généralement en moins de 30 minutes), vous recevrez immédiatement votre produit ou service par le moyen de contact que vous avez fourni.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-5 mb-4 transform transition-all hover:scale-[1.02]">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="fas fa-chevron-right mr-2 transform transition-transform duration-300"></i>
+                                Les comptes Disney+ sont-ils garantis?
+                            </h3>
+                            <div class="text-gray-400 pl-6 hidden animate__animated animate__fadeIn">
+                                <p>Oui, tous nos comptes Disney+ sont garantis pendant 30 jours. Si vous rencontrez un problème avec votre compte pendant cette période, nous le remplacerons gratuitement. Contactez-nous via Telegram pour toute assistance.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-5 mb-4 transform transition-all hover:scale-[1.02]">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="fas fa-chevron-right mr-2 transform transition-transform duration-300"></i>
+                                Comment installer les applications iOS modifiées?
+                            </h3>
+                            <div class="text-gray-400 pl-6 hidden animate__animated animate__fadeIn">
+                                <p>Après l'achat, vous recevrez un lien pour télécharger le fichier IPA. Vous pouvez l'installer via AltStore, Sideloadly ou tout autre service de sideloading. Nous fournissons des instructions détaillées avec chaque achat pour faciliter l'installation.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-5 mb-4 transform transition-all hover:scale-[1.02]">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="fas fa-chevron-right mr-2 transform transition-transform duration-300"></i>
+                                Combien de temps faut-il pour recevoir les commentaires sur les réseaux sociaux?
+                            </h3>
+                            <div class="text-gray-400 pl-6 hidden animate__animated animate__fadeIn">
+                                <p>Notre service de commentaires commence généralement dans l'heure suivant la confirmation du paiement. La livraison complète peut prendre entre 24 et 72 heures, selon la quantité commandée et la plateforme. Nous utilisons des méthodes sûres pour éviter toute détection par les algorithmes des réseaux sociaux.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-5 mb-4 transform transition-all hover:scale-[1.02]">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="fas fa-chevron-right mr-2 transform transition-transform duration-300"></i>
+                                Comment vous contacter en cas de problème?
+                            </h3>
+                            <div class="text-gray-400 pl-6 hidden animate__animated animate__fadeIn">
+                                <p>Vous pouvez nous contacter directement via Telegram à @hzx552. Notre équipe de support est disponible 24/7 pour répondre à vos questions et résoudre tout problème que vous pourriez rencontrer avec nos produits ou services.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+          
+            <section id="contact" class="page-transition min-h-screen hidden">
+                <div class="container mx-auto px-4 py-12">
+                    <h1 class="text-4xl font-bold mb-8 text-center text-glow">Contactez-nous</h1>
+                    
+                    <div class="max-w-2xl mx-auto">
+                        <div class="card p-8 mb-8 transform transition-all hover:scale-[1.02]">
+                            <div class="flex flex-col md:flex-row items-center mb-8">
+                                <div class="bg-gradient w-16 h-16 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6 feature-icon">
+                                    <i class="fab fa-telegram-plane text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Support Telegram</h3>
+                                    <p class="text-gray-400">Réponse rapide garantie</p>
+                                    <a href="https://t.me/hzx552" class="text-purple-400 hover:text-purple-300 transition-colors font-semibold hover:underline">@hzx552</a>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-800 p-6 rounded-xl">
+                                <h3 class="text-xl font-semibold mb-4">Envoyer un message</h3>
+                                <form id="contactForm">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-400 mb-2">Votre adresse email</label>
+                                        <input type="email" class="w-full bg-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" placeholder="exemple@email.com">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-400 mb-2">Sujet</label>
+                                        <input type="text" class="w-full bg-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" placeholder="Question sur un produit...">
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-400 mb-2">Message</label>
+                                        <textarea class="w-full bg-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all h-32" placeholder="Décrivez votre question ou préoccupation..."></textarea>
+                                    </div>
+                                    <button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transform transition-all hover:scale-105" onclick="showNotification('Message envoyé avec succès!')">
+                                        <i class="fas fa-paper-plane mr-2"></i> Envoyer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="text-center text-gray-400">
+                            <p class="mb-2">Temps de réponse moyen: <span class="text-white font-semibold">1-2 heures</span></p>
+                            <p>Nous traitons toutes les demandes par ordre de priorité. Pour une assistance immédiate, utilisez Telegram.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+          
+            <section id="productDetail" class="page-transition min-h-screen hidden">
+                <div class="container mx-auto px-4 py-12">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 id="productTitle" class="text-3xl font-bold mb-6 text-center text-glow">Nom du produit</h1>
+                        
+                        <div class="card p-6 mb-8 transform transition-all hover:scale-[1.01]">
+                            <div class="flex flex-col md:flex-row">
+                                <div class="md:w-2/5 mb-6 md:mb-0 md:pr-6 flex items-center justify-center">
+                                    <img id="productDetailImage" src="" alt="Product" class="product-image large">
+                                </div>
+                                <div class="md:w-3/5">
+                                    <h2 class="text-2xl font-semibold mb-4">Description</h2>
+                                    <p id="productDescription" class="text-gray-400 mb-6">Description du produit...</p>
+                                    
+                                    <div class="p-4 bg-gray-800 rounded-lg mb-6">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-gray-400">Prix unitaire:</span>
+                                            <span id="productPrice" class="font-semibold">0.00€</span>
+                                        </div>
+                                        <div class="counter">
+                                            <button id="decreaseBtn" class="transform transition-transform hover:scale-110">-</button>
+                                            <span id="quantity">1</span>
+                                            <button id="increaseBtn" class="transform transition-transform hover:scale-110">+</button>
+                                        </div>
+                                        <div class="flex justify-between items-center border-t border-gray-700 pt-4 mt-4">
+                                            <span class="font-semibold">Total:</span>
+                                            <span id="totalPrice" class="text-xl font-bold text-purple-400">0.00€</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <button id="buyNowBtn" class="btn-primary w-full py-3 rounded-lg font-semibold transform transition-all hover:scale-105">
+                                        <i class="fas fa-shopping-cart mr-2"></i> Acheter maintenant
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6 transform transition-all hover:scale-[1.01]">
+                            <h2 class="text-2xl font-semibold mb-4">Détails du produit</h2>
+                            <div id="productDetails" class="text-gray-400">
+                                <p>Chargement des détails...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+          
+            <section id="payment" class="page-transition min-h-screen hidden">
+                <div class="container mx-auto px-4 py-12">
+                    <div class="max-w-3xl mx-auto">
+                        <h1 class="text-3xl font-bold mb-8 text-center text-glow">Paiement</h1>
+                        
+                        <div class="card p-8 mb-8 transform transition-all hover:scale-[1.01]">
+                            <h2 class="text-2xl font-semibold mb-6">Récapitulatif de commande</h2>
+                            
+                            <div class="bg-gray-800 p-4 rounded-lg mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span id="paymentProductName">Nom du produit</span>
+                                    <span id="paymentQuantity">x1</span>
+                                </div>
+                                <div class="border-t border-gray-700 pt-2 mt-2 flex justify-between items-center">
+                                    <span class="font-semibold">Total à payer:</span>
+                                    <span id="paymentTotal" class="text-xl font-bold text-purple-400">0.00€</span>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-semibold mb-4">Paiement par Bitcoin</h3>
+                            
+                            <div class="mb-6">
+                                <p class="text-gray-400 mb-4">Veuillez envoyer le montant exact à l'adresse Bitcoin ci-dessous:</p>
+                                <div class="bitcoin-address mb-2">bc1q4zqxhcxwkmrn0qje0kqrj0yk9keuy4pny8j8vk</div>
+                                <button class="text-sm text-purple-400 hover:text-purple-300 transition-colors transform hover:scale-105" onclick="showNotification('Adresse copiée dans le presse-papiers!')">
+                                    <i class="far fa-copy mr-1"></i> Copier l'adresse
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mb-6">
+                                <div class="inline-block p-2 bg-white rounded-lg mb-2">
+                                    <div class="w-48 h-48 bg-gray-200 rounded flex items-center justify-center">
+                                        <i class="fas fa-qrcode text-6xl text-gray-600"></i>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-400">Scanner le code QR pour payer depuis votre portefeuille mobile</p>
+                            </div>
+                            
+                            <div class="bg-gray-800 p-4 rounded-lg mb-6">
+                                <p class="text-amber-400 flex items-start mb-4">
+                                    <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                                    <span>Votre commande sera traitée automatiquement dès que le paiement sera confirmé sur la blockchain Bitcoin.</span>
+                                </p>
+                                <p class="text-gray-400">Pour toute assistance: <span class="text-white font-semibold">Telegram: @hzx552</span></p>
+                            </div>
+                            
+                            <div class="flex justify-center">
+                                <button class="btn-primary px-6 py-3 rounded-lg font-semibold shadow-lg transform transition-all hover:scale-105" onclick="showNotification('Vérification de paiement en cours...')">
+                                    <i class="fas fa-sync-alt mr-2"></i> J'ai effectué le paiement
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+      
+        <footer class="bg-gray-900 py-8 px-4">
+            <div class="container mx-auto">
+                <div class="flex flex-col md:flex-row justify-between mb-8">
+                    <div class="mb-6 md:mb-0">
+                        <div class="text-xl font-bold tracking-wider flex items-center mb-4">
+                            <i class="fas fa-bolt mr-2 logo-pulse"></i>
+                            <span>DigiPremium</span>
+                        </div>
+                        <p class="text-gray-400 max-w-xs">Services premium et produits numériques avec paiement sécurisé en Bitcoin.</p>
+                    </div>
+                    
+                    <div class="mb-6 md:mb-0">
+                        <h3 class="text-lg font-semibold mb-4">Liens rapides</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" data-navigate="home">Accueil</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" data-navigate="products">Produits</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" data-navigate="faq">FAQ</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" data-navigate="contact">Contact</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-6 md:mb-0">
+                        <h3 class="text-lg font-semibold mb-4">Mentions légales</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" onclick="showPopup('termsPopup')">Conditions d'utilisation</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" onclick="showPopup('privacyPopup')">Politique de confidentialité</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-purple-400 transition-colors hover-lift inline-block" onclick="showPopup('refundPopup')">Politique de remboursement</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Nous contacter</h3>
+                        <p class="text-gray-400 mb-2 flex items-center hover-lift">
+                            <i class="fab fa-telegram-plane mr-2"></i> Telegram: <a href="https://t.me/hzx552" class="text-purple-400 ml-1 hover:underline">@hzx552</a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                    <p>&copy; 2023 DigiPremium. Tous droits réservés.</p>
+                </div>
+            </div>
+        </footer>
+
+      
+        <div id="termsPopup" class="popup">
+            <div class="popup-content p-6 max-w-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Conditions d'utilisation</h2>
+                    <button class="text-xl transform transition-all hover:scale-110 hover:rotate-90" onclick="hidePopup('termsPopup')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="overflow-y-auto max-h-96 pr-2">
+                    <h3 class="text-xl font-semibold mb-2">1. Acceptation des conditions</h3>
+                    <p class="text-gray-400 mb-4">En accédant ou en utilisant ce site web, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser ce site.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">2. Produits et services</h3>
+                    <p class="text-gray-400 mb-4">Tous les produits et services proposés sur ce site sont fournis "tels quels" sans garantie d'aucune sorte. Nous ne garantissons pas que les produits ou services répondront à vos besoins ou seront ininterrompus, sécurisés ou exempts d'erreurs.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">3. Paiements</h3>
+                    <p class="text-gray-400 mb-4">Tous les paiements sont traités via Bitcoin et sont considérés comme définitifs. Aucun remboursement ne sera accordé sauf dans des circonstances exceptionnelles et à notre seule discrétion.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">4. Utilisation responsable</h3>
+                    <p class="text-gray-400 mb-4">Vous acceptez d'utiliser les produits et services uniquement à des fins légales et conformément à toutes les lois applicables. Nous nous réservons le droit de refuser le service à quiconque pour quelque raison que ce soit.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">5. Modification des conditions</h3>
+                    <p class="text-gray-400">Nous nous réservons le droit de modifier ces conditions à tout moment sans préavis. Votre utilisation continue du site après de telles modifications constitue votre acceptation des nouvelles conditions.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="privacyPopup" class="popup">
+            <div class="popup-content p-6 max-w-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Politique de confidentialité</h2>
+                    <button class="text-xl transform transition-all hover:scale-110 hover:rotate-90" onclick="hidePopup('privacyPopup')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="overflow-y-auto max-h-96 pr-2">
+                    <h3 class="text-xl font-semibold mb-2">1. Collecte d'informations</h3>
+                    <p class="text-gray-400 mb-4">Nous ne collectons que les informations nécessaires pour fournir nos services. Cela peut inclure des adresses de contact pour la livraison des produits numériques.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">2. Utilisation des informations</h3>
+                    <p class="text-gray-400 mb-4">Les informations collectées sont utilisées uniquement pour fournir nos services, traiter les paiements et communiquer avec vous concernant votre commande.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">3. Protection des données</h3>
+                    <p class="text-gray-400 mb-4">Nous prenons des mesures raisonnables pour protéger vos informations personnelles contre la perte, l'accès non autorisé, la divulgation, l'altération ou la destruction.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">4. Paiements Bitcoin</h3>
+                    <p class="text-gray-400 mb-4">Les transactions Bitcoin sont pseudonymes par nature. Nous ne collectons pas d'informations personnelles liées à vos paiements Bitcoin au-delà de ce qui est visible sur la blockchain publique.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">5. Contact</h3>
+                    <p class="text-gray-400">Si vous avez des questions concernant cette politique de confidentialité, veuillez nous contacter via Telegram: @hzx552</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="refundPopup" class="popup">
+            <div class="popup-content p-6 max-w-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Politique de remboursement</h2>
+                    <button class="text-xl transform transition-all hover:scale-110 hover:rotate-90" onclick="hidePopup('refundPopup')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="overflow-y-auto max-h-96 pr-2">
+                    <p class="text-gray-400 mb-4">Étant donné la nature des produits numériques que nous proposons, toutes les ventes sont considérées comme définitives et nous n'offrons pas de remboursements une fois que le produit ou service a été livré.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">Garantie de service</h3>
+                    <p class="text-gray-400 mb-4">Bien que nous n'offrions pas de remboursements, certains produits comme les comptes Disney+ sont garantis pendant 30 jours. Si vous rencontrez des problèmes pendant cette période, nous fournirons un remplacement gratuit.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">Non-livraison</h3>
+                    <p class="text-gray-400 mb-4">Dans le cas improbable où nous ne serions pas en mesure de livrer le produit ou service après confirmation du paiement, nous vous proposerons soit un produit alternatif de valeur égale ou supérieure, soit un crédit pour un achat futur.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">Résolution des problèmes</h3>
+                    <p class="text-gray-400">Si vous rencontrez des problèmes avec un produit ou service, veuillez nous contacter via Telegram: @hzx552 dans les 24 heures suivant la livraison. Nous ferons de notre mieux pour résoudre le problème de manière satisfaisante.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    
+        const products = {
+            disney: {
+                name: "Disney+ Premium",
+                price: 14.99,
+                image: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
+                description: "Accès complet à Disney+, Star et National Geographic pendant 1 mois.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> Accès à tous les films et séries de Disney, Pixar, Marvel, Star Wars, et National Geographic</li>
+                    <li><span class="text-purple-400">✓</span> Streaming en qualité 4K UHD et HDR</li>
+                    <li><span class="text-purple-400">✓</span> Possibilité de regarder sur 4 appareils simultanément</li>
+                    <li><span class="text-purple-400">✓</span> Téléchargements illimités sur 10 appareils</li>
+                    <li><span class="text-purple-400">✓</span> Garantie de remplacement de 30 jours</li>
+                </ul>`
+            },
+            capcut: {
+                name: "CapCut Pro",
+                price: 9.99,
+                image: "https://seekvectors.com/files/download/79f8e099e4e0e304d6f9862fbddfefe0.svg",
+                description: "Application de montage vidéo professionnelle avec toutes les fonctionnalités premium débloquées.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> Accès à toutes les fonctionnalités premium</li>
+                    <li><span class="text-purple-400">✓</span> Plus de 500 effets et filtres exclusifs</li>
+                    <li><span class="text-purple-400">✓</span> Exportation sans filigrane</li>
+                    <li><span class="text-purple-400">✓</span> Bibliothèque musicale complète débloquée</li>
+                    <li><span class="text-purple-400">✓</span> Application non liée à un compte</li>
+                </ul>`
+            },
+            spotify: {
+                name: "Spotify Premium IPA",
+                price: 12.99,
+                image: "https://cdn.dlcompare.com/game_tetiere/upload/gamecardimage/file/spotify-premium-file-8f085a1a.jpg.webp",
+                description: "Application iOS modifiée avec toutes les fonctionnalités premium débloquées.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> Écoute sans publicité</li>
+                    <li><span class="text-purple-400">✓</span> Qualité audio très élevée (320kbps)</li>
+                    <li><span class="text-purple-400">✓</span> Téléchargement de musique pour écoute hors ligne</li>
+                    <li><span class="text-purple-400">✓</span> Lecture de n'importe quelle chanson</li>
+                    <li><span class="text-purple-400">✓</span> Instructions d'installation détaillées incluses</li>
+                </ul>`
+            },
+            tiktok_comments: {
+                name: "Pack Commentaires TikTok",
+                price: 19.99,
+                image: "https://www.social-provider.com/store/images/product/large-produit-71.jpg?cache=491",
+                description: "500 commentaires réels pour augmenter l'engagement sur vos vidéos TikTok.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> 500 commentaires de comptes réels</li>
+                    <li><span class="text-purple-400">✓</span> Livraison progressive sur 24-48h</li>
+                    <li><span class="text-purple-400">✓</span> Commentaires personnalisables</li>
+                    <li><span class="text-purple-400">✓</span> Boost d'algorithme garanti</li>
+                    <li><span class="text-purple-400">✓</span> Assistance pour maximiser votre visibilité</li>
+                </ul>`
+            },
+            instagram_pack: {
+                name: "Pack Engagement Instagram",
+                price: 24.99,
+                image: "https://i0.wp.com/therecipeltd.co.nz/wp-content/uploads/2023/06/nsplsh_27541482937644aeb058cc4998e51b0emv2.webp?fit=740%2C555&ssl=1",
+                description: "1000 likes + 100 commentaires pour booster vos posts Instagram.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> 1000 likes de comptes réels</li>
+                    <li><span class="text-purple-400">✓</span> 100 commentaires personnalisables</li>
+                    <li><span class="text-purple-400">✓</span> Livraison progressive sur 24-72h</li>
+                    <li><span class="text-purple-400">✓</span> Amélioration du positionnement dans l'algorithme</li>
+                    <li><span class="text-purple-400">✓</span> Compatible avec les publications récentes et futures</li>
+                </ul>`
+            },
+            twitter_retweets: {
+                name: "Pack Retweets X (Twitter)",
+                price: 17.99,
+                image: "https://api.freelogodesign.org/assets/blog/thumb/152880db593345cdb307307a5df1c663_1176x840.jpg?t=638315215250000000",
+                description: "300 retweets de comptes réels pour donner de la visibilité à vos tweets.",
+                details: `<ul class="space-y-2">
+                    <li><span class="text-purple-400">✓</span> 300 retweets de comptes réels</li>
+                    <li><span class="text-purple-400">✓</span> Livraison progressive sur 24-48h</li>
+                    <li><span class="text-purple-400">✓</span> Augmentation de la visibilité dans les tendances</li>
+                    <li><span class="text-purple-400">✓</span> Compatible avec tous types de tweets</li>
+                    <li><span class="text-purple-400">✓</span> Support pour maximiser l'impact</li>
+                </ul>`
+            }
+        };
+
+        let currentPage = 'home';
+        let currentProduct = null;
+        let quantity = 1;
+
+        const app = document.getElementById('app');
+        const backBtn = document.getElementById('backBtn');
+        const menuToggle = document.getElementById('menuToggle');
+        const closeMenu = document.getElementById('closeMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const increaseBtn = document.getElementById('increaseBtn');
+        const quantityElement = document.getElementById('quantity');
+        const productTitle = document.getElementById('productTitle');
+        const productDescription = document.getElementById('productDescription');
+        const productPrice = document.getElementById('productPrice');
+        const totalPrice = document.getElementById('totalPrice');
+        const productDetails = document.getElementById('productDetails');
+        const buyNowBtn = document.getElementById('buyNowBtn');
+        const paymentProductName = document.getElementById('paymentProductName');
+        const paymentQuantity = document.getElementById('paymentQuantity');
+        const paymentTotal = document.getElementById('paymentTotal');
+        const productDetailImage = document.getElementById('productDetailImage');
+
+        function navigateTo(page, productId = null) {
+        
+            document.querySelectorAll('section.page-transition').forEach(section => {
+                section.classList.add('hidden');
+                section.classList.remove('active');
+            });
+            
+          
+            const selectedPage = document.getElementById(page);
+            selectedPage.classList.remove('hidden');
+            
+        
+            setTimeout(() => {
+                selectedPage.classList.add('active');
+            }, 50);
+            
+            // Update current page
+            currentPage = page;
+            
+            // Handle product detail page
+            if (page === 'productDetail' && productId && products[productId]) {
+                currentProduct = productId;
+                quantity = 1;
+                
+                // Update product details
+                productTitle.innerText = products[productId].name;
+                productDescription.innerText = products[productId].description;
+                productPrice.innerText = `${products[productId].price.toFixed(2)}€`;
+                quantityElement.innerText = quantity;
+                totalPrice.innerText = `${(products[productId].price * quantity).toFixed(2)}€`;
+                productDetails.innerHTML = products[productId].details;
+                productDetailImage.src = products[productId].image;
+                productDetailImage.alt = products[productId].name;
+            }
+            
+      
+            if (page === 'payment' && currentProduct) {
+                paymentProductName.innerText = products[currentProduct].name;
+                paymentQuantity.innerText = `x${quantity}`;
+                paymentTotal.innerText = `${(products[currentProduct].price * quantity).toFixed(2)}€`;
+            }
+            
+            if (page === 'home') {
+                backBtn.classList.remove('active');
+            } else {
+                backBtn.classList.add('active');
+            }
+            
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate__animated', 'animate__fadeIn');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.card, .hover-lift, .feature-icon').forEach(el => {
+                observer.observe(el);
+            });
+            
+          
+            document.querySelectorAll('[data-navigate]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-navigate');
+                    navigateTo(page);
+                    
+                
+                    if (link.hasAttribute('data-mobile')) {
+                        mobileMenu.style.transform = 'translateX(100%)';
+                    }
+                });
+            });
+            
+          
+            document.querySelectorAll('[data-product]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = button.getAttribute('data-product');
+                    navigateTo('productDetail', productId);
+                });
+            });
+            
+          
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.style.transform = 'translateX(0)';
+            });
+            
+            closeMenu.addEventListener('click', () => {
+                mobileMenu.style.transform = 'translateX(100%)';
+            });
+            
+          
+            backBtn.addEventListener('click', () => {
+                if (currentPage === 'productDetail') {
+                    navigateTo('products');
+                } else if (currentPage === 'payment') {
+                    navigateTo('productDetail', currentProduct);
+                } else {
+                    navigateTo('home');
+                }
+            });
+            
+        
+            decreaseBtn.addEventListener('click', () => {
+                if (quantity > 1) {
+                    quantity--;
+                    quantityElement.innerText = quantity;
+                    totalPrice.innerText = `${(products[currentProduct].price * quantity).toFixed(2)}€`;
+                    
+                  
+                    totalPrice.classList.add('animate__animated', 'animate__headShake');
+                    setTimeout(() => {
+                        totalPrice.classList.remove('animate__animated', 'animate__headShake');
+                    }, 500);
+                }
+            });
+            
+            increaseBtn.addEventListener('click', () => {
+                quantity++;
+                quantityElement.innerText = quantity;
+                totalPrice.innerText = `${(products[currentProduct].price * quantity).toFixed(2)}€`;
+                
+                totalPrice.classList.add('animate__animated', 'animate__headShake');
+                setTimeout(() => {
+                    totalPrice.classList.remove('animate__animated', 'animate__headShake');
+                }, 500);
+            });
+            
+          
+            buyNowBtn.addEventListener('click', () => {
+                navigateTo('payment');
+            });
+            
+
+            document.querySelectorAll('.faq-toggle').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const content = toggle.nextElementSibling;
+                    content.classList.toggle('hidden');
+                    toggle.querySelector('i').classList.toggle('rotate-90');
+                });
+            });
+        });
+
+        function showNotification(message) {
+            notificationText.innerText = message;
+            notification.classList.add('active');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+
+        function showPopup(popupId) {
+            const popup = document.getElementById(popupId);
+            popup.classList.add('active');
+        }
+
+        function hidePopup(popupId) {
+            const popup = document.getElementById(popupId);
+            popup.classList.remove('active');
+        }
+        
+        
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.card, .hover-lift, .feature-icon');
+            
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                
+                if (rect.top <= windowHeight * 0.8) {
+                    el.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', animateOnScroll);
+        window.addEventListener('load', animateOnScroll);
+    </script>
+</body>
+</html>
