@@ -25,39 +25,39 @@
   <script>
     const sites = {
       lille: [
-        {url:'https://www.lavoixdunord.fr/region/lille-et-environs', conf:90},
-        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85},
-        {url:'https://twitter.com/PoliceNat59', conf:70},
-        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93},
-        {url:'https://www.radars-auto.com/', conf:88}
+        {url:'https://www.lavoixdunord.fr/region/lille-et-environs', conf:90, keyword: 'lille'},
+        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85, keyword: 'lille'},
+        {url:'https://twitter.com/PoliceNat59', conf:70, keyword: 'lille'},
+        {url:'https://www.radars-auto.com/', conf:88, keyword: 'lille'},
+        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93, keyword: 'lille'}
       ],
       valenciennes: [
-        {url:'https://www.lavoixdunord.fr/region/valenciennes-et-environs', conf:90},
-        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85},
-        {url:'https://www.radars-auto.com/', conf:88},
-        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93},
-        {url:'https://twitter.com/Prefet59', conf:75}
+        {url:'https://www.lavoixdunord.fr/region/valenciennes-et-environs', conf:90, keyword: 'valenciennes'},
+        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85, keyword: 'valenciennes'},
+        {url:'https://www.radars-auto.com/', conf:88, keyword: 'valenciennes'},
+        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93, keyword: 'valenciennes'},
+        {url:'https://twitter.com/Prefet59', conf:75, keyword: 'valenciennes'}
       ],
       dunkerque: [
-        {url:'https://www.lavoixdunord.fr/region/dunkerque-et-environs', conf:90},
-        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85},
-        {url:'https://www.radars-auto.com/', conf:88},
-        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93},
-        {url:'https://twitter.com/Prefet59', conf:75}
+        {url:'https://www.lavoixdunord.fr/region/dunkerque-et-environs', conf:90, keyword: 'dunkerque'},
+        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85, keyword: 'dunkerque'},
+        {url:'https://www.radars-auto.com/', conf:88, keyword: 'dunkerque'},
+        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93, keyword: 'dunkerque'},
+        {url:'https://twitter.com/Prefet59', conf:75, keyword: 'dunkerque'}
       ],
       arras: [
-        {url:'https://www.lavoixdunord.fr/region/arras-et-environs', conf:90},
-        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85},
-        {url:'https://www.radars-auto.com/', conf:88},
-        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93},
-        {url:'https://twitter.com/Prefet59', conf:75}
+        {url:'https://www.lavoixdunord.fr/region/arras-et-environs', conf:90, keyword: 'arras'},
+        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85, keyword: 'arras'},
+        {url:'https://www.radars-auto.com/', conf:88, keyword: 'arras'},
+        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93, keyword: 'arras'},
+        {url:'https://twitter.com/Prefet59', conf:75, keyword: 'arras'}
       ],
       roubaix: [
-        {url:'https://www.lavoixdunord.fr/region/roubaix-et-environs', conf:90},
-        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85},
-        {url:'https://www.radars-auto.com/', conf:88},
-        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93},
-        {url:'https://twitter.com/PoliceNat59', conf:70}
+        {url:'https://www.lavoixdunord.fr/region/roubaix-et-environs', conf:90, keyword: 'roubaix'},
+        {url:'https://www.francebleu.fr/infos/faits-divers-justice', conf:85, keyword: 'roubaix'},
+        {url:'https://www.radars-auto.com/', conf:88, keyword: 'roubaix'},
+        {url:'https://www.bison-fute.gouv.fr/index.html', conf:93, keyword: 'roubaix'},
+        {url:'https://twitter.com/PoliceNat59', conf:70, keyword: 'roubaix'}
       ]
     };
 
@@ -73,7 +73,7 @@
           const text = await response.text();
           let match = false;
           for (let mot of motsCles) {
-            if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(city)) {
+            if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(site.keyword)) {
               match = true;
               break;
             }
