@@ -23,24 +23,10 @@
 <h1 class="text-4xl font-bold">Risque de Contrôle</h1>
 <p id="riskPercent" class="text-7xl mt-4">Calcul du risque...</p>
 <p id="dateTime" class="text-sm text-gray-400 mt-2"></p>
+<p id="riskLevel" class="text-xl mt-2"></p>
 <div id="sources" class="mt-6 text-left space-y-2"></div>
 </div>
 <script>
-const sitesBase = [
-{url:'https://www.lavoixdunord.fr/region/lille-et-environs',conf:90}, // Lille
-{url:'https://www.lavoixdunord.fr/region/valenciennes-et-environs',conf:85}, // Valenciennes
-{url:'https://www.lavoixdunord.fr/region/dunkerque-et-environs',conf:80}, // Dunkerque
-{url:'https://www.lavoixdunord.fr/region/arras-et-environs',conf:80}, // Arras
-{url:'https://www.lavoixdunord.fr/region/roubaix-et-environs',conf:85}, // Roubaix
-{url:'https://www.lavoixdunord.fr/region/tourcoing-et-environs',conf:80}, // Tourcoing
-{url:'https://www.lavoixdunord.fr/region/douai-et-environs',conf:80}, // Douai
-{url:'https://www.lavoixdunord.fr/region/lens-et-environs',conf:85}, // Lens
-{url:'https://www.lavoixdunord.fr/region/bethune-et-environs',conf:85}, // Béthune
-{url:'https://www.lavoixdunord.fr/region/hazebrouck-et-environs',conf:70}, // Hazebrouck
-];
-
-const motsCles = ['contrôle','police','barrage','radar','filtrage','sécurité routière','opération de contrôle','alcoolémie','intervention','contrôle routier','vérifications','opération anti-drogue','patrouille','poursuite','poste de contrôle'];
-
 const cityUrls = {
   "lille": [
     'https://www.lavoixdunord.fr/region/lille-et-environs',
@@ -105,6 +91,8 @@ const cityUrls = {
   ],
 };
 
+const motsCles = ['contrôle','police','barrage','radar','filtrage','sécurité routière','opération de contrôle','alcoolémie','intervention','contrôle routier','vérifications','opération anti-drogue','patrouille','poursuite','poste de contrôle'];
+
 async function scrapSites() {
   const city = document.getElementById('citySelect').value;
   const urls = cityUrls[city] || [];
@@ -146,6 +134,18 @@ async function scrapSites() {
   
   const dateTime = now.toLocaleString('fr-FR', { hour: 'numeric', minute: 'numeric', second: 'numeric', day: 'numeric', month: 'numeric', year: 'numeric' });
   document.getElementById('dateTime').innerText = `Mise à jour le : ${dateTime}`;
+  
+  let riskLevel = '';
+  if (totalScore <= 25) {
+    riskLevel = 'Pas d\'inquiétude';
+  } else if (totalScore <= 50) {
+    riskLevel = 'Peu probable';
+  } else if (totalScore <= 75) {
+    riskLevel = 'Fort probable';
+  } else {
+    riskLevel = 'Risque très élevé';
+  }
+  document.getElementById('riskLevel').innerText = `Niveau de risque : ${riskLevel}`;
   
   document.getElementById('sources').innerHTML = sourcesHTML;
 }
