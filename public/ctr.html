@@ -25,100 +25,128 @@
 <div id="sources" class="mt-6 text-left space-y-2"></div>
 </div>
 <script>
-const sites = [
-{url:'https://france3-regions.francetvinfo.fr/hauts-de-france',conf:90},
-{url:'https://actu.fr/hauts-de-france',conf:85},
-{url:'https://www.lavoixdunord.fr/',conf:90},
-{url:'https://www.francebleu.fr/infos/faits-divers-justice',conf:92},
-{url:'https://twitter.com/PoliceNat59',conf:70},
-{url:'https://twitter.com/Prefet59',conf:75},
-{url:'https://www.radars-auto.com/',conf:88},
-{url:'https://www.securite-routiere.gouv.fr/',conf:95},
-{url:'https://waze.com/fr/live-map',conf:65},
-{url:'https://www.tomtom.com/fr_fr/traffic-index/',conf:65},
-{url:'https://www.bison-fute.gouv.fr/index.html',conf:93},
-{url:'https://peripheriquedelyon.fr/trafic',conf:60},
-{url:'https://news.google.com/search?q=controle+police',conf:85},
-{url:'https://www.20minutes.fr/faits-divers',conf:80},
-{url:'https://www.lavoixdunord.fr/region/lille-et-environs',conf:90},
-{url:'https://www.lavoixdunord.fr/region/valenciennes-et-environs',conf:90},
-{url:'https://www.lavoixdunord.fr/region/dunkerque-et-environs',conf:90},
-{url:'https://www.lavoixdunord.fr/region/arras-et-environs',conf:90},
-{url:'https://www.lavoixdunord.fr/region/roubaix-et-environs',conf:90},
-{url:'https://radars.securite-routiere.gouv.fr/#/home',conf:92},
-{url:'https://reseau.interieur.gouv.fr/',conf:95},
-{url:'https://mobile.interieur.gouv.fr/',conf:95},
-{url:'https://www.ouest-france.fr/faits-divers/controles-routiers/',conf:80},
-{url:'https://www.rtl.fr/actu/faits-divers',conf:78},
-{url:'https://www.lindicateurdesflandres.fr/',conf:75},
-{url:'https://www.nordlittoral.fr/',conf:75},
-{url:'https://www.lepharedunkerquois.fr/',conf:75},
-{url:'https://www.sudinfo.be/faits-divers',conf:70},
-{url:'https://www.dhnet.be/actu/faits',conf:70},
-{url:'https://www.lavenir.net/regions/',conf:70},
-{url:'https://www.rtbf.be/article/les-accidents-de-la-route-en-belgique-10853080',conf:75},
-{url:'https://www.maville.com/actu',conf:80},
-{url:'https://www.letelegramme.fr/france/',conf:75},
-{url:'https://www.lanouvellerepublique.fr/france-monde/faits-divers',conf:80},
-{url:'https://www.lyoncapitale.fr/actualite',conf:75},
-{url:'https://www.franceinfo.fr/faits-divers',conf:90},
-{url:'https://www.leprogres.fr/faits-divers',conf:80},
-{url:'https://www.lavoixdunord.fr/region/lens',conf:85},
-{url:'https://www.lavoixdunord.fr/region/douai',conf:85},
-{url:'https://www.lavoixdunord.fr/region/tourcoing',conf:85},
-{url:'https://trafic.radiofrance.fr/',conf:80},
-{url:'https://live.radarbox.com/',conf:65}
+const sitesBase = [
+{url:'https://www.lavoixdunord.fr/region/lille-et-environs',conf:90}, // Lille
+{url:'https://www.lavoixdunord.fr/region/valenciennes-et-environs',conf:85}, // Valenciennes
+{url:'https://www.lavoixdunord.fr/region/dunkerque-et-environs',conf:80}, // Dunkerque
+{url:'https://www.lavoixdunord.fr/region/arras-et-environs',conf:80}, // Arras
+{url:'https://www.lavoixdunord.fr/region/roubaix-et-environs',conf:85}, // Roubaix
+{url:'https://www.lavoixdunord.fr/region/tourcoing-et-environs',conf:80}, // Tourcoing
+{url:'https://www.lavoixdunord.fr/region/douai-et-environs',conf:80}, // Douai
+{url:'https://www.lavoixdunord.fr/region/lens-et-environs',conf:85}, // Lens
+{url:'https://www.lavoixdunord.fr/region/bethune-et-environs',conf:85}, // Béthune
+{url:'https://www.lavoixdunord.fr/region/hazebrouck-et-environs',conf:70}, // Hazebrouck
 ];
 
 const motsCles = ['contrôle','police','barrage','radar','filtrage','sécurité routière','opération de contrôle','alcoolémie','intervention','contrôle routier','vérifications','opération anti-drogue','patrouille','poursuite','poste de contrôle'];
 
+const cityUrls = {
+  "lille": [
+    'https://www.lavoixdunord.fr/region/lille-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/lille',
+    'https://actu.fr/hauts-de-france/lille',
+    'https://radars.securite-routiere.gouv.fr/lille',
+    'https://www.lavoixdunord.fr/region/lens-et-environs',
+  ],
+  "valenciennes": [
+    'https://www.lavoixdunord.fr/region/valenciennes-et-environs',
+    'https://www.lavoixdunord.fr/region/valenciennes',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/valenciennes',
+    'https://radars.securite-routiere.gouv.fr/valenciennes',
+  ],
+  "dunkerque": [
+    'https://www.lavoixdunord.fr/region/dunkerque-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/dunkerque',
+    'https://actu.fr/hauts-de-france/dunkerque',
+    'https://radars.securite-routiere.gouv.fr/dunkerque',
+  ],
+  "arras": [
+    'https://www.lavoixdunord.fr/region/arras-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/arras',
+    'https://actu.fr/hauts-de-france/arras',
+    'https://radars.securite-routiere.gouv.fr/arras',
+  ],
+  "roubaix": [
+    'https://www.lavoixdunord.fr/region/roubaix-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/roubaix',
+    'https://actu.fr/hauts-de-france/roubaix',
+    'https://radars.securite-routiere.gouv.fr/roubaix',
+  ],
+  "tourcoing": [
+    'https://www.lavoixdunord.fr/region/tourcoing-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/tourcoing',
+    'https://actu.fr/hauts-de-france/tourcoing',
+    'https://radars.securite-routiere.gouv.fr/tourcoing',
+  ],
+  "douai": [
+    'https://www.lavoixdunord.fr/region/douai-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/douai',
+    'https://actu.fr/hauts-de-france/douai',
+    'https://radars.securite-routiere.gouv.fr/douai',
+  ],
+  "lens": [
+    'https://www.lavoixdunord.fr/region/lens-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/lens',
+    'https://actu.fr/hauts-de-france/lens',
+    'https://radars.securite-routiere.gouv.fr/lens',
+  ],
+  "bethune": [
+    'https://www.lavoixdunord.fr/region/bethune-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/bethune',
+    'https://actu.fr/hauts-de-france/bethune',
+    'https://radars.securite-routiere.gouv.fr/bethune',
+  ],
+  "hazebrouck": [
+    'https://www.lavoixdunord.fr/region/hazebrouck-et-environs',
+    'https://www.france3-regions.francetvinfo.fr/hauts-de-france/hazebrouck',
+    'https://actu.fr/hauts-de-france/hazebrouck',
+    'https://radars.securite-routiere.gouv.fr/hazebrouck',
+  ],
+};
+
 async function scrapSites() {
-const city = document.getElementById('citySelect').value;
-let totalScore = 0;
-let matches = 0;
-let sourcesHTML = '';
-for (let i = 0; i < sites.length; i++) {
-const site = sites[i];
-try {
-const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(site.url));
-const text = await response.text();
-let match = false;
-for (let mot of motsCles) {
-if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(city)) {
-match = true;
-break;
-}
-}
-if (match) {
-totalScore += site.conf / 4;
-matches++;
-sourcesHTML += `<div class="mt-2 text-green-500">✅ ${site.url} (+${Math.round(site.conf/4)}%)</div>`;
-} else {
-sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${site.url}</div>`;
-}
-document.getElementById('sources').innerHTML = sourcesHTML; // Ajoute les résultats au fur et à mesure
-} catch (e) {
-sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${site.url} (Erreur d'accès)</div>`;
-document.getElementById('sources').innerHTML = sourcesHTML; // Ajoute les résultats au fur et à mesure
-}
-}
-const now = new Date();
-const heure = now.getHours();
-if (heure >= 6 && heure <= 9) totalScore += 6;
-if (heure >= 16 && heure <= 19) totalScore += 8;
-if (heure >= 21 || heure <= 5) totalScore += 12;
-const jour = now.getDay();
-if (jour === 5 || jour === 6) totalScore += 10;
-if (matches < 5) totalScore -= 10;
-if (matches > 10) totalScore += 10;
-totalScore += 20;
-if (totalScore > 100) totalScore = 100;
-if (totalScore < 0) totalScore = 0;
-document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
+  const city = document.getElementById('citySelect').value;
+  const urls = cityUrls[city] || [];
+  let totalScore = 0;
+  let sourcesHTML = '';
+  for (let siteUrl of urls) {
+    try {
+      const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(siteUrl));
+      const text = await response.text();
+      let match = false;
+      for (let mot of motsCles) {
+        if (text.toLowerCase().includes(mot) && text.toLowerCase().includes(city)) {
+          match = true;
+          break;
+        }
+      }
+      if (match) {
+        totalScore += 10;
+        sourcesHTML += `<div class="mt-2">✅ ${siteUrl} (+10%)</div>`;
+      } else {
+        sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl}</div>`;
+      }
+    } catch (e) {
+      sourcesHTML += `<div class="mt-2 text-gray-500">❌ ${siteUrl} (Erreur d'accès)</div>`;
+    }
+  }
+  
+  const now = new Date();
+  const heure = now.getHours();
+  if (heure >= 7 && heure <= 9) totalScore += 5;
+  if (heure >= 16 && heure <= 19) totalScore += 5;
+  if (heure >= 22 || heure <= 4) totalScore += 10;
+  const jour = now.getDay();
+  if (jour === 5 || jour === 6) totalScore += 10;
+  
+  totalScore += 20;
+  if (totalScore > 100) totalScore = 100;
+  document.getElementById('riskPercent').innerText = Math.round(totalScore) + '%';
+  document.getElementById('sources').innerHTML = sourcesHTML;
 }
 
 scrapSites();
-setInterval(scrapSites,60000);
+setInterval(scrapSites, 60000);
 </script>
 </body>
 </html>
