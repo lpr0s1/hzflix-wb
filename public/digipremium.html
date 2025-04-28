@@ -468,7 +468,80 @@
       
         <main>
 
-            <h1 style="color: white"></h1>
+             <style>
+        .countdown-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .reduction {
+            font-size: 18px;
+            color: white;
+            margin-bottom: 10px;
+        }
+     .countdown {
+       background-clip: text;
+       background: linear-gradient(65deg, darkviolet, red, darkviolet);
+
+    font-size: 27px;
+     -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    color: transparent;
+    background-size: 200% 100%; 
+    animation: clmr 2s infinite;
+}
+
+@keyframes clmr {
+    0% {
+        background-position: 200% 50%;
+    }
+    50% {
+        background-position: 0% 50%; 
+    }
+    100% {
+        background-position: 200% 50%;
+    }
+}
+        
+        
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <div class="reduction">Réduction de -85% sur <b>TOUT les produits</b>!</div>
+        <div class="countdown" id="countdown"></div>
+    </div>
+
+    <script>
+        const targetDate = new Date("May 1, 2025 00:00:00").getTime();
+
+        function updateCountdown() {
+            const interval = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+                if (distance <= 0) {
+                    clearInterval(interval);
+                    document.getElementById("countdown").innerHTML = "Temps écoulé!";
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById("countdown").innerHTML = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+                }
+            }, 1000);
+        }
+
+        updateCountdown();
+    </script>
           
             <section id="home" class="page-transition active min-h-screen">
                 <div class="container mx-auto px-4 py-8">
