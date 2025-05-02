@@ -467,6 +467,128 @@
       
         <main>
 
+           <style>
+                 .ctbt-btn {
+      display: block;
+      margin: 100px auto;
+      padding: 20px 40px;
+      background-color: #1a1a1a;
+      color: #fff;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    .ctbt-btn:hover {
+      background-color: #333;
+      transform: scale(1.05);
+    }
+
+    .ctbt-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .ctbt-dialog {
+      background-color: #333333;
+      color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 600px;
+      max-height: 80%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .ctbt-title {
+      font-size: 20px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .ctbt-content {
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-bottom: 20px;
+      padding-right: 5px;
+    }
+
+    .ctbt-contact {
+      background-color: #1f1f1f;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      justify-content: center;
+    }
+
+    .ctbt-close {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 22px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<button class="ctbt-btn" onclick="ctbtOpen()">En savoir plus</button>
+
+<div class="ctbt-overlay" id="ctbtOverlay">
+  <div class="ctbt-dialog">
+    <div class="ctbt-close" onclick="ctbtClose()">&times;</div>
+    <div class="ctbt-title">
+      Développement de site web static gratuits, pour startup qui n’ont pas les moyens, pour avoir une présence sur internet.
+    </div>
+    <div class="ctbt-content">
+      <p>
+        Ce service s'adresse aux jeunes startups ou entrepreneurs qui souhaitent avoir une vitrine en ligne sans dépenser un centime.  
+        Nous croyons que toute idée mérite d’avoir une visibilité, même sans budget.
+        Nos sites statiques sont rapides, responsives et adaptés à votre identité.
+        Nous utilisons des technologies modernes comme HTML5, CSS3, et hébergement gratuit.
+        C'est une première étape vers votre transformation digitale.
+        <br><br>
+        Contactez-nous si vous avez un projet ou une idée !
+        Nous ferons de notre mieux pour vous offrir une solution simple et efficace.
+      </p>
+    </div>
+    <a class="ctbt-contact" href="https://www.tiktok.com/@hanzo_x65?_t=ZN-8w18C38Xi5O&_r=1" target="_blank">
+      <i class="fas fa-address-card"></i> Contacter
+    </a>
+  </div>
+</div>
+
+<script>
+  function ctbtOpen() {
+    document.getElementById('ctbtOverlay').style.display = 'flex';
+    document.body.style.backgroundColor = '#121212';
+  }
+
+  function ctbtClose() {
+    document.getElementById('ctbtOverlay').style.display = 'none';
+    document.body.style.backgroundColor = '';
+  }
+</script>
+
              
           
             <section id="home" class="page-transition active min-h-screen">
