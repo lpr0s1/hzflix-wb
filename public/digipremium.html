@@ -471,7 +471,6 @@
             <style>
                  .ctbt-btn {
       display: block;
-            content: "Free web développment"
       margin-top: 40px;
       padding: 18px 30px;
       background-color: #1a1a1a;
@@ -484,21 +483,22 @@
       transition: background 0.3s ease, transform 0.2s;
     }
 
-                .ctbt-btn::before{
-                    content: "Free web développment"
-                    animation: chgtx 3s steps(1) infinite;
+                .ctbt-btn::after{
+                    content: "Free web developpment";
+                    animation: chgtx 6s steps(1) infinite;
                 }
 
                 @keyframes chgtx{
                     0%{content: "Free web developpment";}
-                    50%{content: "100% gratuit";}
+                    52%{content: "100% gratuit";}
                     100%{content: "Rapide et adapté a votre image";}
                     
                 }
 
     .ctbt-btn:hover {
       background-color: #333;
-      transform: scale(1.05);
+        border: solid 1px darkcyan;
+      transform: scale(1.01);
     }
 
     .ctbt-overlay {
@@ -563,8 +563,6 @@
       cursor: pointer;
     }
   </style>
-</head>
-<body>
 
 <button class="ctbt-btn" onclick="ctbtOpen()"></button>
 
