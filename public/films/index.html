@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HZFlix - Streaming de Films et Séries</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>HZFlix</h1>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#" data-section="home" class="active">Accueil</a></li>
+          <li><a href="#" data-section="series">Séries</a></li>
+          <li><a href="#" data-section="movies">Films</a></li>
+          <li><a href="#" data-section="mylist">Ma Liste</a></li>
+        </ul>
+        <div class="search-container">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Rechercher un film..."
+          />
+          <button id="searchButton">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="featured-content">
+          <h2>Film à la une</h2>
+          <p class="description">
+            Description du film en vedette qui capture l'attention des
+            utilisateurs.
+          </p>
+          <div class="buttons">
+            <button class="play-btn">Lecture</button>
+            <button class="info-btn">Plus d'infos</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="trending">
+        <h3>Tendances actuelles</h3>
+        <div class="movie-row"></div>
+      </section>
+
+      <section class="popular">
+        <h3>Populaire sur HZFlix</h3>
+        <div class="movie-row"></div>
+      </section>
+
+      <section class="continue-watching">
+        <h3>Continuer à regarder</h3>
+        <div class="movie-row"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 HZFlix. Tous droits réservés.</p>
+    </footer>
+    <script src="js/config.js"></script>
+    <script src="js/tmdb-service.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
