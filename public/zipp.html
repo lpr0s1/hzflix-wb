@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipp - Location Premium de Trottinettes Électriques</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+        }
+        
+        .luxury-gradient {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        }
+        
+        .gold-gradient {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .premium-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .premium-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 25px 50px rgba(255, 215, 0, 0.1);
+        }
+        
+        .hero-image {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.7), rgba(45, 45, 45, 0.3)), url('https://static.fnac-static.com/multimedia/Images/FR/MDM/51/44/ab/28001361/3756-1/tsp20250514181608/Trottinette-electrique-Dualtron-Victor-Luxury-2400-W-Noir.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .modal {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .floating-particles::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 215, 0, 0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255, 215, 0, 0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255, 215, 0, 0.4), transparent);
+            background-repeat: repeat;
+            background-size: 100px 100px;
+            animation: float 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+        
+        .luxury-text {
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .warning-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 159, 159, 0.05));
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .success-card {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(104, 211, 145, 0.05));
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+        
+        .map-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .location-point {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .price-tag {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #1a1a1a;
+            font-weight: 800;
+            text-shadow: none;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-image {
+                background-attachment: scroll;
+            }
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+        }
+    </style>
+</head>
+<body class="text-white">
+    
+    <nav class="fixed top-0 w-full z-50 luxury-gradient border-b border-gray-800">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-3xl font-black gold-gradient">Zipp</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#accueil" class="text-gray-300 hover:text-yellow-400 transition duration-300">Accueil</a>
+                    <a href="#services" class="text-gray-300 hover:text-yellow-400 transition duration-300">Services</a>
+                    <a href="#localisation" class="text-gray-300 hover:text-yellow-400 transition duration-300">Localisation</a>
+                    <a href="#contact" class="text-gray-300 hover:text-yellow-400 transition duration-300">Contact</a>
+                </div>
+                <button onclick="openModal('reservationModal')" class="cta-button text-black px-6 py-2 rounded-full font-bold">
+                    Réserver Maintenant
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section id="accueil" class="hero-image min-h-screen flex items-center justify-center relative floating-particles">
+        <div class="text-center z-10" data-aos="fade-up" data-aos-duration="1000">
+            <h1 class="text-6xl md:text-8xl font-black mb-6 luxury-text">
+                <span class="gold-gradient">Zipp</span><br>
+                <span class="text-4xl md:text-5xl font-light">Premium Electric</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto font-light">
+                L'expérience de mobilité électrique la plus raffinée à Cambrai et Masnières
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+                <button onclick="openModal('reservationModal')" class="cta-button text-black px-8 py-4 rounded-full font-bold text-lg">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Réserver - 20€/jour
+                </button>
+                <button onclick="openModal('conditionsModal')" class="border border-yellow-400 text-yellow-400 px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 hover:text-black transition duration-300">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Conditions d'utilisation
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="services" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <h2 class="text-5xl font-black text-center mb-16 gold-gradient" data-aos="fade-up">
+                Service Premium
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="premium-card rounded-2xl p-8 text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-6xl mb-6 gold-gradient">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Sécurité Garantie</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Vitesse limitée à 20 km/h pour votre sécurité et celle des piétons. Conduite responsable obligatoire.
+                    </p>
+                </div>
+                
+                <div class="premium-card rounded-2xl p-8 text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-6xl mb-6 gold-gradient">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Livraison Possible</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Service de livraison sur place selon vos besoins. Flexibilité maximale pour votre confort.
+                    </p>
+                </div>
+                
+                <div class="premium-card rounded-2xl p-8 text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-6xl mb-6 gold-gradient">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Paiement Sécurisé</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Paiement en ligne par carte bancaire ou cryptomonnaie. Transactions 100% sécurisées.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="success-card rounded-2xl p-8" data-aos="fade-right">
+                    <h3 class="text-2xl font-bold mb-4 text-green-400">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Politique de Remboursement
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        Remboursement intégral possible en cas de problème technique de la trottinette ou d'accident indépendant de votre volonté. Votre satisfaction est notre priorité.
+                    </p>
+                </div>
+                
+                <div class="warning-card rounded-2xl p-8" data-aos="fade-left">
+                    <h3 class="text-2xl font-bold mb-4 text-red-400">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Responsabilité Obligatoire
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        <strong>ATTENTION :</strong> Respectez impérativement le code de la route, ne roulez pas trop près des piétons, et prenez soin de la trottinette. Toute infraction ou dégradation entraîne des sanctions et un bannissement immédiat.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="localisation" class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-5xl font-black text-center mb-16 gold-gradient" data-aos="fade-up">
+                Points de Récupération
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <div data-aos="fade-right">
+                    <h3 class="text-3xl font-bold mb-8 text-yellow-400">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Cambrai (59400)
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Gare SNCF</div>
+                                <div class="text-gray-400">Place Maurice Schumann</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Centre-ville</div>
+                                <div class="text-gray-400">Place Aristide Briand</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Musée de Cambrai</div>
+                                <div class="text-gray-400">Zone touristique</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Cathédrale Notre-Dame</div>
+                                <div class="text-gray-400">Centre historique</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div data-aos="fade-left">
+                    <h3 class="text-3xl font-bold mb-8 text-yellow-400">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Masnières (59241)
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Centre-ville</div>
+                                <div class="text-gray-400">Mairie de Masnières</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Zone Commerciale</div>
+                                <div class="text-gray-400">Carrefour Express</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Arrêt Bus TUC</div>
+                                <div class="text-gray-400">Ligne 5 - Mairie</div>
+                            </div>
+                        </div>
+                        <div class="premium-card rounded-xl p-6 flex items-center">
+                            <div class="location-point w-4 h-4 rounded-full mr-4"></div>
+                            <div>
+                                <div class="font-bold">Collège Jacques Prévert</div>
+                                <div class="text-gray-400">Zone éducative</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12" data-aos="fade-up">
+                <div class="price-tag inline-block px-8 py-4 rounded-full text-2xl font-black">
+                    20€ / JOUR
+                </div>
+                <p class="text-gray-400 mt-4">Tarif unique, service premium inclus</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="contact" class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-5xl font-black mb-16 gold-gradient" data-aos="fade-up">
+                Réservez Dès Maintenant
+            </h2>
+            
+            <div class="max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                    Découvrez l'excellence de la mobilité électrique avec Zipp. 
+                    Réservation simple, service premium, expérience inoubliable.
+                </p>
+                
+                <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                    <button onclick="openModal('reservationModal')" class="cta-button text-black px-12 py-6 rounded-full font-bold text-xl">
+                        <i class="fas fa-rocket mr-3"></i>
+                        Réserver Maintenant
+                    </button>
+                    
+                    <a href="https://www.tiktok.com/@hanzo_x65?_t=ZN-8wxN8xnn9gU&_r=1" target="_blank" class="border border-yellow-400 text-yellow-400 px-12 py-6 rounded-full font-bold text-xl hover:bg-yellow-400 hover:text-black transition duration-300">
+                        <i class="fab fa-tiktok mr-3"></i>
+                        Contacter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="luxury-gradient border-t border-gray-800 py-12">
+        <div class="container mx-auto px-6 text-center">
+            <div class="text-4xl font-black gold-gradient mb-6">Zipp</div>
+            <p class="text-gray-400 mb-6">
+                Service premium de location de trottinettes électriques
+            </p>
+            <p class="text-gray-500 text-sm">
+                © 2024 Zipp. Tous droits réservés. Service disponible à Cambrai (59400) et Masnières (59241)
+            </p>
+        </div>
+    </footer>
+
+    <div id="reservationModal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content rounded-2xl p-8 max-w-md w-full relative">
+            <button onclick="closeModal('reservationModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center">
+                <div class="text-6xl mb-6 gold-gradient">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-6">Réservation Premium</h3>
+                <p class="text-gray-300 mb-8">
+                    Vous allez être redirigé vers notre plateforme de paiement sécurisée pour finaliser votre réservation.
+                </p>
+                
+                <div class="bg-yellow-400 text-black p-4 rounded-xl mb-6">
+                    <div class="text-2xl font-black">20€ / JOUR</div>
+                    <div class="text-sm">Paiement sécurisé</div>
+                </div>
+                
+                <a href="https://hzshop.mysellauth.com/checkout/3874ce4ff6e8d-0000004756739" target="_blank" class="cta-button block text-black px-8 py-4 rounded-full font-bold text-lg">
+                    <i class="fas fa-credit-card mr-2"></i>
+                    Procéder au Paiement
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="conditionsModal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto relative">
+            <button onclick="closeModal('conditionsModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h3 class="text-3xl font-bold mb-6 gold-gradient">
+                <i class="fas fa-file-contract mr-2"></i>
+                Conditions d'Utilisation
+            </h3>
+            
+            <div class="space-y-6 text-gray-300">
+                <div class="warning-card p-6 rounded-xl">
+                    <h4 class="text-xl font-bold text-red-400 mb-3">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        OBLIGATIONS STRICTES
+                    </h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><strong>•</strong> Respecter impérativement le code de la route</li>
+                        <li><strong>•</strong> Ne pas rouler trop près des piétons</li>
+                        <li><strong>•</strong> Vitesse limitée à 20 km/h maximum</li>
+                        <li><strong>•</strong> Prendre soin de la trottinette</li>
+                        <li><strong>•</strong> Ne pas endommager le matériel</li>
+                    </ul>
+                </div>
+                
+                <div class="success-card p-6 rounded-xl">
+                    <h4 class="text-xl font-bold text-green-400 mb-3">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        GARANTIES ZIPP
+                    </h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><strong>•</strong> Remboursement en cas de problème technique</li>
+                        <li><strong>•</strong> Remboursement en cas d'accident non responsable</li>
+                        <li><strong>•</strong> Service de livraison disponible</li>
+                        <li><strong>•</strong> Support client réactif</li>
+                    </ul>
+                </div>
+                
+                <div class="luxury-gradient p-6 rounded-xl">
+                    <h4 class="text-xl font-bold text-yellow-400 mb-3">
+                        <i class="fas fa-gavel mr-2"></i>
+                        SANCTIONS
+                    </h4>
+                    <p class="text-sm">
+                        <strong class="text-red-400">ATTENTION :</strong> Toute infraction au code de la route, tout comportement dangereux, ou toute dégradation du matériel entraînera des sanctions immédiates et un bannissement définitif de nos services. Des poursuites pénales pourront être engagées en cas de dégradation.
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <button onclick="closeModal('conditionsModal')" class="cta-button text-black px-8 py-3 rounded-full font-bold">
+                        J'ai lu et j'accepte
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal(modal.id);
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.background = 'rgba(26, 26, 26, 0.95)';
+            } else {
+                nav.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)';
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.premium-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
