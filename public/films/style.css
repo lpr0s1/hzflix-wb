@@ -86,8 +86,6 @@ nav {
 /* Section Hero */
 .hero {
   height: 80vh;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.8)),
-    url("../assets/hero-background.jpg") no-repeat center center;
   background-size: cover;
   display: flex;
   align-items: center;
@@ -150,9 +148,12 @@ section {
 
 .series-section,
 .movies-section,
-.mylist-section,
-.search-results {
+.mylist-section {
   margin-top: 80px;
+}
+
+.search-results {
+  margin-top: 120px; /* Marge augmentée pour éviter que le header ne masque le contenu */
 }
 
 section h3 {
@@ -395,6 +396,18 @@ section h3 {
 
 .list-button.in-list {
   background: #e50914;
+}
+
+.list-button svg {
+  transition: transform 0.3s ease;
+}
+
+.list-button:hover svg {
+  transform: scale(1.2);
+}
+
+.list-button.in-list svg {
+  animation: check-animation 0.5s ease-out;
 }
 
 .movie-meta {
@@ -967,6 +980,21 @@ footer {
   }
 }
 
+@keyframes check-animation {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* Volume control */
 .volume-control {
   position: relative;
@@ -1029,61 +1057,6 @@ footer {
 
 .volume-slider::-moz-range-thumb:hover {
   transform: scale(1.2);
-}
-
-/* Styles pour la liste vide */
-.empty-list {
-  width: 100%;
-  text-align: center;
-  padding: 40px;
-  color: #757575;
-}
-
-.empty-list p {
-  font-size: 1.2rem;
-  margin-bottom: 8px;
-}
-
-.empty-list-subtitle {
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
-
-/* Style pour la notification de succès */
-.success-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 40px 60px;
-  border-radius: 8px;
-  z-index: 2000;
-  text-align: center;
-  animation: popupAnimation 1.5s ease forwards;
-  border: 2px solid #27ae60;
-  font-family: "Poppins", sans-serif;
-  font-size: 1.5rem;
-  box-shadow: 0 0 30px rgba(39, 174, 96, 0.3);
-}
-
-@keyframes popupAnimation {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 1;
-  }
-  70% {
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
 }
 
 /* Responsive Design */
@@ -1156,4 +1129,76 @@ footer {
 
 .movie-modal::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* Message lorsque la liste est vide */
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  min-height: 300px;
+  margin: 2rem auto;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #ccc;
+}
+
+/* Style pour le message "Continuer à regarder" vide */
+.empty-continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #ccc;
+  margin: 1rem 0;
+}
+
+.empty-continue p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+  font-size: 1.1rem;
+}
+
+.empty-continue p:first-child {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Styles pour les sections avec un seul film */
+.movie-row.single-movie {
+  justify-content: center;
+}
+
+.movie-row.single-movie .movie-card {
+  min-width: 300px;
+  max-width: 400px;
+}
+
+/* Message quand aucun résultat local n'est trouvé */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #ccc;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* Styles pour l'image placeholder */
+.movie-card img[src*="placeholder"] {
+  background: linear-gradient(45deg, #2a2a2a, #404040);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
 }

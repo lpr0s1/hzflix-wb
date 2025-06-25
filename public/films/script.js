@@ -17,7 +17,7 @@ function createMovieCard(movie) {
   const imageUrl = tmdbService.getImageUrl(posterPath, CONFIG.POSTER_SIZE);
 
   card.innerHTML = `
-        <img src="${imageUrl}" alt="${movie.title}">
+        <img src="${imageUrl}" alt="${movie.title}" loading="lazy">
         <div class="movie-info">
             <h4>${movie.title}</h4>
             ${
@@ -26,7 +26,7 @@ function createMovieCard(movie) {
                 : ""
             }
             <div class="movie-overview">
-                <p>${movie.overview.substring(0, 100)}...</p>
+                <p>${truncateText(movie.overview, 100)}</p>
             </div>
         </div>
     `;
@@ -81,154 +81,184 @@ function generateStarRating(rating) {
 
 // Fonction pour afficher les détails d'un film
 async function showMovieDetails(movieId) {
-  const movie = await tmdbService.getMovieDetails(movieId);
+  // D'abord essayer de trouver le film dans les films locaux
+  const localMovies = await tmdbService.getLocalMovies();
+  let movie = localMovies.find((m) => m.id === movieId);
+
+  // Si le film n'est pas trouvé localement, essayer avec l'API TMDB
+  if (!movie) {
+    movie = await tmdbService.getMovieDetails(movieId);
+  }
+
   if (!movie) return;
 
-  const trailerUrl = tmdbService.getTrailerUrl(movie.videos);
+  // Pour les films locaux, utiliser les données par défaut
+  const trailerUrl = movie.trailerUrl || null; // Les films locaux n'ont pas de bande-annonce pour l'instant
   const embedUrl = getYoutubeEmbedUrl(trailerUrl);
-  const credits = await tmdbService.getMovieCredits(movieId);
-  const recommendations = await tmdbService.getMovieRecommendations(movieId);
+
+  // Pour les films locaux, pas besoin de charger les crédits et recommandations depuis TMDB
+  let credits = null;
+  let recommendations = [];
+
+  // Si ce n'est pas un film local, charger les données TMDB
+  if (!localMovies.find((m) => m.id === movieId)) {
+    credits = await tmdbService.getMovieCredits(movieId);
+    recommendations = await tmdbService.getMovieRecommendations(movieId);
+  }
+
   const isInList = tmdbService.isInMyList(movieId);
 
   const modal = document.createElement("div");
   modal.className = "movie-modal";
 
-  const formattedDate = new Date(movie.release_date).toLocaleDateString(
-    "fr-FR",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }
-  );
+  const formattedDate = formatDate(movie.release_date);
+
+  // Préparer les éléments HTML pour les actions
+  const playButtonHTML = `
+    <button class="action-button play-button" data-movie-id="${movie.id}">
+      <svg viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" fill="currentColor" />
+      </svg>
+      Lecture
+    </button>
+  `;
+
+  const listButtonHTML = `
+    <button class="action-button list-button ${
+      isInList ? "in-list" : ""
+    }" data-movie-id="${movie.id}">
+      <svg viewBox="0 0 24 24">
+        <path d="${
+          isInList
+            ? "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+            : "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+        }" fill="currentColor" />
+      </svg>
+      ${isInList ? "Dans ma liste" : "Ma Liste"}
+    </button>
+  `;
 
   modal.innerHTML = `
-        <div class="modal-content">
-            ${
-              embedUrl
-                ? `<div class="modal-video-container">
-                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
-                </div>`
-                : `<div class="modal-backdrop" style="background-image: url('${tmdbService.getImageUrl(
-                    movie.backdrop_path
-                  )}')">
-                    <div class="backdrop-overlay"></div>
-                </div>`
-            }
+    <div class="modal-content">
+      ${
+        embedUrl
+          ? `<div class="modal-video-container">
+              <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+            </div>`
+          : `<div class="modal-backdrop" style="background-image: url('${
+              movie.backdrop_path
+                ? tmdbService.getImageUrl(movie.backdrop_path)
+                : "https://via.placeholder.com/1920x1080/1a1a1a/ffffff?text=" +
+                  encodeURIComponent(movie.title)
+            }')">
+              <div class="backdrop-overlay"></div>
+            </div>`
+      }
 
-            <div class="modal-info">
-                <button class="modal-close">&times;</button>                <div class="modal-header">
-                    <h2>${movie.title}</h2>
-                    <div class="modal-actions">
-                        <button class="action-button play-button">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" fill="currentColor" />
-                            </svg>
-                            Lecture
-                        </button>                        <button class="action-button list-button ${
-                          isInList ? "in-list" : ""
-                        }">
-                          ${isInList ? "- Retirer" : "+ Ma Liste"}
-                        </button>
-                    </div>
-                    <div class="movie-meta">
-                        <div class="rating-container">
-                            ${generateStarRating(movie.vote_average)}
-                        </div>
-                        <span class="meta-item">${formattedDate}</span>
-                        <span class="meta-item">${Math.floor(
-                          movie.runtime / 60
-                        )}h ${movie.runtime % 60}min</span>
-                        ${
-                          movie.genres
-                            ? `
-                            <div class="genres">
-                                ${movie.genres
-                                  .map(
-                                    (genre) =>
-                                      `<span class="genre-tag">${genre.name}</span>`
-                                  )
-                                  .join("")}
-                            </div>
-                        `
-                            : ""
-                        }
-                    </div>
-                </div>
+      <div class="modal-info">
+        <button class="modal-close">&times;</button>
 
-                <div class="modal-body">
-                    <p class="overview">${movie.overview}</p>
-
-                    ${
-                      credits && credits.cast
-                        ? `
-                        <div class="cast-section">
-                            <h3>Distribution</h3>
-                            <div class="cast-list">
-                                ${credits.cast
-                                  .slice(0, 6)
-                                  .map(
-                                    (actor) => `
-                                    <div class="cast-member">
-                                        <div class="cast-photo" style="background-image: url('${tmdbService.getImageUrl(
-                                          actor.profile_path,
-                                          "w185"
-                                        )}')"></div>
-                                        <div class="cast-info">
-                                            <span class="actor-name">${
-                                              actor.name
-                                            }</span>
-                                            <span class="character-name">${
-                                              actor.character
-                                            }</span>
-                                        </div>
-                                    </div>
-                                `
-                                  )
-                                  .join("")}
-                            </div>
-                        </div>
-                    `
-                        : ""
-                    }                    ${
-    recommendations && recommendations.length > 0
-      ? `
-                        <div class="recommendations-section">
-                            <h3>Titres similaires</h3>
-                            <div class="recommendations-list">
-                                ${recommendations
-                                  .slice(0, 5)
-                                  .map(
-                                    (rec) => `
-                                    <div class="recommendation-item" onclick="showMovieDetails(${
-                                      rec.id
-                                    })">
-                                        <div class="recommendation-poster" style="background-image: url('${tmdbService.getImageUrl(
-                                          rec.poster_path,
-                                          "w342"
-                                        )}')">
-                                            <div class="recommendation-info">
-                                                <span class="rec-title">${
-                                                  rec.title
-                                                }</span>
-                                                <span class="rec-rating">${generateStarRating(
-                                                  rec.vote_average
-                                                )}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `
-                                  )
-                                  .join("")}
-                            </div>
-                        </div>
-                    `
-      : ""
-  }
-                </div>
+        <div class="modal-header">
+          <h2>${movie.title}</h2>
+          
+          <div class="movie-meta">
+            <div class="rating-container">
+              ${generateStarRating(movie.vote_average)}
             </div>
+            <span class="meta-item">${formattedDate}</span>
+            <span class="meta-item">${Math.floor(movie.runtime / 60)}h ${
+    movie.runtime % 60
+  }min</span>
+            ${
+              movie.genres
+                ? `
+                <div class="genres">
+                  ${movie.genres
+                    .map(
+                      (genre) => `<span class="genre-tag">${genre.name}</span>`
+                    )
+                    .join("")}
+                </div>
+              `
+                : ""
+            }
+          </div>
+          
+          <div class="modal-actions">
+            ${playButtonHTML}
+            ${listButtonHTML}
+          </div>
         </div>
-    `;
+
+        <div class="modal-body">
+          <p class="overview">${movie.overview}</p>
+
+          ${
+            credits && credits.cast
+              ? `
+              <div class="cast-section">
+                <h3>Distribution</h3>
+                <div class="cast-list">
+                  ${credits.cast
+                    .slice(0, 6)
+                    .map(
+                      (actor) => `
+                      <div class="cast-member">
+                        <div class="cast-photo" style="background-image: url('${tmdbService.getImageUrl(
+                          actor.profile_path,
+                          "w185"
+                        )}')"></div>
+                        <div class="cast-info">
+                          <span class="actor-name">${actor.name}</span>
+                          <span class="character-name">${actor.character}</span>
+                        </div>
+                      </div>
+                    `
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
+              : ""
+          }
+          
+          ${
+            recommendations && recommendations.length > 0
+              ? `
+              <div class="recommendations-section">
+                <h3>Titres similaires</h3>
+                <div class="recommendations-list">
+                  ${recommendations
+                    .slice(0, 5)
+                    .map(
+                      (rec) => `
+                      <div class="recommendation-item" data-movie-id="${
+                        rec.id
+                      }">
+                        <div class="recommendation-poster" style="background-image: url('${tmdbService.getImageUrl(
+                          rec.poster_path,
+                          "w342"
+                        )}')">
+                          <div class="recommendation-info">
+                            <span class="rec-title">${rec.title}</span>
+                            <span class="rec-rating">${generateStarRating(
+                              rec.vote_average
+                            )}</span>
+                          </div>
+                        </div>
+                      </div>
+                    `
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
+              : ""
+          }
+        </div>
+      </div>
+    </div>
+  `;
 
   document.body.appendChild(modal);
 
@@ -237,23 +267,50 @@ async function showMovieDetails(movieId) {
     modal.classList.add("closing");
     setTimeout(() => modal.remove(), 300);
   };
-  // Configuration des gestionnaires d'événements
-  const playButton = modal.querySelector(".play-button");
-  playButton.onclick = () => playMovie({ id: movie.id, title: movie.title });
-
-  const listButton = modal.querySelector(".list-button");
-  listButton.onclick = () => {
-    tmdbService.toggleMyList(movie);
-    listButton.classList.toggle("in-list");
-    listButton.textContent = listButton.classList.contains("in-list")
-      ? "- Retirer"
-      : "+ Ma Liste";
-  };
 
   modal.querySelector(".modal-close").onclick = closeModal;
   modal.onclick = (e) => {
     if (e.target === modal) closeModal();
   };
+
+  // Gestionnaires d'événements pour les boutons
+  const playButton = modal.querySelector(".play-button");
+  if (playButton) {
+    playButton.addEventListener("click", () => playMovie(movie));
+  }
+
+  const listButton = modal.querySelector(".list-button");
+  if (listButton) {
+    listButton.addEventListener("click", () => {
+      const result = tmdbService.toggleMyList(movie);
+      if (result.inList) {
+        listButton.classList.add("in-list");
+        listButton.innerHTML = `
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
+          </svg>
+          Dans ma liste
+        `;
+      } else {
+        listButton.classList.remove("in-list");
+        listButton.innerHTML = `
+          <svg viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+          </svg>
+          Ma Liste
+        `;
+      }
+    });
+  }
+
+  // Gestionnaires d'événements pour les recommandations
+  modal.querySelectorAll(".recommendation-item").forEach((item) => {
+    const recId = parseInt(item.dataset.movieId);
+    item.addEventListener("click", () => {
+      closeModal();
+      showMovieDetails(recId);
+    });
+  });
 
   // Animation d'ouverture
   requestAnimationFrame(() => {
@@ -264,38 +321,68 @@ async function showMovieDetails(movieId) {
 // Fonction pour remplir les rangées de films
 async function populateMovieRows() {
   try {
-    // Récupérer les films tendance
-    const trendingMovies = await tmdbService.getTrendingMovies();
-    movies.trending = trendingMovies;
+    // Récupérer les films locaux
+    const localMovies = await tmdbService.getLocalMovies();
+
+    if (localMovies.length === 0) {
+      console.warn("Aucun film local trouvé dans movies.json");
+      return;
+    }
+
+    // Utiliser les films locaux pour toutes les sections
+    movies.trending = localMovies;
+    movies.popular = localMovies;
+
+    // Remplir la section "Tendances actuelles"
     const trendingRow = document.querySelector(".trending .movie-row");
     trendingRow.innerHTML = "";
-    trendingMovies.forEach((movie) => {
+    localMovies.forEach((movie) => {
       trendingRow.appendChild(createMovieCard(movie));
     });
 
-    // Récupérer les films populaires
-    const popularMovies = await tmdbService.getPopularMovies();
-    movies.popular = popularMovies;
+    // Remplir la section "Populaire sur HZFlix"
     const popularRow = document.querySelector(".popular .movie-row");
     popularRow.innerHTML = "";
-    popularMovies.forEach((movie) => {
+    localMovies.forEach((movie) => {
       popularRow.appendChild(createMovieCard(movie));
     });
 
-    // Charger les films "Continuer à regarder" depuis localStorage
-    const continueWatching = JSON.parse(
-      localStorage.getItem("continueWatching") || "[]"
-    );
+    // Charger les films "Continuer à regarder" avec la méthode dédiée
+    const continueWatching = tmdbService.getContinueWatching();
     movies.continue = continueWatching;
-    const continueRow = document.querySelector(".continue-watching .movie-row");
-    continueRow.innerHTML = "";
-    continueWatching.forEach((movie) => {
-      continueRow.appendChild(createMovieCard(movie));
-    });
 
-    // Mettre à jour le film à la une
-    if (trendingMovies.length > 0) {
-      updateFeaturedMovie(trendingMovies[0]);
+    const continueWatchingSection =
+      document.querySelector(".continue-watching");
+
+    // Afficher ou masquer la section selon qu'il y a des films à continuer ou non
+    if (continueWatching.length === 0) {
+      // Option 1: Masquer complètement la section
+      // continueWatchingSection.style.display = "none";
+
+      // Option 2: Afficher un message
+      continueWatchingSection.innerHTML = `
+        <h3>Continuer à regarder</h3>
+        <div class="empty-continue">
+          <p>Vous n'avez pas de films en cours de visionnage.</p>
+          <p>Les films que vous commencez à regarder apparaîtront ici.</p>
+        </div>
+      `;
+    } else {
+      // Afficher les films en cours de visionnage
+      continueWatchingSection.innerHTML = `
+        <h3>Continuer à regarder</h3>
+        <div class="movie-row"></div>
+      `;
+
+      const continueRow = continueWatchingSection.querySelector(".movie-row");
+      continueWatching.forEach((movie) => {
+        continueRow.appendChild(createMovieCard(movie));
+      });
+    }
+
+    // Mettre à jour le film à la une avec le premier film local
+    if (localMovies.length > 0) {
+      updateFeaturedMovie(localMovies[0]);
     }
   } catch (error) {
     console.error("Erreur lors du chargement des films:", error);
@@ -345,7 +432,11 @@ async function handleSearch() {
   if (!query) return;
 
   try {
-    const searchResults = await tmdbService.searchMovies(query);
+    // Rechercher d'abord dans les films locaux
+    const localMovies = await tmdbService.getLocalMovies();
+    const localResults = localMovies.filter((movie) =>
+      movie.title.toLowerCase().includes(query.toLowerCase())
+    );
 
     // Créer une nouvelle section pour les résultats
     const mainElement = document.querySelector("main");
@@ -360,15 +451,38 @@ async function handleSearch() {
       );
     }
 
-    searchSection.innerHTML = `
-            <h3>Résultats de recherche pour "${query}"</h3>
-            <div class="movie-row"></div>
-        `;
+    // Si on trouve des résultats locaux, les afficher en priorité
+    if (localResults.length > 0) {
+      searchSection.innerHTML = `
+        <h3>Résultats de recherche pour "${query}" - Films Disponibles</h3>
+        <div class="movie-row"></div>
+      `;
 
-    const movieRow = searchSection.querySelector(".movie-row");
-    searchResults.forEach((movie) => {
-      movieRow.appendChild(createMovieCard(movie));
-    });
+      const movieRow = searchSection.querySelector(".movie-row");
+      localResults.forEach((movie) => {
+        movieRow.appendChild(createMovieCard(movie));
+      });
+    } else {
+      // Si aucun résultat local, chercher dans TMDB (optionnel)
+      const searchResults = await tmdbService.searchMovies(query);
+
+      searchSection.innerHTML = `
+        <h3>Résultats de recherche pour "${query}"</h3>
+        <div class="movie-row"></div>
+      `;
+
+      const movieRow = searchSection.querySelector(".movie-row");
+
+      // Vérifier si nous avons des résultats
+      if (searchResults.length === 0) {
+        movieRow.innerHTML =
+          '<div class="no-results">Aucun résultat trouvé dans notre catalogue</div>';
+      } else {
+        searchResults.forEach((movie) => {
+          movieRow.appendChild(createMovieCard(movie));
+        });
+      }
+    }
 
     // Faire défiler jusqu'aux résultats
     searchSection.scrollIntoView({ behavior: "smooth" });
@@ -417,7 +531,6 @@ async function handleNavigation(section) {
           });
         await populateMovieRows();
         break;
-
       case "series":
         // Créer et peupler la section séries
         let seriesSection = document.querySelector(".series-section");
@@ -428,46 +541,78 @@ async function handleNavigation(section) {
         }
         seriesSection.innerHTML = `
                   <h3>Séries Populaires</h3>
-                  <div class="movie-row"></div>
+                  <div class="movie-row popular-series"></div>
+                  <h3>Séries les Mieux Notées</h3>
+                  <div class="movie-row top-rated-series"></div>
               `;
-        const seriesRow = seriesSection.querySelector(".movie-row");
-        const series = await tmdbService.getPopularSeries();
-        series.forEach((show) => {
-          seriesRow.appendChild(createMovieCard(show));
+        const popularSeriesRow = seriesSection.querySelector(
+          ".movie-row.popular-series"
+        );
+        const topRatedSeriesRow = seriesSection.querySelector(
+          ".movie-row.top-rated-series"
+        );
+
+        // Charger les séries populaires et les mieux notées en parallèle
+        const [popularSeries, topRatedSeries] = await Promise.all([
+          tmdbService.getPopularSeries(),
+          tmdbService.getTopRatedSeries(),
+        ]);
+
+        // Afficher les séries populaires
+        popularSeries.forEach((show) => {
+          popularSeriesRow.appendChild(createMovieCard(show));
         });
+
+        // Afficher les séries les mieux notées
+        topRatedSeries.forEach((show) => {
+          topRatedSeriesRow.appendChild(createMovieCard(show));
+        });
+
         seriesSection.style.display = "block";
         break;
-
       case "movies":
-        // Créer et peupler la section films
+        // Créer et peupler la section films avec les films locaux
         let moviesSection = document.querySelector(".movies-section");
         if (!moviesSection) {
           moviesSection = document.createElement("section");
           moviesSection.className = "movies-section";
           main.appendChild(moviesSection);
         }
+
+        const localMovies = await tmdbService.getLocalMovies();
+
         moviesSection.innerHTML = `
-                  <h3>Films Populaires</h3>
-                  <div class="movie-row"></div>
-                  <h3>Films les Mieux Notés</h3>
-                  <div class="movie-row top-rated"></div>
-              `;
-        const popularRow = moviesSection.querySelector(
-          ".movie-row:not(.top-rated)"
+          <h3>Films Disponibles</h3>
+          <div class="movie-row local-movies"></div>
+          ${
+            localMovies.length > 1
+              ? `
+            <h3>Sélection du Moment</h3>
+            <div class="movie-row featured-movies"></div>
+          `
+              : ""
+          }
+        `;
+
+        const localMoviesRow = moviesSection.querySelector(
+          ".movie-row.local-movies"
         );
-        const topRatedRow = moviesSection.querySelector(".movie-row.top-rated");
+        const featuredMoviesRow = moviesSection.querySelector(
+          ".movie-row.featured-movies"
+        );
 
-        const [popularMovies, topRatedMovies] = await Promise.all([
-          tmdbService.getPopularMovies(),
-          tmdbService.getTopRatedMovies(),
-        ]);
+        // Afficher tous les films locaux dans la première section
+        localMovies.forEach((movie) => {
+          localMoviesRow.appendChild(createMovieCard(movie));
+        });
 
-        popularMovies.forEach((movie) => {
-          popularRow.appendChild(createMovieCard(movie));
-        });
-        topRatedMovies.forEach((movie) => {
-          topRatedRow.appendChild(createMovieCard(movie));
-        });
+        // Si on a plusieurs films, dupliquer dans la section "Sélection du Moment"
+        if (featuredMoviesRow && localMovies.length > 1) {
+          localMovies.forEach((movie) => {
+            featuredMoviesRow.appendChild(createMovieCard(movie));
+          });
+        }
+
         moviesSection.style.display = "block";
         break;
 
@@ -479,24 +624,32 @@ async function handleNavigation(section) {
           myListSection.className = "mylist-section";
           main.appendChild(myListSection);
         }
-        myListSection.innerHTML = `
-                  <h3>Ma Liste</h3>
-                  <div class="movie-row"></div>              `;
-        const myListRow = myListSection.querySelector(".movie-row");
         const myList = JSON.parse(localStorage.getItem("myList") || "[]");
 
         if (myList.length === 0) {
-          myListRow.innerHTML = `
+          // Afficher un message quand la liste est vide
+          myListSection.innerHTML = `
+            <h3>Ma Liste</h3>
             <div class="empty-list">
-              <p>Aucun film dans la liste</p>
-              <p class="empty-list-subtitle">Cliquez sur "+ Ma Liste" sur un film pour l'ajouter ici</p>
+              <svg viewBox="0 0 24 24" width="64" height="64">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+              </svg>
+              <h4>Votre liste est vide</h4>
+              <p>Ajoutez des films et des séries à votre liste en cliquant sur le bouton "Ma Liste" pendant que vous parcourez le site.</p>
             </div>
           `;
         } else {
+          // Afficher les films si la liste n'est pas vide
+          myListSection.innerHTML = `
+            <h3>Ma Liste</h3>
+            <div class="movie-row"></div>
+          `;
+          const myListRow = myListSection.querySelector(".movie-row");
           myList.forEach((movie) => {
             myListRow.appendChild(createMovieCard(movie));
           });
         }
+
         myListSection.style.display = "block";
         break;
     }
@@ -514,7 +667,7 @@ document.getElementById("searchInput").addEventListener("keypress", (e) => {
 });
 
 // Fonction pour créer le lecteur vidéo
-function createVideoPlayer(movieTitle, videoUrl) {
+function createVideoPlayer(movieTitle, videoUrl, movie) {
   const modal = document.createElement("div");
   modal.className = "video-player-modal";
 
@@ -846,6 +999,74 @@ function createVideoPlayer(movieTitle, videoUrl) {
       playVideo();
     }
   };
+
+  // Sauvegarder la progression régulièrement
+  let currentMovieData = null;
+
+  // Récupérer les données du film associées à cette vidéo
+  tmdbService
+    .getMovieDetails(movie.id || movie)
+    .then((movieData) => {
+      currentMovieData = movieData;
+    })
+    .catch((error) => {
+      console.error(
+        "Erreur lors de la récupération des détails du film:",
+        error
+      );
+      // Si on ne peut pas obtenir les détails, utiliser les données de base
+      currentMovieData =
+        typeof movie === "object" ? movie : { id: movie, title: movieTitle };
+    });
+
+  // Suivre la progression de la vidéo
+  elements.video.addEventListener("timeupdate", () => {
+    if (!currentMovieData) return;
+
+    const progress =
+      (elements.video.currentTime / elements.video.duration) * 100;
+    if (!isNaN(progress) && progress > 0 && progress < 98) {
+      // Sauvegarder la progression toutes les 5 secondes
+      if (Math.floor(elements.video.currentTime) % 5 === 0) {
+        tmdbService.saveMovieProgress(currentMovieData, Math.round(progress));
+      }
+    }
+  });
+
+  // Sauvegarder la progression quand la vidéo est fermée
+  const saveProgressOnExit = () => {
+    if (currentMovieData && elements.video.duration > 0) {
+      const progress =
+        (elements.video.currentTime / elements.video.duration) * 100;
+      if (!isNaN(progress) && progress > 0 && progress < 98) {
+        tmdbService.saveMovieProgress(currentMovieData, Math.round(progress));
+      }
+    }
+  };
+
+  // Ajout de l'événement de sauvegarde à la fermeture
+  modal
+    .querySelector(".video-close")
+    .addEventListener("click", saveProgressOnExit);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) saveProgressOnExit();
+  });
+
+  // Quand la vidéo est terminée (plus de 98% visionnée), la retirer de "continuer à regarder"
+  elements.video.addEventListener("ended", () => {
+    if (currentMovieData) {
+      tmdbService.saveMovieProgress(currentMovieData, 100);
+      // Rafraîchir la section "Continuer à regarder" si nécessaire
+      const continueWatchingSection =
+        document.querySelector(".continue-watching");
+      if (
+        continueWatchingSection &&
+        continueWatchingSection.style.display !== "none"
+      ) {
+        populateMovieRows();
+      }
+    }
+  });
 }
 
 // Fonction pour lire un film
@@ -863,20 +1084,29 @@ async function playMovie(movie) {
       color: white;
       text-align: center;
       z-index: 1000;
-      font-family: 'Poppins', sans-serif;
     `;
-    loadingMessage.innerHTML = `
-      <div class="loading-spinner" style="margin-bottom: 10px;"></div>
-      <div>Chargement de la vidéo...</div>
-    `;
+    loadingMessage.textContent = "Chargement de la vidéo...";
     document.body.appendChild(loadingMessage);
 
     const videoUrl = await tmdbService.getMovieVideoUrl(movie.id);
-
     loadingMessage.remove();
 
     if (videoUrl && typeof videoUrl === "string" && videoUrl.trim() !== "") {
-      createVideoPlayer(movie.title, videoUrl);
+      createVideoPlayer(movie.title, videoUrl, movie);
+
+      // Marquer que l'utilisateur a commencé à regarder ce film
+      if (!movie.progress) {
+        tmdbService.saveMovieProgress(movie, 0);
+        // Rafraîchir la section "Continuer à regarder" si elle est visible
+        const continueWatchingSection =
+          document.querySelector(".continue-watching");
+        if (
+          continueWatchingSection &&
+          continueWatchingSection.style.display !== "none"
+        ) {
+          setTimeout(() => populateMovieRows(), 500);
+        }
+      }
     } else {
       console.warn("Aucune URL de vidéo valide trouvée pour ce film.");
       const errorMessage = document.createElement("div");
@@ -927,16 +1157,24 @@ async function playMovie(movie) {
 async function init() {
   handleHeaderScroll();
   await populateMovieRows();
+
+  // Initialiser les écouteurs d'événements de recherche avec debounce
+  const searchInput = document.getElementById("searchInput");
+  const searchButton = document.getElementById("searchButton");
+
+  // Utiliser debounce pour éviter trop d'appels API pendant la frappe
+  searchInput.addEventListener("input", debounce(handleSearch, 500));
+  searchButton.addEventListener("click", handleSearch);
+
+  // Écouteur d'événements pour la navigation
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const section = link.dataset.section;
+      handleNavigation(section);
+    });
+  });
 }
 
 // Démarrer l'application
 init();
-
-// Ajouter les écouteurs d'événements pour la navigation
-document.querySelectorAll(".nav-links a").forEach((link) => {
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    const section = e.target.dataset.section;
-    handleNavigation(section);
-  });
-});

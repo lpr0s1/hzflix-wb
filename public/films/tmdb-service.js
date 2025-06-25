@@ -2,15 +2,45 @@
 class TMDBService {
   constructor() {
     this.config = CONFIG;
+    this.cache = {};
+  }
+
+  // Nouvelle méthode pour gérer le cache
+  async fetchWithCache(
+    url,
+    cacheKey,
+    cacheDuration = this.config.CACHE_DURATION
+  ) {
+    const now = Math.floor(Date.now() / 1000); // Temps actuel en secondes
+
+    // Vérifier si nous avons une donnée en cache et si elle est encore valide
+    if (this.cache[cacheKey] && now < this.cache[cacheKey].expiry) {
+      return this.cache[cacheKey].data;
+    }
+
+    // Sinon, effectuer la requête
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      // Mettre en cache avec une date d'expiration
+      this.cache[cacheKey] = {
+        data: data,
+        expiry: now + cacheDuration,
+      };
+
+      return data;
+    } catch (error) {
+      console.error(`Erreur lors de la requête ${url}:`, error);
+      throw error;
+    }
   }
 
   // Récupérer les films tendance
   async getTrendingMovies() {
     try {
-      const response = await fetch(
-        `${this.config.API_BASE_URL}/trending/movie/week?api_key=${this.config.API_KEY}&language=fr-FR`
-      );
-      const data = await response.json();
+      const url = `${this.config.API_BASE_URL}/trending/movie/week?api_key=${this.config.API_KEY}&language=fr-FR`;
+      const data = await this.fetchWithCache(url, "trending-movies");
       return data.results;
     } catch (error) {
       console.error(
@@ -119,38 +149,107 @@ class TMDBService {
     }
   }
 
+  // Fonction helper pour lire depuis localStorage avec gestion d'erreurs
+  _getFromLocalStorage(key, defaultValue = []) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : defaultValue;
+    } catch (error) {
+      console.error(
+        `Erreur lors de la lecture de ${key} dans localStorage:`,
+        error
+      );
+      return defaultValue;
+    }
+  }
+
+  // Fonction helper pour écrire dans localStorage avec gestion d'erreurs
+  _setLocalStorage(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+      console.error(
+        `Erreur lors de l'écriture de ${key} dans localStorage:`,
+        error
+      );
+    }
+  }
   // Sauvegarder la progression d'un film
   saveMovieProgress(movie, progress) {
     try {
-      let continueWatching = JSON.parse(
-        localStorage.getItem("continueWatching") || "[]"
-      );
+      let continueWatching = this._getFromLocalStorage("continueWatching");
       const existingIndex = continueWatching.findIndex(
         (m) => m.id === movie.id
       );
 
-      const movieWithProgress = {
-        ...movie,
-        progress: progress,
-      };
-
-      if (existingIndex !== -1) {
-        continueWatching[existingIndex] = movieWithProgress;
+      // Si un film est terminé (progress >= 98), le retirer de "continuer à regarder"
+      if (progress >= 98) {
+        if (existingIndex !== -1) {
+          continueWatching.splice(existingIndex, 1);
+        }
       } else {
-        continueWatching.unshift(movieWithProgress);
-        // Garder seulement les 10 derniers films
-        continueWatching = continueWatching.slice(0, 10);
+        const movieWithProgress = {
+          ...movie,
+          progress: progress,
+          lastWatched: Date.now(), // Ajout d'un timestamp pour trier par date récente
+        };
+
+        if (existingIndex !== -1) {
+          continueWatching[existingIndex] = movieWithProgress;
+        } else {
+          continueWatching.unshift(movieWithProgress);
+          // Garder seulement les 10 derniers films
+          continueWatching = continueWatching.slice(0, 10);
+        }
       }
 
-      localStorage.setItem(
-        "continueWatching",
-        JSON.stringify(continueWatching)
-      );
+      this._setLocalStorage("continueWatching", continueWatching);
       return continueWatching;
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de la progression:", error);
       return [];
     }
+  }
+
+  // Gestion de Ma Liste
+  toggleMyList(movie) {
+    try {
+      const myList = this._getFromLocalStorage("myList");
+      const existingIndex = myList.findIndex((m) => m.id === movie.id);
+
+      if (existingIndex !== -1) {
+        // Retirer de la liste
+        myList.splice(existingIndex, 1);
+        this._setLocalStorage("myList", myList);
+        return { inList: false, list: myList };
+      } else {
+        // Ajouter à la liste
+        myList.unshift(movie);
+        this._setLocalStorage("myList", myList);
+        return { inList: true, list: myList };
+      }
+    } catch (error) {
+      console.error("Erreur lors de la gestion de Ma Liste:", error);
+      return { inList: false, list: [] };
+    }
+  }
+
+  // Vérifier si un film est dans Ma Liste
+  isInMyList(movieId) {
+    const myList = this._getFromLocalStorage("myList");
+    return myList.some((m) => m.id === movieId);
+  }
+
+  // Récupérer les films à continuer
+  getContinueWatching() {
+    return this._getFromLocalStorage("continueWatching").sort(
+      (a, b) => (b.lastWatched || 0) - (a.lastWatched || 0)
+    );
+  }
+
+  // Récupérer Ma Liste
+  getMyList() {
+    return this._getFromLocalStorage("myList");
   }
 
   // Obtenir les genres de films
@@ -187,22 +286,24 @@ class TMDBService {
       );
       return [];
     }
-  }
-  // Obtenir l'URL de la vidéo d'un film depuis notre fichier JSON local
+  } // Obtenir l'URL de la vidéo d'un film depuis notre fichier JSON local
   async getMovieVideoUrl(movieId) {
     try {
-      const response = await fetch("assets/movies.json");
+      const response = await fetch("/assets/movies.json");
       if (!response.ok) {
         throw new Error("Impossible de charger le fichier movies.json");
       }
       const data = await response.json();
 
-      // Rechercher le film correspondant dans notre liste
-      const movie = data.movies.find(
-        (m) => m.tmdbId === movieId || m.id === movieId
-      );
+      // Chercher le film spécifique par ID
+      const movie = data.movies.find((m) => m.id === movieId);
       if (movie && movie.videoUrl) {
         return movie.videoUrl;
+      }
+
+      // Fallback: retourner la première vidéo disponible si l'ID n'est pas trouvé
+      if (data.movies && data.movies.length > 0) {
+        return data.movies[0].videoUrl;
       }
       return null;
     } catch (error) {
@@ -227,77 +328,116 @@ class TMDBService {
     }
   }
 
-  // Ajouter/Retirer un film de la liste personnelle
-  toggleMyList(movie) {
+  // Obtenir les séries les mieux notées
+  async getTopRatedSeries() {
     try {
-      let myList = JSON.parse(localStorage.getItem("myList") || "[]");
-      const index = myList.findIndex((m) => m.id === movie.id);
-
-      if (index === -1) {
-        // Ajouter le film
-        myList.push(movie);
-        this.showSuccessPopup("Film ajouté à votre liste !");
-      } else {
-        // Retirer le film
-        myList.splice(index, 1);
-        this.showSuccessPopup("Film retiré de votre liste");
-      }
-
-      localStorage.setItem("myList", JSON.stringify(myList));
-
-      // Mettre à jour l'interface si nous sommes sur la page "Ma Liste"
-      const myListSection = document.querySelector(".mylist-section");
-      if (myListSection && myListSection.style.display === "block") {
-        const myListRow = myListSection.querySelector(".movie-row");
-        if (myList.length === 0) {
-          myListRow.innerHTML = `
-            <div class="empty-list">
-              <p>Aucun film dans la liste</p>
-              <p class="empty-list-subtitle">Cliquez sur "+ Ma Liste" sur un film pour l'ajouter ici</p>
-            </div>
-          `;
-        } else {
-          myListRow.innerHTML = "";
-          myList.forEach((movie) => {
-            const card = createMovieCard(movie);
-            myListRow.appendChild(card);
-          });
-        }
-      }
-
-      return myList;
+      const response = await fetch(
+        `${this.config.API_BASE_URL}/tv/top_rated?api_key=${this.config.API_KEY}&language=${this.config.LANGUAGE}&${this.config.DEFAULT_PARAMS}`
+      );
+      const data = await response.json();
+      // Adapter le format des séries pour correspondre au format des films
+      return data.results.map((show) => ({
+        ...show,
+        title: show.name,
+        release_date: show.first_air_date,
+      }));
     } catch (error) {
-      console.error("Erreur lors de la modification de Ma Liste:", error);
+      console.error(
+        "Erreur lors de la récupération des séries les mieux notées:",
+        error
+      );
       return [];
     }
   }
-
-  // Afficher une popup de succès
-  showSuccessPopup(message) {
-    const popup = document.createElement("div");
-    popup.className = "success-popup";
-    popup.innerHTML = `
-      <div style="font-size: 3rem; margin-bottom: 15px;">✓</div>
-      ${message}
-    `;
-    document.body.appendChild(popup);
-
-    setTimeout(() => {
-      popup.style.animation = "none";
-      popup.style.opacity = "0";
-      popup.style.transform = "translate(-50%, -50%) scale(0)";
-      setTimeout(() => popup.remove(), 300);
-    }, 2000);
-  }
-
-  // Vérifier si un film est dans la liste personnelle
-  isInMyList(movieId) {
+  // Nouvelle méthode pour charger les films locaux
+  async getLocalMovies() {
     try {
-      const myList = JSON.parse(localStorage.getItem("myList") || "[]");
-      return myList.some((movie) => movie.id === movieId);
+      const response = await fetch("/assets/movies.json");
+      if (!response.ok) {
+        throw new Error("Impossible de charger le fichier movies.json");
+      }
+      const data = await response.json();
+
+      // Pour chaque film local, rechercher ses informations via TMDB
+      const moviesWithDetails = await Promise.all(
+        data.movies.map(async (localMovie) => {
+          try {
+            // Rechercher le film par titre sur TMDB
+            const searchResults = await this.searchMovies(localMovie.title);
+
+            if (searchResults && searchResults.length > 0) {
+              // Prendre le premier résultat qui correspond le mieux
+              const tmdbMovie = searchResults[0];
+
+              // Récupérer les détails complets du film
+              const movieDetails = await this.getMovieDetails(tmdbMovie.id);
+
+              if (movieDetails) {
+                // Combiner les données TMDB avec l'URL vidéo locale
+                return {
+                  ...movieDetails,
+                  // Créer un ID unique pour le film local
+                  id: `local-${tmdbMovie.id}`,
+                  originalTmdbId: tmdbMovie.id,
+                  videoUrl: localMovie.videoUrl,
+                  // Marquer comme film local
+                  isLocal: true,
+                };
+              }
+            }
+
+            // Si aucun résultat TMDB trouvé, créer une entrée basique
+            return {
+              id: `local-${Date.now()}-${Math.random()
+                .toString(36)
+                .substr(2, 9)}`,
+              title: localMovie.title,
+              videoUrl: localMovie.videoUrl,
+              overview: `${localMovie.title} - Film disponible en streaming sur HZFlix`,
+              poster_path: null,
+              backdrop_path: null,
+              release_date: "2024",
+              vote_average: 8.0,
+              runtime: 120,
+              genres: [
+                { id: 28, name: "Action" },
+                { id: 12, name: "Aventure" },
+              ],
+              isLocal: true,
+            };
+          } catch (error) {
+            console.error(
+              `Erreur lors de la recherche de "${localMovie.title}":`,
+              error
+            );
+
+            // Retourner une entrée basique en cas d'erreur
+            return {
+              id: `local-${Date.now()}-${Math.random()
+                .toString(36)
+                .substr(2, 9)}`,
+              title: localMovie.title,
+              videoUrl: localMovie.videoUrl,
+              overview: `${localMovie.title} - Film disponible en streaming sur HZFlix`,
+              poster_path: null,
+              backdrop_path: null,
+              release_date: "2024",
+              vote_average: 8.0,
+              runtime: 120,
+              genres: [
+                { id: 28, name: "Action" },
+                { id: 12, name: "Aventure" },
+              ],
+              isLocal: true,
+            };
+          }
+        })
+      );
+
+      return moviesWithDetails.filter((movie) => movie !== null);
     } catch (error) {
-      console.error("Erreur lors de la vérification de Ma Liste:", error);
-      return false;
+      console.error("Erreur lors du chargement des films locaux:", error);
+      return [];
     }
   }
 }
