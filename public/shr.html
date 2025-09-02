@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9750317912399784" crossorigin="anonymous"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>shrfile</title>
+  <meta name="description" content="Partage de fichiers que j'ai trouver au file du temp sur des forum." />
+  <meta name="keywords" content="Partage, mail, fichiers, gratuits, download, telechargement, zip, pdf, e-book" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://hzflix.online/shrfile" />
+  <meta name="theme-color" content="#0b0f16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta property="og:title" content="shrfile" />
+  <meta property="og:description" content="Partage de fichiers en ligne, e-book, logiciel, ipa, etc..." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://hzflix.online/shrfile" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="shrfile - Partage de fichiers gratuit" />
+  <meta name="twitter:description" content="Partage de fichiers gratuit" />
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebApplication",
+    "name":"shrfile",
+    "applicationCategory":"MultimediaApplication",
+    "operatingSystem":"iOS, Android, Web",
+    "description":"Partage de fichiers gratuit",
+    "url":"https://hzflix.online/shrfile"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-gray-900 to-gray-800 text-white font-inter">
+
+
+  <div id="intro" class="flex flex-col items-center justify-center h-screen text-center px-4">
+    <h1 class="text-3xl font-bold mb-6">Ce site partage des fichiers qui peuvent vous être utiles !</h1>
+    <button onclick="startSite()" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition" style="animation: j 0.98s infinite">Continuer</button>
+    
+    <style>
+      @keyframes j{
+        0%{transform: scale(1.0)}
+        50%{transform: scale(0.9)}
+        100%{transform: scale(1.0)}
+      }
+    </style>
+    
+  </div>
+
+  <nav id="menu" class="hidden fixed top-0 left-0 w-full bg-black bg-opacity-50 flex justify-center gap-8 py-4 z-50">
+    <button onclick="showSection('files')" class="hover:underline">📁 Fichiers</button>
+    <button onclick="showSection('tips')" class="hover:underline">💡 Conseils</button>
+    <button onclick="showSection('legal')" class="hover:underline">📜 Légal</button>
+  </nav>
+
+
+  <main class="pt-24 px-6 space-y-16">
+    <section id="files" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">📁 Fichiers disponibles</h2>
+      <ul class="space-y-4">
+        <li class="flex justify-between items-center bg-gray-700 p-4 rounded-lg">
+          <span>AnonMails.zip</span>
+          <a href="x)/AnonMails.zip" download><span class="material-symbols-outlined text-white text-2xl">download</span></a>
+        </li>
+        <li class="flex justify-between items-center bg-gray-700 p-4 rounded-lg">
+          <span>DisneyPlus.txt</span>
+          <a href="x)/DisneyPlus.txt" download><span class="material-symbols-outlined text-white text-2xl">download</span></a>
+        </li>
+        <li class="flex justify-between items-center bg-gray-700 p-4 rounded-lg">
+          <span>btc_combo.txt</span>
+          <a href="x)/btc_combo.txt" download><span class="material-symbols-outlined text-white text-2xl">download</span></a>
+        </li>
+        <li class="flex justify-between items-center bg-gray-700 p-4 rounded-lg">
+          <span>Ok_All_Hotmail_Valids.txt</span>
+          <a href="x)/Ok_All_Hotmail_Valids.txt" download><span class="material-symbols-outlined text-white text-2xl">download</span></a>
+        </li>
+        <li class="flex justify-between items-center bg-gray-700 p-4 rounded-lg">
+          <span>170_FTP_19.03.2025.txt</span>
+          <a href="x)/170_FTP_19.03.2025.txt" download><span class="material-symbols-outlined text-white text-2xl">download</span></a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Conseils -->
+    <section id="tips" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">💡 Conseils d’utilisation</h2>
+      <ul class="list-disc pl-6 space-y-2">
+        <li>Utilisez ces fichiers de manière responsable.</li>
+        <li>Ne partagez pas d’informations sensibles sans vérification.</li>
+        <li>Protégez vos données personnelles et votre vie privée.</li>
+      </ul>
+    </section>
+
+    <!-- Légal -->
+    <section id="legal" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">📜 Politique de confidentialité & Conditions</h2>
+      <p class="mb-4">Ce site ne collecte aucune donnée personnelle. Les fichiers sont partagés à titre informatif uniquement.</p>
+      <p>En accédant à ce site, vous acceptez que l’auteur ne soit pas responsable de l’usage que vous faites des fichiers ou outils proposés. Utilisez-les à vos propres risques.</p>
+    </section>
+  </main>
+
+  <script>
+    function startSite() {
+      document.getElementById('intro').style.display = 'none';
+      document.getElementById('menu').classList.remove('hidden');
+      showSection('files');
+    }
+
+    function showSection(id) {
+      ['files', 'tips', 'legal'].forEach(sec => {
+        document.getElementById(sec).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
