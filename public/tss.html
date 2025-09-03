@@ -100,7 +100,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Créateur de page lien</title>
+  <title>Créateur de page perso</title>
 
   <!-- Icônes Material (inchangé) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -165,14 +165,16 @@
 
 <!-- Viewer -->
 <section id="viewer" class="hidden">
-  <div class="grid gap-2">
+  <div class="grid gap-2" style="box-shadow: 0px 0px 2px white; border-radius: 3px;">
+    <br>
     <!-- Titre plus grand -->
     <h1 id="vTitle" style="font-size: 2rem; font-weight: bold;"></h1>
-
+<br>
+  
     <div class="flex items-center gap-2">
       <!-- Pseudo un peu plus petit -->
-      <span id="vPseudo" style="font-size: 1.2rem; font-weight: 500; color: darkorange;"></span>
-      <!-- Thème masqué -->
+      @<span id="vPseudo" style="font-size: 1.2rem; font-weight: 500; color: darkorange;"></span>
+      <!-- Thème -->
       <span id="vThemeTag" class="text-xs opacity-70" style="display: none;"></span>
     </div>
 
