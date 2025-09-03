@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Générateur de pages à partager</title>
+
+  <!-- Open Graph/Twitter génériques (aperçu de base, pas par page) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Crée un lien à partager" />
+  <meta property="og:description" content="Génère un lien instantané, partage-le par SMS, réseaux sociaux, QR code." />
+  <meta property="og:image" content="https://dummyimage.com/1200x630/111827/ffffff&text=Partage" />
+  <meta property="og:url" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Crée un lien à partager" />
+  <meta name="twitter:description" content="Génère un lien instantané, partage-le par SMS, réseaux sociaux, QR code." />
+  <meta name="twitter:image" content="https://dummyimage.com/1200x630/111827/ffffff&text=Partage" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#4f46e5'
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Libs publiques (sans compte) -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+  <style>
+    html, body { background: #0b0b0f; color: #fff; }
+    .card { background: #0f172a; border: 1px solid #1f2937; }
+    .muted { color: #cbd5e1; }
+    .input, .textarea {
+      background: #0b0b0f; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; width: 100%;
+    }
+    .btn {
+      background: #4f46e5; border-radius: 10px; border: none; padding: 10px 14px; color: white;
+    }
+    .btn:disabled { opacity: 0.6; }
+    .chip { background: #111827; border: 1px dashed #374151; border-radius: 8px; padding: 6px 8px; }
+    a.link { color: #93c5fd; text-decoration: underline; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">Générateur de pages à partager</h1>
+      <a href="#" id="resetApp" class="link text-sm">Réinitialiser</a>
+    </header>
+
+    <!-- Création -->
+    <section id="creator" class="card rounded-xl p-5">
+      <h2 class="text-lg font-medium mb-3">Créer une page</h2>
+      <p class="muted mb-4">Le lien contient les infos compressées. Aucun serveur requis.</p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm muted">Titre</label>
+          <input id="inTitle" class="input mt-1" placeholder="Ex: Mon super lien" maxlength="120" />
+        </div>
+        <div>
+          <label class="text-sm muted">Slug personnalisé (optionnel)</label>
+          <input id="inSlug" class="input mt-1" placeholder="ex: mon-lien" maxlength="60" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm muted">Description (courte)</label>
+          <textarea id="inDesc" class="textarea mt-1" rows="3" maxlength="280" placeholder="Quelques mots pour décrire…"></textarea>
+        </div>
+        <div>
+          <label class="text-sm muted">Image (URL) — optionnel</label>
+          <input id="inImage" class="input mt-1" placeholder="https://…/image.jpg" />
+        </div>
+        <div class="flex items-center gap-3">
+          <input id="inEncrypt" type="checkbox" class="h-4 w-4" />
+          <label for="inEncrypt" class="muted text-sm select-none">Protéger par mot de passe</label>
+        </div>
+        <div id="pwdWrap" class="hidden">
+          <label class="text-sm muted">Mot de passe</label>
+          <input id="inPassword" class="input mt-1" type="password" placeholder="Minimum 6 caractères" />
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button id="btnGenerate" class="btn">Générer le lien</button>
+        <span class="chip text-sm">Pas d’API • Pas de login • Fonctionne hors serveur</span>
+      </div>
+
+      <p class="muted text-xs mt-3">Astuce: évite les descriptions très longues pour garder des URLs partagées courtes.</p>
+    </section>
+
+    <!-- Résultat & Partage -->
+    <section id="result" class="card rounded-xl p-5 hidden">
+      <h2 class="text-lg font-medium mb-4">Ton lien est prêt</h2>
+
+      <div class="grid md:grid-cols-2 gap-5 items-start">
+        <div>
+          <div class="mb-3">
+            <div class="muted text-sm mb-1">Lien</div>
+            <a id="outUrl" class="link break-all" href="#" target="_blank" rel="noopener">—</a>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button id="btnNativeShare" class="btn bg-green-600">Partager (natif)</button>
+            <button id="btnCopy" class="btn" data-clipboard-target="#outUrl">Copier le lien</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <a id="shareX" class="chip" target="_blank" rel="noopener">X / Twitter</a>
+            <a id="shareFB" class="chip" target="_blank" rel="noopener">Facebook</a>
+            <a id="shareLI" class="chip" target="_blank" rel="noopener">LinkedIn</a>
+            <a id="shareWA" class="chip" target="_blank" rel="noopener">WhatsApp</a>
+            <a id="shareTG" class="chip" target="_blank" rel="noopener">Telegram</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="muted text-sm mb-2">QR code</div>
+          <div id="qr" class="p-3 bg-[#0b0b0f] rounded-lg inline-block"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visionneuse -->
+    <section id="viewer" class="card rounded-xl p-5 hidden">
+      <h2 id="vTitle" class="text-xl font-semibold mb-2"></h2>
+      <p id="vDesc" class="muted mb-3"></p>
+      <img id="vImg" class="rounded-lg mb-4 max-h-72 object-cover hidden" alt="" />
+      <div class="flex flex-wrap gap-2">
+        <button id="vShare" class="btn bg-green-600">Partager cette page</button>
+        <button id="vCopy" class="btn">Copier le lien</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // ========= Helpers =========
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const BASE_URL = location.origin + location.pathname; // index.html ou route statique
+    const MAX_DESC = 280;
+
+    function toSlug(s) {
+      return (s || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9-_ ]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .slice(0, 60);
+    }
+
+    function shortId(len = 6) {
+      const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+      const bytes = new Uint8Array(len);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, b => alphabet[b % alphabet.length]).join('');
+    }
+
+    // Base64URL <-> Uint8Array
+    function b64urlEncode(bytes) {
+      let str = btoa(String.fromCharCode(...bytes));
+      return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,'');
+    }
+    function b64urlDecode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = str.length % 4 ? 4 - (str.length % 4) : 0;
+      str = str + '='.repeat(pad);
+      const bin = atob(str);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return bytes;
+    }
+
+    // Compression
+    function compressToBytes(text) {
+      const encoded = LZString.compressToUint8Array(text);
+      return encoded;
+    }
+    function decompressFromBytes(bytes) {
+      return LZString.decompressFromUint8Array(bytes);
+    }
+
+    // Crypto (AES-GCM avec PBKDF2)
+    async function deriveKey(password, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt','decrypt']
+      );
+    }
+    async function encryptBytes(plainBytes, password) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveKey(password, salt);
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plainBytes));
+      return { salt, iv, ct };
+    }
+    async function decryptBytes(ctBytes, password, salt, iv) {
+      const key = await deriveKey(password, salt);
+      const pt = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ctBytes));
+      return pt;
+    }
+
+    function buildHash({ slug, dataB64, enc }) {
+      // Hash params: s=slug&d=base64url[bytes]|e=1
+      const params = new URLSearchParams();
+      if (slug) params.set('s', slug);
+      params.set('d', dataB64);
+      if (enc) params.set('e', '1');
+      return '#' + params.toString();
+    }
+
+    function parseHash() {
+      if (!location.hash || location.hash.length < 2) return null;
+      const q = new URLSearchParams(location.hash.slice(1));
+      const slug = q.get('s') || '';
+      const dataB64 = q.get('d');
+      const enc = q.get('e') === '1';
+      if (!dataB64) return null;
+      return { slug, dataB64, enc };
+    }
+
+    function setVisible(el, show) {
+      el.classList.toggle('hidden', !show);
+    }
+
+    function updateShareLinks(url, title) {
+      const u = encodeURIComponent(url);
+      const t = encodeURIComponent(title || 'Découvre ma page');
+      $('#shareX').href  = `https://twitter.com/intent/tweet?url=${u}&text=${t}`;
+      $('#shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${u}`;
+      $('#shareLI').href = `https://www.linkedin.com/shareArticle?mini=true&url=${u}&title=${t}`;
+      $('#shareWA').href = `https://api.whatsapp.com/send?text=${t}%20${u}`;
+      $('#shareTG').href = `https://t.me/share/url?url=${u}&text=${t}`;
+    }
+
+    function renderQR(url) {
+      const wrap = $('#qr');
+      wrap.innerHTML = '';
+      QRCode.toCanvas(url, { width: 180, margin: 1, color: { dark: '#FFFFFF', light: '#0b0b0f' } }, (err, canvas) => {
+        if (!err) wrap.appendChild(canvas);
+      });
+    }
+
+    function sanitizeUrl(u) {
+      try {
+        const url = new URL(u);
+        return url.href;
+      } catch {
+        return '';
+      }
+    }
+
+    // ========= Création du lien =========
+    $('#inEncrypt').addEventListener('change', (e) => {
+      setVisible($('#pwdWrap'), e.target.checked);
+    });
+
+    $('#btnGenerate').addEventListener('click', async () => {
+      const title = $('#inTitle').value.trim();
+      const desc = $('#inDesc').value.trim();
+      const image = $('#inImage').value.trim();
+      const wantEnc = $('#inEncrypt').checked;
+      const password = $('#inPassword').value;
+
+      if (!title) {
+        alert('Le titre est requis.'); return;
+      }
+      if (desc.length > MAX_DESC) {
+        alert('Description trop longue.'); return;
+      }
+      if (image && !sanitizeUrl(image)) {
+        alert('URL image invalide.'); return;
+      }
+      if (wantEnc && (!password || password.length < 6)) {
+        alert('Mot de passe trop court (min 6).'); return;
+      }
+
+      const raw = { t: title, d: desc || undefined, i: image || undefined, v: 1 };
+      const json = JSON.stringify(raw);
+
+      const compressed = compressToBytes(json);
+      let payloadBytes;
+      let encMeta = null;
+
+      try {
+        if (wantEnc) {
+          const { salt, iv, ct } = await encryptBytes(compressed, password);
+          // Concat: salt(16) + iv(12) + ct
+          payloadBytes = new Uint8Array(salt.length + iv.length + ct.length);
+          payloadBytes.set(salt, 0);
+          payloadBytes.set(iv, salt.length);
+          payloadBytes.set(ct, salt.length + iv.length);
+          encMeta = { enc: true };
+        } else {
+          payloadBytes = compressed;
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Erreur de chiffrement.'); return;
+      }
+
+      const dataB64 = b64urlEncode(payloadBytes);
+
+      const baseSlug = toSlug($('#inSlug').value || title);
+      const finalSlug = baseSlug ? `${baseSlug}-${shortId(5)}` : shortId(8);
+
+      const hash = buildHash({ slug: finalSlug, dataB64, enc: !!encMeta });
+      const finalUrl = BASE_URL + hash;
+
+            // Affichage résultat
+      $('#outUrl').textContent = finalUrl;
+      $('#outUrl').href = finalUrl;
+      setVisible($('#result'), true);
+      setVisible($('#creator'), false);
+      setVisible($('#viewer'), false);
+
+      // Liens de partage
+      updateShareLinks(finalUrl, title);
+
+      // QR code
+      renderQR(finalUrl);
+    });
+
+    // ========= Partage natif =========
+    $('#btnNativeShare').addEventListener('click', async () => {
+      const url = $('#outUrl').href;
+      const title = $('#inTitle').value || 'Ma page';
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, url });
+        } catch (err) {
+          if (err?.name !== 'AbortError') {
+            alert('Partage interrompu.');
+          }
+        }
+      } else {
+        alert('Partage natif indisponible sur ce navigateur.');
+      }
+    });
+
+    // ========= Copier lien =========
+    new ClipboardJS('#btnCopy').on('success', () => {
+      $('#btnCopy').textContent = 'Copié ✅';
+      setTimeout(() => { $('#btnCopy').textContent = 'Copier le lien'; }, 1200);
+    });
+
+    // ========= Lecture d'une page depuis l'URL =========
+    async function loadFromHash() {
+      const parsed = parseHash();
+      if (!parsed) return;
+
+      const { slug, dataB64, enc } = parsed;
+      try {
+        const bytes = b64urlDecode(dataB64);
+        let decompressed;
+        if (enc) {
+          const pwd = prompt('Cette page est protégée. Entrez le mot de passe :');
+          if (!pwd) { alert('Mot de passe requis.'); return; }
+          const salt = bytes.slice(0, 16);
+          const iv = bytes.slice(16, 28);
+          const ct = bytes.slice(28);
+          const plainBytes = await decryptBytes(ct, pwd, salt, iv);
+          decompressed = decompressFromBytes(plainBytes);
+        } else {
+          decompressed = decompressFromBytes(bytes);
+        }
+        const obj = JSON.parse(decompressed);
+        // Affichage
+        $('#vTitle').textContent = obj.t || '';
+        $('#vDesc').textContent = obj.d || '';
+        if (obj.i) {
+          $('#vImg').src = obj.i;
+          setVisible($('#vImg'), true);
+        } else {
+          setVisible($('#vImg'), false);
+        }
+        setVisible($('#viewer'), true);
+        setVisible($('#creator'), false);
+        setVisible($('#result'), false);
+
+        // Boutons partage/copie
+        const currentUrl = location.href;
+        $('#vShare').onclick = async () => {
+          if (navigator.share) {
+            try { await navigator.share({ title: obj.t, url: currentUrl }); } catch {}
+          } else {
+            alert('Partage natif indisponible.');
+          }
+        };
+        $('#vCopy').onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(currentUrl);
+            $('#vCopy').textContent = 'Copié ✅';
+            setTimeout(() => { $('#vCopy').textContent = 'Copier le lien'; }, 1200);
+          } catch {}
+        };
+      } catch (e) {
+        console.error(e);
+        alert('Impossible de lire cette page.');
+      }
+    }
+
+    // ========= Réinitialiser =========
+    $('#resetApp').addEventListener('click', (e) => {
+      e.preventDefault();
+      location.hash = '';
+      location.reload();
+    });
+
+    // ========= Init =========
+    if (location.hash) {
+      loadFromHash();
+    }
+  </script>
+</body>
+</html>
