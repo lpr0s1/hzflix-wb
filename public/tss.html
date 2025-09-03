@@ -163,28 +163,43 @@
     </div>
   </section>
 
-  <!-- Viewer -->
-  <section id="viewer" class="hidden">
-    <div class="grid gap-2">
-      <h1 id="vTitle"></h1>
-      <div class="flex items-center gap-2">
-        <span id="vPseudo"></span>
-        <span id="vThemeTag" class="text-xs opacity-70"></span>
-      </div>
-      <p id="vDesc"></p>
-      <img id="vImg" alt="" class="hidden" />
-      <div id="vLinks" class="grid gap-2 mt-3"></div>
+<!-- Viewer -->
+<section id="viewer" class="hidden">
+  <div class="grid gap-2">
+    <!-- Titre plus grand -->
+    <h1 id="vTitle" style="font-size: 2rem; font-weight: bold;"></h1>
 
-      <div class="flex gap-2 mt-4">
-        <button id="vShare" class="btn-ghost">Partager</button>
-        <button id="vCopy" class="btn-ghost">Copier le lien</button>
-      </div>
+    <div class="flex items-center gap-2">
+      <!-- Pseudo un peu plus petit -->
+      <span id="vPseudo" style="font-size: 1.2rem; font-weight: 500;"></span>
+      <!-- Thème masqué -->
+      <span id="vThemeTag" class="text-xs opacity-70" style="display: none;"></span>
     </div>
-  </section>
 
-  <div class="mt-6">
-    <a href="#" id="resetApp" class="btn-ghost">Réinitialiser</a>
+    <!-- Description taille adaptée -->
+    <p id="vDesc" style="font-size: 1rem;"></p>
+
+    <!-- Image -->
+    <img id="vImg" alt="" class="hidden" />
+
+    <!-- Liens -->
+    <div id="vLinks" class="grid gap-2 mt-3"></div>
+
+    <!-- Boutons un peu plus bas -->
+    <div class="flex gap-2 mt-6">
+      <button id="vShare" class="btn-ghost" style="font-size: 1rem; padding: 0.5rem 1rem;">Partager</button>
+      <button id="vCopy" class="btn-ghost" style="font-size: 1rem; padding: 0.5rem 1rem;">Copier le lien</button>
+    </div>
   </div>
+</section>
+
+<!-- Bouton Retour -->
+<div class="mt-8 flex justify-center">
+  <a href="#" id="resetApp" class="btn-ghost" style="font-size: 1rem; padding: 0.6rem 1.2rem;">
+    <span class="material-icons align-middle mr-1">arrow_back</span>
+  </a>
+</div>
+
 
   <!-- ClipboardJS -->
   <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
@@ -504,5 +519,7 @@
   </script>
 </body>
 </html>
+
+
 
 
