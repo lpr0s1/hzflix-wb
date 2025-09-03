@@ -117,14 +117,14 @@
   <section id="creator">
     <div class="grid gap-3">
       <input id="inTitle" class="input" placeholder="Titre (requis)" />
-      <input id="inPseudo" class="input" placeholder="Pseudo (optionnel)" />
+      <input id="inPseudo" class="input" placeholder="Pseudo (optionnel)"/>
       <textarea id="inDesc" class="input" placeholder="Description (max 500)"></textarea>
       <input id="inImage" class="input" placeholder="URL de l’image (optionnel)" />
       <select id="inTheme" class="input">
-        <option value="particles">Particles</option>
-        <option value="retro">Retro</option>
-        <option value="luxury">Luxury</option>
-        <option value="racing">Racing</option>
+        <option value="particles">Pro</option>
+        <option value="retro">Certified</option>
+        <option value="luxury">Créator</option>
+        <option value="racing">Admin</option>
       </select>
       <!-- Champ slug présent (corrige l’erreur lors de la génération) -->
       <input id="inSlug" class="input" placeholder="Identifiant personnalisé (optionnel)" />
@@ -165,7 +165,7 @@
 
 <!-- Viewer -->
 <section id="viewer" class="hidden">
-  <div class="grid gap-2" style="box-shadow: 0px 0px 5px white; border-radius: 3px; padding: 10px 20px;">
+  <div class="grid gap-2" style="box-shadow: 0px 0px 9px darkorange; border-radius: 3px; padding: 13px 30px;">
     <br>
     <!-- Titre plus grand -->
     <h1 id="vTitle" style="font-size: 2rem; font-weight: bold;"></h1>
@@ -186,9 +186,17 @@
 <br><br>
     <hr style="color: darkorange">
     <!-- Liens -->
-    <div id="vLinks" class="grid gap-2 mt-3"></div>
+    <div id="vLinks" class="grid gap-2 mt-3" style="animation: yh 4s infinite;"></div>
 <br><br><br>
-    <!-- Boutons un peu plus bas -->
+<style>
+  @keyframes yh{
+    0%{box-shadow: 0px 0px 0px black}
+    50%{box-shadow: 0px 0px 5px darkorange}
+    100%{box-shadow: 0px 0px 0px black}
+  }
+</style>
+      
+    
     <div class="flex gap-2 mt-6">
       <button id="vShare" class="btn-ghost" style="font-size: 1rem; padding: 0.5rem 1rem;">Partager</button>
       <button id="vCopy" class="btn-ghost" style="font-size: 1rem; padding: 0.5rem 1rem;">Copier le lien</button>
