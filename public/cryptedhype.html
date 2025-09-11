@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>cryptedhype – Chiffrement & Déchiffrement</title>
   <meta name="description" content="cryptedhype : chiffrez et déchiffrez vos fichiers (.txt, .pdf, .jpg, .apk…) en PGP directement dans votre navigateur.">
   <meta name="keywords" content="PGP,chiffrement,cryptographie,fichiers,openpgp">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ff0000">
-  <meta property="og:title" content="cryptedhype">
-  <meta property="og:description" content="Chiffrez et déchiffrez vos fichiers en PGP sans quitter la page.">
-  <meta property="og:url" content="https://hzflix.online/cryptedhype">
-  <meta property="og:type" content="website">
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <!-- OpenPGP.js via CDN (assure le global window.openpgp) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/openpgp/5.6.2/openpgp.min.js" defer></script>
 </head>
+
 <body class="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-6">
 
   <h1 class="text-4xl font-bold mb-8 text-red-600">cryptedhype</h1>
@@ -52,32 +52,35 @@
     <div id="decrypt-result" class="flex flex-col space-y-4 mt-4"></div>
   </section>
 
-  <!-- OpenPGP.js -->
-  <script src="https://cdn.jsdelivr.net/npm/openpgp@5.7.1/dist/openpgp.min.js"></script>
-  <script>
+  <!-- Script principal : attendre le chargement complet -->
+  <script defer>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (typeof openpgp !== 'object') {
+      alert('Échec du chargement de OpenPGP.js');
+      return;
+    }
+
     // ——— CHIFFREMENT ———
     document.getElementById("encrypt-input").addEventListener("change", async (e) => {
       const file = e.target.files[0];
-      if (!file) return;
-
       const resultEl = document.getElementById("encrypt-result");
       resultEl.innerHTML = "";
 
+      if (!file) return;
+
       try {
-        // Lecture du fichier en binaire
         const data = new Uint8Array(await file.arrayBuffer());
 
-        // Génération de la paire PGP (sans passphrase)
-        const { privateKey: privArmored, publicKey: pubArmored } =
-          await openpgp.generateKey({
-            userIDs: [{ name: "cryptedhype User", email: "user@hzflix.online" }],
-            curve: "curve25519"
-          });
+        // Génération de la paire PGP
+        const { privateKey: privArmored, publicKey: pubArmored } = await openpgp.generateKey({
+          userIDs: [{ name: "cryptedhype User", email: "user@hzflix.online" }],
+          curve: "curve25519"
+        });
 
-        // Préparer message binaire
+        // Créer message binaire
         const message = await openpgp.createMessage({ binary: data });
 
-        // Clé publique prête à l’emploi
+        // Préparer clé publique
         const publicKey = await openpgp.readKey({ armoredKey: pubArmored });
 
         // Chiffrement en binaire
@@ -87,7 +90,7 @@
           format: "binary"
         });
 
-        // Lien de téléchargement du .pgp
+        // Lien de téléchargement .pgp
         const blob = new Blob([encryptedBinary], { type: "application/pgp-encrypted" });
         const linkEnc = document.createElement("a");
         linkEnc.href = URL.createObjectURL(blob);
@@ -123,13 +126,12 @@
     document.getElementById("decrypt-btn").addEventListener("click", async () => {
       const fileInput = document.getElementById("decrypt-input");
       const privArmored = document.getElementById("private-key").value.trim();
+      const resultEl = document.getElementById("decrypt-result");
+      resultEl.innerHTML = "";
 
       if (!fileInput.files.length || !privArmored) {
         return alert("Veuillez fournir le fichier chiffré et la clé privée.");
       }
-
-      const resultEl = document.getElementById("decrypt-result");
-      resultEl.innerHTML = "";
 
       try {
         const file = fileInput.files[0];
@@ -163,6 +165,7 @@
         alert("Erreur lors du déchiffrement : " + err.message);
       }
     });
+  });
   </script>
 </body>
 </html>
