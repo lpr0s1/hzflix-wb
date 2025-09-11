@@ -17,12 +17,37 @@
 <body class="min-h-screen flex flex-col items-center justify-start p-6 text-gray-100">
 
 <div style="display: flex;">
-  <h1 class="text-5xl font-extrabold mb-10 text-red-500" style="background: linear-gradient(to right, red, darkred);
+  <h1 class="text-5xl font-extrabold mb-10 text-red-500" style="background: linear-gradient(to right, darkred, darkred, darkred, darkred, red, red, red);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-">cryptedhype</h1><small style="color: lightgrey; font-family: 'Copperplate';">1.0.1</small></div>
+">cryptedhype</h1><small style="color: white; font-family: 'Copperplate';">1.0.1</small></div>
+
+
+<span class="tx">Sécurisez vos fichiers</span>
+
+<style>
+.tx {
+  bottom: 41px;
+  position: relative;
+  display: inline-block;
+  overflow: hidden; 
+  white-space: nowrap;   
+  border-right: 2px solid;
+  width: 0;
+  animation: typing 3s steps(20, end) forwards, blink 0.7s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 18ch } 
+}
+
+@keyframes blink {
+  50% { border-color: transparent }
+}
+</style>
   
 
   
@@ -31,7 +56,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  color: transparent; font-family: 'Copperplate';
+  color: transparent;
 ">Chiffrer un fichier</h2>
     <input
       id="encrypt-input"
@@ -47,7 +72,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  color: transparent; font-family: 'Copperplate';
+  color: transparent;
 ">Déchiffrer un fichier</h2>
     <input
       id="decrypt-input"
@@ -180,11 +205,11 @@
       });
     });
   </script>
-  <br>
 
 <a href="#" style="color: darkred; text-decoration: underline;" onclick="alert('Fonctionnement\n\nAjouter les fichiers que vous souhaitez chiffrés pour éviter que son contenu sois visible.\n\nGrace a votre clé pgp, que vous gardez précieusement. En dessous vous avez la partie ou il faut ajouter le fichier que vous avez chiffré, pour le déchiffré avec cette clé.')">Comment ça marche ?</a>
 <a href="#" style="color: darkred; text-decoration: underline;" onclick="alert('1.0.1\n11/09/2025')">Mise a jour</a>
 </body>
 </html>
+
 
 
