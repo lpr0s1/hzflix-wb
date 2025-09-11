@@ -4,169 +4,171 @@
   <meta charset="UTF-8" />
   <title>cryptedhype – Chiffrement & Déchiffrement</title>
   <meta name="description" content="cryptedhype : chiffrez et déchiffrez vos fichiers (.txt, .pdf, .jpg, .apk…) en PGP directement dans votre navigateur.">
-  <meta name="keywords" content="PGP,chiffrement,cryptographie,fichiers,openpgp">
+  <meta name="keywords" content="PGP,chiffrement,cryptographie,fichiers">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ff0000">
 
-  <!-- Tailwind via CDN -->
-  <script src="https://cdn.tailwindcss.com" defer></script>
-  <!-- OpenPGP.js via CDN (assure le global window.openpgp) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/openpgp/5.6.2/openpgp.min.js" defer></script>
+  <!-- Couleurs sombres et accent rouge -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #121212; }
+    .card { background-color: #1f1f1f; }
+  </style>
 </head>
+<body class="min-h-screen flex flex-col items-center justify-start p-6 text-gray-100">
 
-<body class="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-6">
+  <h1 class="text-5xl font-extrabold mb-10 text-red-500">cryptedhype</h1>
 
-  <h1 class="text-4xl font-bold mb-8 text-red-600">cryptedhype</h1>
-
-  <!-- Section chiffrement -->
-  <section id="encrypt-section" class="w-full max-w-md mb-12">
-    <h2 class="text-2xl mb-4 text-red-600">Chiffrer un fichier</h2>
+  <!-- Card Chiffrement -->
+  <div class="card rounded-xl shadow-lg p-6 w-full max-w-lg mb-12 transform transition hover:scale-[1.02]">
+    <h2 class="text-2xl font-bold mb-4 text-red-400">🔐 Chiffrer un fichier</h2>
     <input
       id="encrypt-input"
       type="file"
-      class="w-full mb-4 text-sm file:bg-red-600 file:text-white file:px-4 file:py-2 file:rounded"
+      class="w-full mb-4 text-sm file:bg-red-600 file:text-white file:px-4 file:py-2 file:rounded cursor-pointer"
     />
     <div id="encrypt-result" class="flex flex-col space-y-4"></div>
-  </section>
+  </div>
 
-  <!-- Section déchiffrement -->
-  <section id="decrypt-section" class="w-full max-w-md">
-    <h2 class="text-2xl mb-4 text-red-600">Déchiffrer un fichier</h2>
+  <!-- Card Déchiffrement -->
+  <div class="card rounded-xl shadow-lg p-6 w-full max-w-lg transform transition hover:scale-[1.02]">
+    <h2 class="text-2xl font-bold mb-4 text-red-400">🔓 Déchiffrer un fichier</h2>
     <input
       id="decrypt-input"
       type="file"
-      class="w-full mb-2 text-sm file:bg-red-600 file:text-white file:px-4 file:py-2 file:rounded"
+      class="w-full mb-2 text-sm file:bg-red-600 file:text-white file:px-4 file:py-2 file:rounded cursor-pointer"
     />
     <textarea
       id="private-key"
       rows="4"
       placeholder="Collez ici votre clé privée PGP"
-      class="w-full mb-4 p-2 bg-gray-800 text-sm text-white rounded"
+      class="w-full mb-4 p-3 bg-gray-700 text-sm text-white rounded placeholder-gray-400"
     ></textarea>
     <button
       id="decrypt-btn"
-      class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200"
+      class="w-full py-3 bg-red-600 rounded text-white font-semibold transition transform hover:bg-red-700 hover:scale-105"
     >
       Déchiffrer
     </button>
     <div id="decrypt-result" class="flex flex-col space-y-4 mt-4"></div>
-  </section>
+  </div>
 
-  <!-- Script principal : attendre le chargement complet -->
-  <script defer>
-  window.addEventListener('DOMContentLoaded', () => {
-    if (typeof openpgp !== 'object') {
-      alert('Échec du chargement de OpenPGP.js');
-      return;
-    }
-
-    // ——— CHIFFREMENT ———
-    document.getElementById("encrypt-input").addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      const resultEl = document.getElementById("encrypt-result");
-      resultEl.innerHTML = "";
-
-      if (!file) return;
-
-      try {
-        const data = new Uint8Array(await file.arrayBuffer());
-
-        // Génération de la paire PGP
-        const { privateKey: privArmored, publicKey: pubArmored } = await openpgp.generateKey({
-          userIDs: [{ name: "cryptedhype User", email: "user@hzflix.online" }],
-          curve: "curve25519"
-        });
-
-        // Créer message binaire
-        const message = await openpgp.createMessage({ binary: data });
-
-        // Préparer clé publique
-        const publicKey = await openpgp.readKey({ armoredKey: pubArmored });
-
-        // Chiffrement en binaire
-        const encryptedBinary = await openpgp.encrypt({
-          message,
-          encryptionKeys: publicKey,
-          format: "binary"
-        });
-
-        // Lien de téléchargement .pgp
-        const blob = new Blob([encryptedBinary], { type: "application/pgp-encrypted" });
-        const linkEnc = document.createElement("a");
-        linkEnc.href = URL.createObjectURL(blob);
-        linkEnc.download = file.name + ".pgp";
-        linkEnc.textContent = "Télécharger le fichier chiffré";
-        linkEnc.className = "text-red-400 hover:underline";
-
-        // Affichage de la clé privée + bouton copier
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex flex-col";
-
-        const pre = document.createElement("pre");
-        pre.textContent = privArmored;
-        pre.className = "bg-gray-800 text-white p-2 text-sm overflow-auto max-h-48 whitespace-pre-wrap break-all rounded";
-
-        const copyBtn = document.createElement("button");
-        copyBtn.textContent = "Copier la clé privée";
-        copyBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200";
-        copyBtn.addEventListener("click", () => {
-          navigator.clipboard.writeText(privArmored);
-          copyBtn.textContent = "Clé copiée !";
-        });
-
-        wrapper.append(pre, copyBtn);
-        resultEl.append(linkEnc, wrapper);
-
-      } catch (err) {
-        alert("Erreur lors du chiffrement : " + err.message);
+  <!-- OpenPGP.js -->
+  <script src="https://cdn.jsdelivr.net/npm/openpgp@5.7.0/dist/openpgp.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Vérifier la présence d'OpenPGP
+      if (typeof openpgp !== 'object') {
+        alert('Impossible de charger OpenPGP.js');
+        return;
       }
+
+      // ——— CHIFFREMENT ———
+      const encInput = document.getElementById('encrypt-input');
+      const encResult = document.getElementById('encrypt-result');
+
+      encInput.addEventListener('change', async () => {
+        encResult.innerHTML = '';
+        const file = encInput.files[0];
+        if (!file) return;
+
+        try {
+          // Lire fichier binaire
+          const data = new Uint8Array(await file.arrayBuffer());
+
+          // Générer paire PGP
+          const { privateKey: privArmored, publicKey: pubArmored } =
+            await openpgp.generateKey({
+              userIDs: [{ name: 'cryptedhype User', email: 'user@hzflix.online' }],
+              curve: 'curve25519'
+            });
+
+          // Créer message binaire
+          const message = await openpgp.createMessage({ binary: data });
+          const publicKey = await openpgp.readKey({ armoredKey: pubArmored });
+
+          // Chiffrer en binaire
+          const encryptedBinary = await openpgp.encrypt({
+            message,
+            encryptionKeys: publicKey,
+            format: 'binary'
+          });
+
+          // Lien de téléchargement du fichier chiffré
+          const blob = new Blob([encryptedBinary], { type: 'application/pgp-encrypted' });
+          const linkEnc = document.createElement('a');
+          linkEnc.href = URL.createObjectURL(blob);
+          linkEnc.download = file.name + '.pgp';
+          linkEnc.textContent = '⬇️ Télécharger le .pgp';
+          linkEnc.className = 'text-red-400 hover:underline';
+
+          // Afficher clé privée + bouton copier
+          const wrapper = document.createElement('div');
+          wrapper.className = 'mt-4 flex flex-col space-y-2';
+
+          const pre = document.createElement('pre');
+          pre.textContent = privArmored;
+          pre.className = 'bg-gray-700 text-white p-3 text-xs overflow-auto max-h-56 rounded';
+
+          const copyBtn = document.createElement('button');
+          copyBtn.textContent = '📋 Copier la clé privée';
+          copyBtn.className = 'self-start px-4 py-2 bg-red-600 text-white rounded transition hover:bg-red-700';
+          copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(privArmored);
+            copyBtn.textContent = '✅ Clé copiée';
+          });
+
+          wrapper.append(pre, copyBtn);
+          encResult.append(linkEnc, wrapper);
+
+        } catch (err) {
+          alert('Erreur lors du chiffrement : ' + err.message);
+        }
+      });
+
+      // ——— DÉCHIFFREMENT ———
+      const decInput = document.getElementById('decrypt-input');
+      const decBtn = document.getElementById('decrypt-btn');
+      const decResult = document.getElementById('decrypt-result');
+      const privTextarea = document.getElementById('private-key');
+
+      decBtn.addEventListener('click', async () => {
+        decResult.innerHTML = '';
+        const file = decInput.files[0];
+        const privArmored = privTextarea.value.trim();
+
+        if (!file || !privArmored) {
+          return alert('Fichier chiffré ET clé privée requis.');
+        }
+
+        try {
+          const encryptedData = new Uint8Array(await file.arrayBuffer());
+          const privateKeyObj = await openpgp.readPrivateKey({ armoredKey: privArmored });
+          const message = await openpgp.readMessage({ binaryMessage: encryptedData });
+
+          const { data: decryptedBinary } = await openpgp.decrypt({
+            message,
+            decryptionKeys: privateKeyObj,
+            format: 'binary'
+          });
+
+          // Lien de téléchargement du fichier déchiffré
+          const originalName = file.name.replace(/\.pgp$/i, '') || 'decrypted.dat';
+          const blob = new Blob([decryptedBinary]);
+          const linkDec = document.createElement('a');
+          linkDec.href = URL.createObjectURL(blob);
+          linkDec.download = originalName;
+          linkDec.textContent = '⬇️ Télécharger le déchiffré';
+          linkDec.className = 'text-red-400 hover:underline';
+
+          decResult.append(linkDec);
+
+        } catch (err) {
+          alert('Erreur lors du déchiffrement : ' + err.message);
+        }
+      });
     });
-
-    // ——— DÉCHIFFREMENT ———
-    document.getElementById("decrypt-btn").addEventListener("click", async () => {
-      const fileInput = document.getElementById("decrypt-input");
-      const privArmored = document.getElementById("private-key").value.trim();
-      const resultEl = document.getElementById("decrypt-result");
-      resultEl.innerHTML = "";
-
-      if (!fileInput.files.length || !privArmored) {
-        return alert("Veuillez fournir le fichier chiffré et la clé privée.");
-      }
-
-      try {
-        const file = fileInput.files[0];
-        const encryptedData = new Uint8Array(await file.arrayBuffer());
-
-        // Lecture de la clé privée
-        const privateKey = await openpgp.readPrivateKey({ armoredKey: privArmored });
-
-        // Lecture du message chiffré
-        const message = await openpgp.readMessage({ binaryMessage: encryptedData });
-
-        // Déchiffrement en binaire
-        const { data: decryptedBinary } = await openpgp.decrypt({
-          message,
-          decryptionKeys: privateKey,
-          format: "binary"
-        });
-
-        // Lien de téléchargement du fichier déchiffré
-        const originalName = file.name.replace(/\.pgp$/i, "") || "decrypted.dat";
-        const blob = new Blob([decryptedBinary]);
-        const linkDec = document.createElement("a");
-        linkDec.href = URL.createObjectURL(blob);
-        linkDec.download = originalName;
-        linkDec.textContent = "Télécharger le fichier déchiffré";
-        linkDec.className = "text-red-400 hover:underline";
-
-        resultEl.append(linkDec);
-
-      } catch (err) {
-        alert("Erreur lors du déchiffrement : " + err.message);
-      }
-    });
-  });
   </script>
 </body>
 </html>
+
 
