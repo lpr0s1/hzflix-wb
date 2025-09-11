@@ -12,18 +12,28 @@
   <meta property="og:url" content="https://hzflix.online/cryptedhype">
   <meta property="og:type" content="website">
 
-  <!-- PWA manifest -->
-  <link rel="manifest" href="/cryptedhype/manifest.json">
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Accent rouge nerveux */
-    body { background: #111; color: #eee; }
-    .accent { color: #ff0000; }
-    .btn { @apply px-4 py-2 rounded font-semibold transition-all; }
-    .btn-red { @apply bg-red-600 hover:bg-red-700 text-white; }
-    .dialog { @apply fixed inset-0 bg-black/80 flex items-center justify-center p-4; }
+    body {
+      background: #111;
+      color: #eee;
+    }
+    .accent {
+      color: #ff0000;
+    }
+    .btn {
+      @apply px-4 py-2 rounded font-semibold transition-all;
+    }
+    .btn-red {
+      @apply bg-red-600 hover:bg-red-700 text-white;
+    }
+    .dialog {
+      @apply fixed inset-0 bg-black/80 flex items-center justify-center p-4;
+    }
+    /* Préserve le fond sombre et le texte blanc */
+    pre.privkey {
+      @apply text-white bg-transparent p-2 text-sm overflow-auto;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-6">
@@ -33,16 +43,28 @@
   <!-- Section chiffrement -->
   <section id="encrypt-section" class="w-full max-w-md mb-12">
     <h2 class="text-2xl mb-4 accent">Chiffrer un fichier</h2>
-    <input type="file" id="file-to-encrypt" class="mb-4 w-full text-sm file:bg-red-600 file:text-white file:py-2 file:px-4 file:rounded"/>
-    <button id="encrypt-btn" class="btn btn-red mb-4 w-full">Générer clé & chiffrer</button>
+    <input
+      type="file"
+      id="file-to-encrypt"
+      class="mb-4 w-full text-sm file:bg-red-600 file:text-white file:py-2 file:px-4 file:rounded"
+    />
     <div id="encrypt-result" class="space-y-4"></div>
   </section>
 
   <!-- Section déchiffrement -->
   <section id="decrypt-section" class="w-full max-w-md">
     <h2 class="text-2xl mb-4 accent">Déchiffrer un fichier</h2>
-    <input type="file" id="file-to-decrypt" class="mb-2 w-full text-sm file:bg-red-600 file:text-white file:py-2 file:px-4 file:rounded"/>
-    <textarea id="private-key" rows="4" placeholder="Collez ici votre clé privée PGP" class="mb-4 w-full p-2 bg-gray-900 text-sm"></textarea>
+    <input
+      type="file"
+      id="file-to-decrypt"
+      class="mb-2 w-full text-sm file:bg-red-600 file:text-white file:py-2 file:px-4 file:rounded"
+    />
+    <textarea
+      id="private-key"
+      rows="4"
+      placeholder="Collez ici votre clé privée PGP"
+      class="mb-4 w-full p-2 bg-gray-900 text-sm text-white"
+    ></textarea>
     <button id="decrypt-btn" class="btn btn-red w-full">Déchiffrer</button>
     <div id="decrypt-result" class="mt-4"></div>
   </section>
@@ -52,7 +74,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
   <script>
-    // Paramètre URL chiffré (ex: ?token=U2FsdGVkX1...)
+    // Fonction utilitaire pour décrypter un paramètre URL (chiffré côté client)
     const URL_SECRET = "hzflixParamKey";
     function getDecryptedParam(param) {
       const raw = new URLSearchParams(location.search).get(param);
@@ -64,7 +86,7 @@
         return null;
       }
     }
-    // Exemple d'utilisation :
+    // Masquer/en afficher des sections selon token chiffré
     const mode = getDecryptedParam("token");
     if (mode === "dec") {
       document.getElementById("encrypt-section").classList.add("hidden");
@@ -72,12 +94,10 @@
       document.getElementById("decrypt-section").classList.add("hidden");
     }
 
-
-    // FONCTIONS DE CHIFFREMENT
-    document.getElementById("encrypt-btn").addEventListener("click", async () => {
-      const fileInput = document.getElementById("file-to-encrypt");
-      if (!fileInput.files.length) return alert("Choisissez un fichier d'abord.");
-      const file = fileInput.files[0];
+    // Quand l'utilisateur sélectionne un fichier, on génère la clé et on chiffre
+    document.getElementById("file-to-encrypt").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
       const data = new Uint8Array(await file.arrayBuffer());
 
       // Génération de la paire PGP
@@ -93,23 +113,23 @@
         config: { allowUnauthenticatedStream: true }
       });
 
-      // Affichage du lien de téléchargement
+      // Préparer le lien de téléchargement du fichier chiffré
       const blob = new Blob([encrypted], { type: "application/pgp-encrypted" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = file.name + ".pgp";
-      link.textContent = "Télécharger fichier chiffré";
+      link.textContent = "Télécharger le fichier chiffré";
       link.className = "text-red-400 hover:underline";
 
-      // Affichage de la clé privée
+      // Afficher la clé privée automatiquement (texte en blanc)
       const pre = document.createElement("pre");
       pre.textContent = privateKey;
-      pre.className = "bg-gray-900 p-2 text-xs overflow-auto";
+      pre.className = "privkey";
 
-      // Bouton copier
+      // Bouton "Copier"
       const copyBtn = document.createElement("button");
-      copyBtn.textContent = "Copier clé privée";
+      copyBtn.textContent = "Copier la clé privée";
       copyBtn.className = "btn btn-red";
       copyBtn.onclick = () => navigator.clipboard.writeText(privateKey);
 
@@ -118,18 +138,20 @@
       result.append(link, pre, copyBtn);
     });
 
-    // FONCTIONS DE DÉCHIFFREMENT
+    // Déchiffrement
     document.getElementById("decrypt-btn").addEventListener("click", async () => {
       const fileInput = document.getElementById("file-to-decrypt");
       const privKeyArmored = document.getElementById("private-key").value.trim();
-      if (!fileInput.files.length || !privKeyArmored) return alert("Fichier et clé privée requis.");
+      if (!fileInput.files.length || !privKeyArmored) {
+        return alert("Veuillez fournir le fichier chiffré et la clé privée.");
+      }
       const file = fileInput.files[0];
       const encryptedData = await file.arrayBuffer();
 
-      // Lecture et déverrouillage de la clé privée
+      // Lecture de la clé privée
       const privateKeyObj = await openpgp.readPrivateKey({ armoredKey: privKeyArmored });
 
-      // Déchiffrement
+      // Lecture du message chiffré
       const message = await openpgp.readMessage({ binaryMessage: new Uint8Array(encryptedData) });
       const { data: decrypted } = await openpgp.decrypt({
         message,
@@ -137,14 +159,14 @@
         format: "binary"
       });
 
-      // Téléchargement du fichier déchiffré
+      // Préparer lien de téléchargement du fichier déchiffré
       const outName = file.name.replace(/\.pgp$/i, "") || "decrypted.dat";
       const blob = new Blob([decrypted]);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = outName;
-      link.textContent = "Télécharger fichier déchiffré";
+      link.textContent = "Télécharger le fichier déchiffré";
       link.className = "text-red-400 hover:underline";
 
       const result = document.getElementById("decrypt-result");
@@ -154,3 +176,4 @@
   </script>
 </body>
 </html>
+
