@@ -7,7 +7,7 @@
   <meta name="keywords" content="PGP,chiffrement,cryptographie,fichiers">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Couleurs sombres et accent rouge -->
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background-color: #121212; }
@@ -16,11 +16,23 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-6 text-gray-100">
 
-  <h1 class="text-5xl font-extrabold mb-10 text-red-500">cryptedhype</h1>
+<div style="display: flex;">
+  <h1 class="text-5xl font-extrabold mb-10 text-red-500" style="background: linear-gradient(to right, red, darkred);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+">cryptedhype</h1><small style="color: lightgrey">1.0.1</small></div>
+  
 
-  <!-- Card Chiffrement -->
+  
   <div class="card rounded-xl shadow-lg p-6 w-full max-w-lg mb-12 transform transition hover:scale-[1.02]">
-    <h2 class="text-2xl font-bold mb-4 text-red-400">🔐 Chiffrer un fichier</h2>
+    <h2 class="text-2xl font-bold mb-4 text-red-400" style="background: linear-gradient(to right, red, orange);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+">Chiffrer un fichier</h2>
     <input
       id="encrypt-input"
       type="file"
@@ -29,9 +41,14 @@
     <div id="encrypt-result" class="flex flex-col space-y-4"></div>
   </div>
 
-  <!-- Card Déchiffrement -->
+  
   <div class="card rounded-xl shadow-lg p-6 w-full max-w-lg transform transition hover:scale-[1.02]">
-    <h2 class="text-2xl font-bold mb-4 text-red-400">🔓 Déchiffrer un fichier</h2>
+    <h2 class="text-2xl font-bold mb-4 text-red-400" style="background: linear-gradient(to right, orange, red);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+">Déchiffrer un fichier</h2>
     <input
       id="decrypt-input"
       type="file"
@@ -52,17 +69,16 @@
     <div id="decrypt-result" class="flex flex-col space-y-4 mt-4"></div>
   </div>
 
-  <!-- OpenPGP.js -->
+  
   <script src="https://cdn.jsdelivr.net/npm/openpgp@5.7.0/dist/openpgp.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Vérifier la présence d'OpenPGP
       if (typeof openpgp !== 'object') {
         alert('Impossible de charger OpenPGP.js');
         return;
       }
 
-      // ——— CHIFFREMENT ———
+      
       const encInput = document.getElementById('encrypt-input');
       const encResult = document.getElementById('encrypt-result');
 
@@ -72,28 +88,26 @@
         if (!file) return;
 
         try {
-          // Lire fichier binaire
+          
           const data = new Uint8Array(await file.arrayBuffer());
 
-          // Générer paire PGP
+          
           const { privateKey: privArmored, publicKey: pubArmored } =
             await openpgp.generateKey({
               userIDs: [{ name: 'cryptedhype User', email: 'user@hzflix.online' }],
               curve: 'curve25519'
             });
 
-          // Créer message binaire
+          
           const message = await openpgp.createMessage({ binary: data });
           const publicKey = await openpgp.readKey({ armoredKey: pubArmored });
 
-          // Chiffrer en binaire
           const encryptedBinary = await openpgp.encrypt({
             message,
             encryptionKeys: publicKey,
             format: 'binary'
           });
 
-          // Lien de téléchargement du fichier chiffré
           const blob = new Blob([encryptedBinary], { type: 'application/pgp-encrypted' });
           const linkEnc = document.createElement('a');
           linkEnc.href = URL.createObjectURL(blob);
@@ -101,7 +115,6 @@
           linkEnc.textContent = '⬇️ Télécharger le .pgp';
           linkEnc.className = 'text-red-400 hover:underline';
 
-          // Afficher clé privée + bouton copier
           const wrapper = document.createElement('div');
           wrapper.className = 'mt-4 flex flex-col space-y-2';
 
@@ -125,7 +138,7 @@
         }
       });
 
-      // ——— DÉCHIFFREMENT ———
+      
       const decInput = document.getElementById('decrypt-input');
       const decBtn = document.getElementById('decrypt-btn');
       const decResult = document.getElementById('decrypt-result');
@@ -151,7 +164,6 @@
             format: 'binary'
           });
 
-          // Lien de téléchargement du fichier déchiffré
           const originalName = file.name.replace(/\.pgp$/i, '') || 'decrypted.dat';
           const blob = new Blob([decryptedBinary]);
           const linkDec = document.createElement('a');
@@ -168,6 +180,10 @@
       });
     });
   </script>
+  <br>
+
+<a href="#" style="color: darkred; text-decoration: underline;" onclick="alert('Fonctionnement\n\nAjouter les fichiers que vous souhaitez chiffrés pour éviter que son contenu sois visible.\n\nGrace a votre clé pgp, que vous gardez précieusement. En dessous vous avez la partie ou il faut ajouter le fichier que vous avez chiffré, pour le déchiffré avec cette clé.')">Comment ça marche ?</a>
+<a href="#" style="color: darkred; text-decoration: underline;" onclick="alert('1.0.1\n11/09/2025')">Mise a jour</a>
 </body>
 </html>
 
