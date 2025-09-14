@@ -5,8 +5,8 @@
   </head>
 <body>
   <h1 style="background-color: black; color: white; padding: 10px 20px; border-radius: 3px;">Virement</h1>
-  <button onclick="copyText()">Copier</button>
   <h1>IBAN</h1>
+  <button onclick="copyText()">Copier</button>
 <p id="texte">IE48PPSE99038064679384</p>
   
 
@@ -17,16 +17,16 @@ function copyText() {
   navigator.clipboard.writeText(texte)
 }
 </script>
-  <button onclick="copyText()">Copier</button>
   <h1>BIC</h1>
+  <button onclick="copyTextt()">Copier</button>
 <p id="textet">PPSEIE22XXX</p>
   
 
 <script>
-function copyText() {
-  const texte = document.getElementById("textet").innerText;
+function copyTextt() {
+  const tex = document.getElementById("textet").innerText;
 
-  navigator.clipboard.writeText(texte)
+  navigator.clipboard.writeText(tex)
     
     });
 }
