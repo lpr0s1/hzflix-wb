@@ -1,0 +1,40 @@
+<html>
+  <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  </head>
+<body>
+  <button onclick="copyText()">Copier</button>
+  <h1>IBAN</h1>
+<p id="texte">IE48PPSE99038064679384</p>
+  
+
+<script>
+function copyText() {
+  const texte = document.getElementById("texte").innerText;
+
+  navigator.clipboard.writeText(texte)
+    .then(() => {
+      alert("Texte copié !");
+    })
+    .catch(err => {
+      console.error("Erreur lors de la copie : ", err);
+    });
+}
+</script>
+  <button onclick="copyText()">Copier</button>
+  <h1>BIC</h1>
+<p id="textet">PPSEIE22XXX</p>
+  
+
+<script>
+function copyText() {
+  const texte = document.getElementById("textet").innerText;
+
+  navigator.clipboard.writeText(texte)
+    
+    });
+}
+</script>
+</body>
+</html>
