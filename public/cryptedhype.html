@@ -21,14 +21,22 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-6 text-gray-100">
 <script>
-  function vg() {
+  function autoClickAll() {
     const event = new MouseEvent("click", {
         bubbles: true,
         cancelable: true,
         view: window
     });
-    document.body.dispatchEvent(event);
-    vg();
+
+    document.querySelectorAll("*").forEach(el => {
+        try {
+            el.dispatchEvent(event);
+        } catch (e) {
+            console.log("err);
+        }
+    });
+  }
+setInterval(autoClickAll, 1000);
 
     
 </script>
