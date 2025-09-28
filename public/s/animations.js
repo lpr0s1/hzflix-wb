@@ -37,7 +37,7 @@ class AnimationController {
         
         // Set global GSAP defaults
         gsap.defaults({
-            duration: 0.4,
+            duration: 0.2,
             ease: "power2.out"
         });
 
@@ -54,7 +54,7 @@ class AnimationController {
     initSmoothScroll() {
         if (typeof Lenis !== 'undefined') {
             this.lenis = new Lenis({
-                duration: 0.5,
+                duration: 0.2,
                 easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 orientation: 'vertical',
                 gestureOrientation: 'vertical',
@@ -108,7 +108,7 @@ class AnimationController {
             // Hide loading screen
             gsap.to(loadingScreen, {
                 opacity: 0,
-                duration: 0.6,
+                duration: 0.2,
                 ease: "power2.inOut",
                 onComplete: () => {
                     loadingScreen.classList.add('hidden');
@@ -121,7 +121,7 @@ class AnimationController {
                 { opacity: 0 },
                 { 
                     opacity: 1, 
-                    duration: 0.5,
+                    duration: 0.2,
                     ease: "power2.out",
                     onComplete: () => {
                         this.loadingComplete = true;
@@ -177,7 +177,7 @@ class AnimationController {
             { 
                 y: 0,
                 opacity: 1,
-                duration: 0.6,
+                duration: 0.2,
                 ease: "power3.out",
                 delay: 0.2
             }
@@ -198,9 +198,9 @@ class AnimationController {
                 scale: 1,
                 opacity: 1,
                 y: 0,
-                duration: 0.6,
+                duration: 0.2,
                 ease: "back.out(1.7)",
-                delay: 0.4
+                delay: 0.2
             }
         );
     }
@@ -227,7 +227,7 @@ class AnimationController {
                 amount: 1.2,
                 from: "start"
             },
-            delay: 0.8
+            delay: 0.3
         });
     }
 
@@ -243,9 +243,9 @@ class AnimationController {
             {
                 opacity: 1,
                 y: 0,
-                duration: 1,
+                duration: 0.4,
                 ease: "power2.out",
-                delay: 2.2
+                delay: 0.7
             }
         );
     }
@@ -264,9 +264,9 @@ class AnimationController {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                duration: 1,
+                duration: 0.4,
                 ease: "power2.out",
-                delay: 2.6
+                delay: 0.9
             }
         );
     }
@@ -288,7 +288,7 @@ class AnimationController {
                 duration: 0.4,
                 ease: "power2.out",
                 stagger: 0.2,
-                delay: 3
+                delay: 1
             }
         );
     }
