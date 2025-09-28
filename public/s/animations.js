@@ -54,7 +54,7 @@ class AnimationController {
     initSmoothScroll() {
         if (typeof Lenis !== 'undefined') {
             this.lenis = new Lenis({
-                duration: 0.2,
+                duration: 0.1,
                 easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 orientation: 'vertical',
                 gestureOrientation: 'vertical',
@@ -108,7 +108,7 @@ class AnimationController {
             // Hide loading screen
             gsap.to(loadingScreen, {
                 opacity: 0,
-                duration: 0.2,
+                duration: 0.1,
                 ease: "power2.inOut",
                 onComplete: () => {
                     loadingScreen.classList.add('hidden');
@@ -221,8 +221,8 @@ class AnimationController {
             opacity: 1,
             y: 0,
             rotationX: 0,
-            duration: 0.4,
-            ease: "back.out(1.7)",
+            duration: 0.1,
+            ease: "back.out(0.7)",
             stagger: {
                 amount: 1.2,
                 from: "start"
@@ -243,9 +243,9 @@ class AnimationController {
             {
                 opacity: 1,
                 y: 0,
-                duration: 0.4,
+                duration: 0.2,
                 ease: "power2.out",
-                delay: 0.7
+                delay: 0.3
             }
         );
     }
@@ -266,7 +266,7 @@ class AnimationController {
                 scale: 1,
                 duration: 0.4,
                 ease: "power2.out",
-                delay: 0.9
+                delay: 0.5
             }
         );
     }
@@ -288,7 +288,7 @@ class AnimationController {
                 duration: 0.4,
                 ease: "power2.out",
                 stagger: 0.2,
-                delay: 1
+                delay: 0.5
             }
         );
     }
