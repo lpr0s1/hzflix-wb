@@ -54,7 +54,7 @@ class AnimationController {
     initSmoothScroll() {
         if (typeof Lenis !== 'undefined') {
             this.lenis = new Lenis({
-                duration: 0.1,
+                duration: 0.02,
                 easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 orientation: 'vertical',
                 gestureOrientation: 'vertical',
@@ -108,7 +108,7 @@ class AnimationController {
             // Hide loading screen
             gsap.to(loadingScreen, {
                 opacity: 0,
-                duration: 0.1,
+                duration: 0.05,
                 ease: "power2.inOut",
                 onComplete: () => {
                     loadingScreen.classList.add('hidden');
@@ -121,7 +121,7 @@ class AnimationController {
                 { opacity: 0 },
                 { 
                     opacity: 1, 
-                    duration: 0.2,
+                    duration: 0.04,
                     ease: "power2.out",
                     onComplete: () => {
                         this.loadingComplete = true;
@@ -177,9 +177,9 @@ class AnimationController {
             { 
                 y: 0,
                 opacity: 1,
-                duration: 0.2,
+                duration: 0.05,
                 ease: "power3.out",
-                delay: 0.2
+                delay: 0.06
             }
         );
     }
@@ -198,9 +198,9 @@ class AnimationController {
                 scale: 1,
                 opacity: 1,
                 y: 0,
-                duration: 0.2,
+                duration: 0.04,
                 ease: "back.out(1.7)",
-                delay: 0.2
+                delay: 0.03
             }
         );
     }
@@ -221,13 +221,13 @@ class AnimationController {
             opacity: 1,
             y: 0,
             rotationX: 0,
-            duration: 0.1,
+            duration: 0.06,
             ease: "back.out(0.7)",
             stagger: {
                 amount: 1.2,
                 from: "start"
             },
-            delay: 0.3
+            delay: 0.07
         });
     }
 
@@ -243,9 +243,9 @@ class AnimationController {
             {
                 opacity: 1,
                 y: 0,
-                duration: 0.2,
+                duration: 0.06,
                 ease: "power2.out",
-                delay: 0.3
+                delay: 0.1
             }
         );
     }
@@ -264,9 +264,9 @@ class AnimationController {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                duration: 0.4,
+                duration: 0.06,
                 ease: "power2.out",
-                delay: 0.5
+                delay: 0.1
             }
         );
     }
@@ -285,10 +285,10 @@ class AnimationController {
                 opacity: 1,
                 x: 0,
                 rotationY: 0,
-                duration: 0.4,
+                duration: 0.07,
                 ease: "power2.out",
                 stagger: 0.2,
-                delay: 0.5
+                delay: 0.1
             }
         );
     }
@@ -334,7 +334,7 @@ class AnimationController {
                             opacity: 1,
                             y: 0,
                             rotationX: 0,
-                            duration: 0.6,
+                            duration: 0.1,
                             ease: "power2.out",
                             stagger: 0.03
                         }
@@ -462,7 +462,7 @@ class AnimationController {
                         opacity: 1,
                         scale: 1,
                         y: 0,
-                        duration: 0.6,
+                        duration: 0.3,
                         ease: "power2.out"
                     }
                 );
@@ -478,9 +478,9 @@ class AnimationController {
                         {
                             opacity: 1,
                             y: 0,
-                            duration: 0.8,
+                            duration: 0.06,
                             ease: "power2.out",
-                            delay: 0.6
+                            delay: 0.2
                         }
                     );
                 }
