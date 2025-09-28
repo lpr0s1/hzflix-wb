@@ -1387,7 +1387,7 @@ body {
     height: 60px;
     top: 60%;
     right: 15%;
-    animation-delay: 7s;
+    animation-delay: 3s;
 }
 
 .element-3 {
@@ -1395,7 +1395,7 @@ body {
     height: 80px;
     bottom: 30%;
     left: 70%;
-    animation-delay: 14s;
+    animation-delay: 2s;
 }
 
 @keyframes floatSlow {
@@ -1481,7 +1481,7 @@ body {
 [data-scroll-reveal] {
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 [data-scroll-reveal].revealed {
