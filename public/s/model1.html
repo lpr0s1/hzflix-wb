@@ -17,7 +17,7 @@
         }
 
         body {
-            z-index: 1;
+            z-index: -1;
             background-color: var(--bg-dark);
             color: var(--text-light);
             font-family: 'Inter', sans-serif;
@@ -37,6 +37,8 @@
             border-radius: 50%;
             transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             opacity: 0;
+            -webkit-pointer-events: none;
+            -webkit-border-radius: 50%;
         }
         /* Cacher le curseur sur les appareils tactiles */
         body.is-touch .cursor {
@@ -46,11 +48,13 @@
             left: -3px; top: -3px;
             width: 6px; height: 6px;
             background-color: var(--accent);
+            -webkit-background-color: var(--accent);
         }
         .cursor-outline {
             left: -15px; top: -15px;
             width: 30px; height: 30px;
             border: 2px solid var(--accent);
+            -webkit-border: 2px solid var(--accent);
             opacity: 0.5;
             transition: transform 0.1s ease-out, width 0.2s ease-out, height 0.2s ease-out;
         }
@@ -58,6 +62,7 @@
         .cursor-outline.is-hovering {
             transform: scale(2.5);
             border-color: rgba(0, 124, 240, 0.3);
+            -webkit-border-color: rgba(0, 124, 240, 0.3);
         }
 
         /* --- Préchargeur --- */
