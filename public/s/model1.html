@@ -147,6 +147,12 @@
             height: 0;
         }
 
+        header{
+            z-index: 99999;
+            background: rgba(0,0,0,0.5)
+            backdrop-filter: blur(10px)
+        }
+
     </style>
 </head>
 <body class="text-gray-100 antialiased">
@@ -266,7 +272,7 @@
 
     // Changer couleur fond
     bgColorInput.addEventListener('input', (e) => {
-      document.body.style.background = e.target.value;
+      document.body.style.backgroundColor = e.target.value;
     });
 
     // Changer couleur header
