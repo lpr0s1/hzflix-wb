@@ -148,12 +148,18 @@
             height: 0;
         }
 
-        header {
-    z-index: 99999;
-    background: rgba(0,0,0,0.5); /* ← il manquait un point-virgule */
-    backdrop-filter: blur(80px);
-    -webkit-backdrop-filter: blur(80px);
-}
+     header{
+         z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    /* UTILISE rgba, PAS opacity */
+    background: rgba(0,0,0,0.35);
+    /* le flou réel : keep -webkit- et non-prefixé */
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+     }
     </style>
 </head>
 <body class="text-gray-100 antialiased">
