@@ -17,7 +17,7 @@
         }
 
         body {
-            z-index: -1;
+            z-index: 999;
             background-color: var(--bg-dark);
             color: var(--text-light);
             font-family: 'Inter', sans-serif;
@@ -154,15 +154,15 @@
         }
 
      header{
-         position: sticky;
+         position: fixed;
          top: 0px;
-         z-index: 999999;
+         z-index: 99999999;
     display:flex;
     align-items:center;
     justify-content:center;
     color:#fff;
     /* UTILISE rgba, PAS opacity */
-    background: rgba(0,0,0,0.35);
+    background: rgba(0,0,0,0.5);
     /* le flou réel : keep -webkit- et non-prefixé */
     -webkit-backdrop-filter: blur(62px);
     backdrop-filter: blur(62px);
@@ -192,124 +192,6 @@
             
         </div>
     </header>
-
-    <style>
-    .btn-palette {
-      margin: 20px;
-      padding: 10px 20px;
-      background-color: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-
-    /* Popup */
-    #ptp {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      background-color: #333;
-    }
-
-    #ptp .popup-content {
-      background-color: #333;
-      padding: 20px;
-      border-radius: 10px;
-      min-width: 300px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-
-    #ptp .popup-content h2 {
-      margin-top: 0;
-        color: white;
-    }
-
-    .option {
-      margin: 15px 0;
-    }
-
-    .clseo {
-      float: right;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 20px;
-    }
-  </style>
-    <button class="btn-palette" style="position: relative; margin-top: 200px;">🎨 Palette de couleur</button>
-
-  <!-- Popup -->
-  <div class="popup" id="ptp">
-    <div class="popup-content">
-      <span class="close" id="close">&times;</span>
-      <h2>Options de personnalisation</h2>
-
-      <div class="option">
-        <label>Couleur de fond :</label>
-        <input type="color" id="bgColor" value="#f0f0f0">
-      </div>
-
-      <div class="option">
-        <label>Couleur du header :</label>
-        <input type="color" id="headerColor" value="#333333">
-      </div>
-
-      <div class="option">
-        <label>
-          <input type="checkbox" id="blurToggle">
-          Activer le flou du header
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const btnPalette = document.querySelector('.btn-palette');
-    const ptp = document.getElementById('ptp');
-    const closeBtn = document.getElementById('close');
-    const bgColorInput = document.getElementById('bgColor');
-    const headerColorInput = document.getElementById('headerColor');
-    const blurToggle = document.getElementById('blurToggle');
-
-    // Ouvrir popup
-    btnPalette.addEventListener('click', () => {
-      ptp.style.display = 'flex';
-    });
-
-    // Fermer popup
-    closeBtn.addEventListener('click', () => {
-      ptp.style.display = 'none';
-    });
-
-    // Changer couleur fond
-    bgColorInput.addEventListener('input', (e) => {
-      document.body.style.backgroundColor = e.target.value;
-    });
-
-    // Changer couleur header
-    headerColorInput.addEventListener('input', (e) => {
-      document.querySelector("header").style.background = e.target.value;
-    });
-
-    // Toggle blur
-    blurToggle.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        document.querySelector("header").style.backdropFilter = 'blur(8px)';
-        document.querySelector("header").style.background = headerColorInput.value + '80'; // transparence
-      } else {
-        document.querySelector("header").style.backdropFilter = 'none';
-        document.querySelector("header").style.background = headerColorInput.value;
-      }
-    });
-  </script>
-
-    
-
-    <!-- PALETTE DE COULEUR ICI -->
-
     
 
     <div id="menu-overlay" class="menu-overlay fixed inset-0 bg-black/80 backdrop-blur-xl z-40 flex items-center justify-center">
