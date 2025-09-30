@@ -147,12 +147,12 @@
             height: 0;
         }
 
-        header{
-            z-index: 99999;
-            background: rgba(0,0,0,0.5)
-            backdrop-filter: blur(10px)
-        }
-
+        header {
+    z-index: 99999;
+    background: rgba(0,0,0,0.5); /* ← il manquait un point-virgule */
+    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(80px);
+}
     </style>
 </head>
 <body class="text-gray-100 antialiased">
