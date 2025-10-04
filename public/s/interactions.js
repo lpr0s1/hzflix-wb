@@ -56,7 +56,7 @@ class InteractionManager {
                 gsap.to(header, {
                     backdropFilter: 'blur(20px) saturate(180%)',
                     background: 'rgba(248, 250, 252, 0.95)',
-                    duration: 0.3,
+                    duration: 0.01,
                     ease: 'power2.out'
                 });
             } else if (currentScrollY <= 100 && this.headerScrolled) {
@@ -66,7 +66,7 @@ class InteractionManager {
                 gsap.to(header, {
                     backdropFilter: 'blur(20px) saturate(180%)',
                     background: 'rgba(248, 250, 252, 0.8)',
-                    duration: 0.3,
+                    duration: 0.01,
                     ease: 'power2.out'
                 });
             }
@@ -77,14 +77,14 @@ class InteractionManager {
                     // Scrolling down - hide header
                     gsap.to(header, {
                         y: -100,
-                        duration: 0.3,
+                        duration: 0.01,
                         ease: 'power2.out'
                     });
                 } else if (scrollDelta < 0) {
                     // Scrolling up - show header
                     gsap.to(header, {
                         y: 0,
-                        duration: 0.3,
+                        duration: 0.01,
                         ease: 'power2.out'
                     });
                 }
@@ -185,7 +185,7 @@ class InteractionManager {
                 if (options.hoverScale) {
                     gsap.to(button, {
                         scale: options.hoverScale,
-                        duration: 0.3,
+                        duration: 0.03,
                         ease: 'power2.out'
                     });
                 }
@@ -193,7 +193,7 @@ class InteractionManager {
                 if (options.glow) {
                     gsap.to(button, {
                         boxShadow: '0 20px 40px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3)',
-                        duration: 0.3,
+                        duration: 0.03,
                         ease: 'power2.out'
                     });
                 }
@@ -205,7 +205,7 @@ class InteractionManager {
                     boxShadow: options.glow ? 
                         '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' :
                         button.style.boxShadow,
-                    duration: 0.3,
+                    duration: 0.03,
                     ease: 'power2.out'
                 });
             });
@@ -215,7 +215,7 @@ class InteractionManager {
                 if (options.clickScale) {
                     gsap.to(button, {
                         scale: options.clickScale,
-                        duration: 0.1,
+                        duration: 0.01,
                         ease: 'power2.out'
                     });
                 }
@@ -225,7 +225,7 @@ class InteractionManager {
                 if (options.clickScale) {
                     gsap.to(button, {
                         scale: options.hoverScale || 1,
-                        duration: 0.2,
+                        duration: 0.02,
                         ease: 'power2.out'
                     });
                 }
@@ -248,7 +248,7 @@ class InteractionManager {
             gsap.to(menuBtn, {
                 scale: 1.1,
                 rotation: 180,
-                duration: 0.3,
+                duration: 0.03,
                 ease: 'power2.out'
             });
         });
@@ -257,7 +257,7 @@ class InteractionManager {
             gsap.to(menuBtn, {
                 scale: 1,
                 rotation: 0,
-                duration: 0.3,
+                duration: 0.03,
                 ease: 'power2.out'
             });
         });
@@ -285,7 +285,7 @@ class InteractionManager {
             background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
             border-radius: 50%;
             transform: scale(0);
-            animation: ripple-animation 0.6s linear;
+            animation: ripple-animation 0.06s linear;
             pointer-events: none;
         `;
 
@@ -295,7 +295,7 @@ class InteractionManager {
         gsap.to(ripple, {
             scale: 2,
             opacity: 0,
-            duration: 0.6,
+            duration: 0.06,
             ease: 'power2.out',
             onComplete: () => {
                 ripple.remove();
@@ -378,7 +378,7 @@ class InteractionManager {
             { opacity: 0 },
             { 
                 opacity: 1, 
-                duration: 0.3,
+                duration: 0.03,
                 ease: 'power2.out'
             }
         );
@@ -393,9 +393,9 @@ class InteractionManager {
                 y: 0,
                 scale: 1,
                 opacity: 1,
-                duration: 0.4,
+                duration: 0.04,
                 ease: 'back.out(1.7)',
-                delay: 0.1
+                delay: 0.01
             }
         );
 
@@ -409,9 +409,9 @@ class InteractionManager {
             { 
                 y: 0,
                 opacity: 1,
-                duration: 0.3,
+                duration: 0.03,
                 stagger: 0.1,
-                delay: 0.3,
+                delay: 0.03,
                 ease: 'power2.out'
             }
         );
@@ -422,15 +422,15 @@ class InteractionManager {
             y: -30,
             scale: 0.95,
             opacity: 0,
-            duration: 0.3,
+            duration: 0.03,
             ease: 'power2.inOut'
         });
 
         gsap.to(modal, {
             opacity: 0,
-            duration: 0.3,
+            duration: 0.03,
             ease: 'power2.inOut',
-            delay: 0.1,
+            delay: 0.01,
             onComplete: () => {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
@@ -448,7 +448,7 @@ class InteractionManager {
         // Add checkmark animation
         gsap.to(button, {
             scale: 1.1,
-            duration: 0.2,
+            duration: 0.02,
             ease: 'power2.out',
             yoyo: true,
             repeat: 1
@@ -502,8 +502,8 @@ class InteractionManager {
             { 
                 x: 0,
                 opacity: 1,
-                duration: 0.3,
-                stagger: 0.1,
+                duration: 0.03,
+                stagger: 0.01,
                 ease: 'power2.out'
             }
         );
@@ -515,7 +515,7 @@ class InteractionManager {
         gsap.to(mobileMenu.querySelectorAll('.mobile-nav-item, .mobile-cta-button'), {
             x: -30,
             opacity: 0,
-            duration: 0.2,
+            duration: 0.02,
             stagger: 0.05,
             ease: 'power2.in',
             onComplete: () => {
@@ -562,7 +562,7 @@ class InteractionManager {
             height: 3px;
             background: linear-gradient(90deg, #3b82f6, #10b981);
             z-index: 9999;
-            transition: width 0.1s ease;
+            transition: width 0.01s ease;
         `;
         document.body.appendChild(progressBar);
 
@@ -583,7 +583,7 @@ class InteractionManager {
                 
                 if (targetElement) {
                     gsap.to(window, {
-                        duration: 1,
+                        duration: 0.1,
                         scrollTo: {
                             y: targetElement,
                             offsetY: 100
@@ -638,7 +638,7 @@ class InteractionManager {
                 y: -100,
                 x: Math.random() * 100 - 50,
                 rotation: 360,
-                duration: Math.random() * 10 + 10,
+                duration: Math.random() * 1 + 1,
                 repeat: -1,
                 ease: "none"
             });
@@ -680,7 +680,7 @@ class InteractionManager {
                 y: (Math.random() - 0.5) * 200,
                 scale: 0,
                 opacity: 0,
-                duration: 0.8,
+                duration: 0.08,
                 ease: "power2.out",
                 onComplete: () => {
                     particle.remove();
@@ -713,7 +713,7 @@ class InteractionManager {
                 y: Math.random() * -200 - 100,
                 rotation: Math.random() * 720,
                 scale: 0,
-                duration: 1.5,
+                duration: 0.5,
                 ease: "power2.out",
                 onComplete: () => {
                     confetti.remove();
@@ -825,7 +825,7 @@ class InteractionManager {
             resizeTimeout = setTimeout(() => {
                 // Refresh ScrollTrigger on resize
                 ScrollTrigger.refresh();
-            }, 250);
+            }, 200);
         });
     }
 
