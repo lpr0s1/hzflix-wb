@@ -37,7 +37,7 @@ class AnimationController {
         
         // Set global GSAP defaults
         gsap.defaults({
-            duration: 0.2,
+            duration: 0.02,
             ease: "power2.out"
         });
 
@@ -108,7 +108,7 @@ class AnimationController {
             // Hide loading screen
             gsap.to(loadingScreen, {
                 opacity: 0,
-                duration: 0.05,
+                duration: 0.01,
                 ease: "power2.inOut",
                 onComplete: () => {
                     loadingScreen.classList.add('hidden');
@@ -121,7 +121,7 @@ class AnimationController {
                 { opacity: 0 },
                 { 
                     opacity: 1, 
-                    duration: 0.04,
+                    duration: 0.01,
                     ease: "power2.out",
                     onComplete: () => {
                         this.loadingComplete = true;
@@ -129,7 +129,7 @@ class AnimationController {
                     }
                 }
             );
-        }, 500);
+        }, 100);
     }
 
     /* =========================================================================
@@ -177,9 +177,9 @@ class AnimationController {
             { 
                 y: 0,
                 opacity: 1,
-                duration: 0.05,
+                duration: 0.03,
                 ease: "power3.out",
-                delay: 0.06
+                delay: 0.02
             }
         );
     }
@@ -221,13 +221,13 @@ class AnimationController {
             opacity: 1,
             y: 0,
             rotationX: 0,
-            duration: 0.06,
+            duration: 0.01,
             ease: "back.out(0.7)",
             stagger: {
                 amount: 1.2,
                 from: "start"
             },
-            delay: 0.07
+            delay: 0.01
         });
     }
 
@@ -264,9 +264,9 @@ class AnimationController {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                duration: 0.06,
+                duration: 0.02,
                 ease: "power2.out",
-                delay: 0.1
+                delay: 0.01
             }
         );
     }
@@ -285,10 +285,10 @@ class AnimationController {
                 opacity: 1,
                 x: 0,
                 rotationY: 0,
-                duration: 0.07,
+                duration: 0.01,
                 ease: "power2.out",
                 stagger: 0.2,
-                delay: 0.1
+                delay: 0.02
             }
         );
     }
@@ -334,7 +334,7 @@ class AnimationController {
                             opacity: 1,
                             y: 0,
                             rotationX: 0,
-                            duration: 0.1,
+                            duration: 0.02,
                             ease: "power2.out",
                             stagger: 0.03
                         }
@@ -365,9 +365,9 @@ class AnimationController {
                             y: 0,
                             rotationX: 0,
                             scale: 1,
-                            duration: 0.4,
+                            duration: 0.02,
                             ease: "power2.out",
-                            delay: index * 0.2
+                            delay: index * 0.02
                         }
                     );
                 },
@@ -398,9 +398,9 @@ class AnimationController {
                             opacity: 1,
                             y: 0,
                             scale: 1,
-                            duration: 0.4,
+                            duration: 0.01,
                             ease: "power2.out",
-                            delay: index * 0.15
+                            delay: index * 0.03
                         }
                     );
                     
@@ -414,9 +414,9 @@ class AnimationController {
                             {
                                 scale: 1,
                                 rotation: 0,
-                                duration: 0.5,
+                                duration: 0.01,
                                 ease: "elastic.out(1, 0.5)",
-                                delay: index * 0.15 + 0.3
+                                delay: index * 0.1 + 0.1
                             }
                         );
                     }
@@ -462,7 +462,7 @@ class AnimationController {
                         opacity: 1,
                         scale: 1,
                         y: 0,
-                        duration: 0.3,
+                        duration: 0.02,
                         ease: "power2.out"
                     }
                 );
@@ -478,9 +478,9 @@ class AnimationController {
                         {
                             opacity: 1,
                             y: 0,
-                            duration: 0.06,
+                            duration: 0.02,
                             ease: "power2.out",
-                            delay: 0.2
+                            delay: 0.04
                         }
                     );
                 }
@@ -589,7 +589,7 @@ class AnimationController {
                 gsap.to(element, {
                     x: x * 0.15,
                     y: y * 0.15,
-                    duration: 0.3,
+                    duration: 0.02,
                     ease: "power2.out"
                 });
             });
@@ -598,7 +598,7 @@ class AnimationController {
                 gsap.to(element, {
                     x: 0,
                     y: 0,
-                    duration: 0.5,
+                    duration: 0.03,
                     ease: "elastic.out(1, 0.3)"
                 });
             });
@@ -761,7 +761,7 @@ window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
         animationController.refresh();
-    }, 250);
+    }, 200);
 });
 
 /* =============================================================================
