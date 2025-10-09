@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique de confidentialité</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+  <header class="bg-white shadow-md py-6">
+    <div class="container mx-auto px-6">
+      <h1 class="text-3xl font-bold text-gray-900">Politique de Confidentialité</h1>
+      <p class="text-gray-600 mt-2">Votre vie privée est importante pour nous.</p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-6 py-8">
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Collecte de données</h2>
+      <p>Nous collectons les informations suivantes lorsque vous utilisez notre site web : nom, email, informations de contact, et données de navigation. Ces informations sont utilisées uniquement pour améliorer nos services et communiquer avec vous.</p>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Cookies</h2>
+      <p>Nous utilisons des cookies pour analyser le trafic et améliorer l’expérience utilisateur. Vous pouvez gérer vos préférences de cookies via votre navigateur.</p>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Partage des données</h2>
+      <p>Vos informations ne sont jamais vendues à des tiers. Elles peuvent être partagées uniquement avec des prestataires de services nécessaires à l’exécution de nos services (hébergement, analytics, etc.).</p>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Sécurité</h2>
+      <p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données contre toute perte, utilisation abusive ou accès non autorisé.</p>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Vos droits</h2>
+      <p>Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles en nous contactant via notre formulaire de contact.</p>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold mb-2">Contact</h2>
+      <p>Pour toute question concernant cette politique de confidentialité, contactez-nous à <a href="mailto:contact@votresite.com" class="text-blue-600 underline">contact@votresite.com</a>.</p>
+    </section>
+  </main>
+
+  <footer class="bg-white shadow-inner py-6 mt-12">
+    <div class="container mx-auto px-6 text-center text-gray-600">
+      &copy; 2025 Votre Startup. Tous droits réservés.
+    </div>
+  </footer>
+
+  <script>
+    const cookieSection = document.querySelector('section:nth-of-type(2)');
+    const toggleButton = document.createElement('button');
+    toggleButton.textContent = "Afficher/Masquer Cookies";
+    toggleButton.className = "bg-blue-600 text-white px-4 py-2 rounded mt-4";
+    cookieSection.prepend(toggleButton);
+
+    toggleButton.addEventListener('click', () => {
+      cookieSection.querySelector('p').classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>
