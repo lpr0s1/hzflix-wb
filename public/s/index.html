@@ -1,447 +1,226 @@
 <!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <title>HZFlix.online Solutions Premium pour Startups Visionnaires</title>
-    <meta name="og:title" content="Hzflix Solution premium pour startup">
-    <meta name="description" content="Créez l'impression parfaite avec nos sites vitrines haut de gamme. Design futuriste, sécurité avancée, livraison express en 48h. Votre succès commence ici.">
-    <meta name="keywords" content="site vitrine premium, startup, développement web professionnel, design moderne, sécurité, performance">
-    
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
-    <!-- External Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.26/bundled/lenis.min.js"></script>
-    <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
-    
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>HZFlix.online Solutions Premium pour Startups Visionnaires</title>
+  <meta name="og:title" content="Hzflix Solution premium pour startup">
+  <meta name="description" content="Créez l'impression parfaite avec nos sites vitrines haut de gamme. Design futuriste, sécurité avancée, livraison express en 48h. Votre succès commence ici.">
+  <meta name="keywords" content="site vitrine premium, startup, développement web professionnel, design moderne, sécurité, performance">
+
+  <!-- Fonts & icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.26/bundled/lenis.min.js"></script>
+  <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-text">Création d'expériences exceptionnelles...</div>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-        </div>
+  <div id="loadingScreen" class="loading-screen" aria-hidden="false">
+    <div class="loader-inner">
+      <div class="loader-logo">HZFlix.online</div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
     </div>
+  </div>
 
-    <div id="app" class="app-container">
-        <!-- Header -->
-        <header id="mainHeader" class="header">
-            <div class="header-blur"></div>
-            <div class="container header-content">
-                <div class="brand-section">
-                    <div class="logo-container">
-                        <div class="brand-text">
-                            <div class="brand-name">HZFlix.online</div>
-                            <div class="brand-tagline">Solutions Premium</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <nav class="main-nav">
-                    <div class="nav-items">
-                        <span class="nav-item">
-                            <span class="price-highlight">1200€</span>
-                            <span class="price-detail">Paiement unique</span>
-                        </span>
-                        <span class="nav-item">
-                            <span class="delivery-highlight">48h</span>
-                            <span class="delivery-detail">Livraison garantie</span>
-                        </span>
-                    </div>
-                    <button id="headerCta" class="cta-button">
-                        <span class="cta-text">Démarrer mon projet</span>
-                        <span class="cta-icon material-icons-round">arrow_forward</span>
-                    </button>
-                </nav>
+  <div id="app" class="app">
+    <header id="mainHeader" class="site-header" role="banner">
+      <div class="header-inner container">
+        <a class="brand" href="/" aria-label="HZFlix home">
+          <div class="brand-name">HZFlix.online</div>
+          <div class="brand-tag">Solutions Premium</div>
+        </a>
 
-              
-                <!-- Mobile Menu Button -->
-                <button id="mobileMenuBtn" class="mobile-menu-btn">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
-            </div>
+        <nav class="nav" role="navigation" aria-label="Main">
+          <div class="nav-info">
+            <div class="nav-item"><strong>1200€</strong><span>Paiement unique</span></div>
+            <div class="nav-item"><strong>48h</strong><span>Livraison</span></div>
+          </div>
 
-            <!-- Mobile Menu -->
-            <div id="mobileMenu" class="mobile-menu">
-                <div class="mobile-menu-content">
-                    <div class="mobile-nav-items">
-                        <div class="mobile-nav-item">
-                            <span class="mobile-price">1200€ - Paiement unique</span>
-                        </div>
-                        <div class="mobile-nav-item">
-                            <span class="mobile-delivery">Livraison garantie en 48h</span>
-                        </div>
-                    </div>
-                    <button id="mobileCta" class="mobile-cta-button">
-                        Démarrer mon projet
-                    </button>
-                </div>
-            </div>
-        </header>
+          <button id="headerCta" class="btn btn-primary" aria-haspopup="dialog">Démarrer mon projet
+            <span class="material-icons-round">arrow_forward</span>
+          </button>
 
+          <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="mobileMenu">
+            <span class="burger"><span></span><span></span><span></span></span>
+            <span class="sr-only">Ouvrir le menu</span>
+          </button>
+        </nav>
+      </div>
 
-        <main class="main-content">
-            <!-- Hero Section -->
-            <section id="heroSection" class="hero-section">
-                <div class="hero-background">
-                    <div class="gradient-orb orb-1"></div>
-                    <div class="gradient-orb orb-2"></div>
-                    <div class="gradient-orb orb-3"></div>
-                    </div>
-                
-                <div class="container hero-container">
-                    <div class="hero-content">
-                        <div class="hero-left">
-                            <div class="hero-badge" id="heroBadge">
-                                <span class="badge-icon"></span>
-                                <span class="badge-text">Offre Exclusive Premium</span>
-                            </div>
-                            
-                            <h1 class="hero-title" id="heroTitle">
-                                <span class="title-line">Votre présence</span>
-                                <span class="title-line">digitale</span>
-                                <span class="title-line title-highlight"></span>
-                                <span class="title-line">pour conquérir</span>
-                            </h1>
-                            
-                            <p class="hero-description" id="heroDescription">
-                                Nous créons des <strong>expériences web exceptionnelles</strong> qui transforment 
-                                les visiteurs en clients. Design futuriste, performance optimale, 
-                                <strong>livraison express en <b>48h</b></strong>.
-                            </p>
-                            
-                            <div class="hero-actions">
-                                <button id="primaryCta" class="primary-cta">
-                                    <span class="cta-glow"></span>
-                                    <span class="cta-content">
-                                        <span class="cta-main">Commander mon site</span>
-                                        <span class="cta-sub">Livraison <b>48h</b></span>
-                                    </span>
-                                </button>
-                                
-                                <a href="mailto:admin@hzflix.online?subject=Demande%20d'information&body=Bonjour,%20je%20souhaite%20en%20savoir%20plus." class="secondary-cta">
-                                    <span class="material-icons-round">chat</span>
-                                    <span>Discussion gratuite</span>
-                                </a>
-                            </div>
-                            
-                            <div class="pricing-card" id="pricingCard">
-                                <div class="pricing-header">
-                                    <div class="pricing-info">
-                                        <div class="pricing-label">Solution complète</div>
-                                        <div class="pricing-details">Domaine + Hébergement: 10€/mois</div>
-                                    </div>
-                                    <div class="pricing-amount">
-                                        <span class="currency">€</span>
-                                        <span class="price">1200</span>
-                                    </div>
-                                </div>
-                                <div class="pricing-divider"></div>
-                                <div class="pricing-features">
-                                    <span class="feature-item">Prototype validé en 24h</span>
-                                    <span class="feature-item">Mise en production 48h</span>
-                                    <span class="feature-item">Révisions illimitées incluses</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        
-                        <div class="hero-right">
-                            <div class="features-showcase">
-                                <div class="showcase-card performance-card" data-scroll-reveal>
-                                    <div class="card-icon">
-                                        <span class="material-icons-round">speed</span>
-                                    </div>
-                                    <div class="card-content">
-                                        <h3>Performance Exceptionnelle</h3>
-                                        <p>Optimisation avancée, sécurité SSL, temps de chargement optimisés pour convertir</p>
-                                    </div>
-                                </div>
+      <div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+        <div class="mobile-inner">
+          <a class="mobile-cta" href="mailto:admin@hzflix.online">Contact: admin@hzflix.online</a>
+          <a class="mobile-cta" href="/politique">Politique de confidentialité</a>
+          <a class="mobile-cta btn" href="https://t.me/uvk240">Discussion</a>
+        </div>
+      </div>
+    </header>
 
-                                
-                                
-                                <div class="showcase-card responsive-card" data-scroll-reveal>
-                                    <div class="card-icon">
-                                        <span class="material-icons-round">devices</span>
-                                    </div>
-                                    <div class="card-content">
-                                        <h3>Design Adaptatif Universel</h3>
-                                        <p>Expérience parfaite sur mobile, tablette et desktop. Compatible tous navigateurs</p>
-                                    </div>
-                                </div>
-
-                                
-                                <div class="showcase-card design-card" data-scroll-reveal>
-                                    <div class="card-icon">
-                                        <span class="material-icons-round">palette</span>
-                                    </div>
-                                    <div class="card-content">
-                                        <h3>Identité Visuelle Marquante</h3>
-                                        <p>Typographie premium, animations subtiles, design qui inspire confiance et professionnalisme</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="guarantee-badge" data-scroll-reveal>
-                                <div class="guarantee-content">
-                                    <div class="guarantee-title">Garanties Premium</div>
-                                    <div class="guarantee-list">
-                                        <span>Support post-livraison 7j</span>
-                                        <span>Tests compatibilité complets</span>
-                                        <span>Livraison respectée sous 48h</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-<br><br>
-            <center>
-            <h1 style="font-family: Arial, Helvetica, sans-serif; font-size: 28px; font-weight: 700; color: #000000; margin-bottom: 15px;">
-    Découvrez nos maquettes : la preuve concrète de notre valeur. </h1>
-
-    <button onclick="window.location.href='https://hzflix.online/s/model1'" class="mobile-cta-button">
-                        Maquette 1
-                    </button>
-            </center>
-                                
-
-            <!-- Features Section -->
-            <section id="featuresSection" class="features-section">
-                <div class="container">
-                    <div class="section-header" data-scroll-reveal>
-                        <h2 class="section-title" id="featuresTitle">
-                            L'excellence dans chaque détail
-                        </h2>
-                        <p class="section-subtitle">
-                            Des fonctionnalitées qui font la différence pour votre succés digital
-                        </p>
-                    </div>
-                    
-                    <div class="features-grid">
-                        <div class="feature-card modern-design" data-scroll-reveal>
-                            <div class="feature-icon">
-                                <span class="material-icons-round">auto_awesome</span>
-                            </div>
-                            <div class="feature-content">
-                                <h3>Design Futuriste</h3>
-                                <p>Esthétique avant-gardiste qui captive instantanément. Contrastes nets, hiérarchie visuelle parfaite, identité mémorable.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="feature-card smooth-animations" data-scroll-reveal>
-                            <div class="feature-icon">
-                                <span class="material-icons-round">motion_photos_on</span>
-                            </div>
-                            <div class="feature-content">
-                                <h3>Animations Cinématographiques</h3>
-                                <p>Transitions fluides et micro-interactions soigneusement calibrés pour une expérience utilisateur exceptionnelle.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="feature-card conversion-optimized" data-scroll-reveal>
-                            <div class="feature-icon">
-                                <span class="material-icons-round">trending_up</span>
-                            </div>
-                            <div class="feature-content">
-                                <h3>Conversion Maximisés</h3>
-                                <p>CTA strategiquement positionnées, parcours utilisateur optimisé, psychologie de la persuasion appliquée.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Why Choose Us Section -->
-            <section id="whySection" class="why-section">
-                <div class="container">
-                    <div class="section-header" data-scroll-reveal>
-                        <h2 class="section-title" id="whyTitle">
-                            Pourquoi nous choisir ?
-                        </h2>
-                        <p class="section-subtitle">
-                            L'expertise qui fait la différence dans votre réussite
-                        </p>
-                    </div>
-                    
-                    <div class="why-grid">
-                        <div class="why-card express-delivery" data-scroll-reveal>
-                            <div class="why-number">01</div>
-                            <div class="why-content">
-                                <h3>Livraison Express Garantie</h3>
-                                <p>Prototype fonctionnel validé en 24h, livraison finale complète en 48h maximum. Votre time-to-market optimisé.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="why-card dedicated-support" data-scroll-reveal>
-                            <div class="why-number">02</div>
-                            <div class="why-content">
-                                <h3>Support Dédié Premium</h3>
-                                <p>Assistance personnalisée post-livraison, ajustements inclus, accompagnement pour optimiser vos conversions.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="why-card security-compliance" data-scroll-reveal>
-                            <div class="why-number">03</div>
-                            <div class="why-content">
-                                <h3>Sécurité & Conformité</h3>
-                                <p>SSL premium, headers sécurisés, SEO optimisé, tests d'intrusion basiques. Votre site blindé dès le lancement.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Final CTA Section -->
-            <section id="ctaSection" class="cta-section">
-                <div class="container">
-                    <div class="cta-container" data-scroll-reveal>
-                        <div class="cta-background">
-                            <div class="cta-gradient"></div>
-                        </div>
-                        
-                        <div class="cta-content">
-                            <h2 class="cta-title" id="ctaTitle">
-                                Prêt à dominer votre marché ?
-                            </h2>
-                            <p class="cta-description">
-                                Rejoignez les leaders qui nous font confiance. 
-                                <strong>1200€ - paiement unique</strong> 
-                                <strong>Livraison 48h</strong>
-                                <strong>Domaine + Hébergement 10€/mois</strong>
-                            </p>
-                            
-                            <div class="cta-actions">
-                                <button id="finalCta" class="final-cta-button">
-                                    <span class="cta-glow-final"></span>
-                                    <span class="cta-text-final">Lancer mon projet maintenant</span>
-                                    <span class="material-icons-round">rocket_launch</span>
-                                </button>
-                                
-                                <a href="https://t.me/uvk240" class="contact-cta">
-                                    <span class="material-icons-round">support_agent</span>
-                                    <span>Consultation gratuite</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-left">
-                        <div class="footer-brand">
-                            <span class="footer-text">HZFlix.online</span>
-                        </div>
-                        <p class="footer-description">
-                            Solutions web premium pour startups visionnaires
-                        </p>
-                    </div>
-                    
-                    <div class="footer-right">
-                        <div class="footer-info">
-                            <span>Développement professionnel en 48h</span>
-                        </div>
-                        <a href="mailto:admin@hzflix.online" class="footer-contact">
-                            <span class="material-icons-round">telegram</span>
-                            <span>Contact direct</span>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="footer-bottom">
-                    <div class="copyright">
-                        © 2024 HZFlix.online l'Excellence digitale garantie
-                    </div>
-                </div>
-            </div>
-        </footer>
-
-        <!-- Modal -->
-        <div id="modal" class="modal-overlay">
-            <div class="modal-backdrop"></div>
-            <div class="modal-container">
-                <div class="modal-header">
-                    <div class="modal-title-section">
-                        <h3 class="modal-title">Créer mon site vitrine premium</h3>
-                        <p class="modal-subtitle">1200€ - Livraison 48h avec Domaine + Hébergement 10€/mois</p>
-                    </div>
-                    <button id="closeModal" class="close-modal">
-                        <span class="material-icons-round">close</span>
-                    </button>
-                </div>
-                
-                <div class="modal-content">
-                    <div class="modal-grid">
-                        <div class="modal-section">
-                            <h4>Inclus dans votre projet</h4>
-                                <li> Design responsive premium</li>
-                                <li> Animations & transitions</li>
-                                <li> Optimisation SEO avancé</li>
-                                <li> Sécurité SSL premium</li>
-                                <li> Support 7 jours post-livraison</li>
-                        </div>
-                        
-                        <div class="modal-section">
-                            <h4>Processus de création</h4>
-                            <ol class="modal-steps">
-                                <li>Brief détaillé & analyse</li>
-                                <li>Prototype fonctionnel (24h)</li>
-                                <li>Validation & ajustements</li>
-                                <li>Livraison finale (48h)</li>
-                                <li>Formation & assistance</li>
-                            </ol>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <a href="https://t.me/uvk240" class="modal-contact-btn">
-                            <span class="material-icons-round">chat</span>
-                            <span>Discuter du projet</span>
-                        </a>
-                        <button id="modalOrderBtn" onclick="window.location.href='https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d'" class="modal-order-btn">
-                            <span>Commander maintenant</span>
-                            <span class="material-icons-round">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <main id="main" class="main">
+      <section id="hero" class="hero section" data-section>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-video-mask"></div>
+          <div class="hero-gradient"></div>
         </div>
 
-        <!-- bg -->
-        <div class="background-effects">
-            <div class="floating-elements">
-                <div class="floating-element element-1"></div>
-                <div class="floating-element element-2"></div>
-                <div class="floating-element element-3"></div>
+        <div class="container hero-grid">
+          <div class="hero-left">
+            <div class="badge">Offre Exclusive Premium</div>
+
+            <h1 class="hero-title" data-splitting>
+              Votre présence digitale pour conquérir
+            </h1>
+
+            <p class="hero-sub">
+              Nous créons des <strong>expériences web exceptionnelles</strong> qui transforment visiteurs en clients. Design futuriste, performance, livraison <strong>48h</strong>.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-cta" id="primaryCta">Commander mon site <span class="sub">Livraison 48h</span></button>
+              <a class="btn btn-ghost" href="mailto:admin@hzflix.online">Discussion gratuite</a>
             </div>
+
+            <div class="pricing-card">
+              <div class="price-left">
+                <div class="label">Solution complète</div>
+                <div class="meta">Domaine + Hébergement: 10€/mois</div>
+              </div>
+              <div class="price-right"><span class="currency">€</span><span class="amount">1200</span></div>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="feature-stack">
+              <article class="feature" data-feature="perf">
+                <i class="material-icons-round">speed</i>
+                <h3>Performance Exceptionnelle</h3>
+                <p>Chargement optimisé, SSL, conversion.</p>
+              </article>
+
+              <article class="feature" data-feature="design">
+                <i class="material-icons-round">palette</i>
+                <h3>Identité Visuelle Marquante</h3>
+                <p>Typographie premium, animations subtiles.</p>
+              </article>
+
+              <article class="feature" data-feature="responsive">
+                <i class="material-icons-round">devices</i>
+                <h3>Design Adaptatif</h3>
+                <p>Expérience parfaite sur tous appareils.</p>
+              </article>
+            </div>
+
+            <div class="guarantee">
+              <h4>Garanties Premium</h4>
+              <ul>
+                <li>Support post-livraison 7j</li>
+                <li>Tests compatibilité complets</li>
+                <li>Livraison respectée sous 48h</li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </section>
+
+      <section id="demos" class="demos section" data-section>
+        <div class="container center">
+          <h2>Découvrez nos maquettes</h2>
+          <p>La preuve concrète de notre valeur.</p>
+          <div class="demo-actions">
+            <a class="btn" href="https://hzflix.online/s/model1">Maquette 1</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="features section" data-section>
+        <div class="container">
+          <div class="section-head">
+            <h2>L'excellence dans chaque détail</h2>
+            <p>Des fonctionnalités qui font la différence pour votre succès digital</p>
+          </div>
+
+          <div class="features-grid">
+            <div class="card">Design Futuriste</div>
+            <div class="card">Animations Cinématographiques</div>
+            <div class="card">Conversion Maximisée</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="why" class="why section" data-section>
+        <div class="container">
+          <h2>Pourquoi nous choisir ?</h2>
+          <div class="why-grid">
+            <div class="why-item"><strong>01</strong><p>Livraison Express 24-48h</p></div>
+            <div class="why-item"><strong>02</strong><p>Support Dédié Premium</p></div>
+            <div class="why-item"><strong>03</strong><p>Sécurité & Conformité</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cta" class="final-cta section" data-section>
+        <div class="container cta-grid">
+          <h2>Prêt à dominer votre marché ?</h2>
+          <p><strong>1200€ - paiement unique</strong> • <strong>Livraison 48h</strong> • <strong>Domaine + Hébergement 10€/mois</strong></p>
+          <div class="cta-actions">
+            <button class="btn btn-cta" id="finalCta">Lancer mon projet maintenant <span class="material-icons-round">rocket_launch</span></button>
+            <a class="btn btn-ghost" href="https://t.me/uvk240">Consultation gratuite</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+      <div class="container footer-inner">
+        <div class="footer-left">
+          <div class="brand-small">HZFlix.online</div>
+          <p>Solutions web premium pour startups visionnaires</p>
+        </div>
+
+        <div class="footer-right">
+          <div>Développement professionnel en 48h</div>
+          <a href="mailto:admin@hzflix.online">Contact direct</a>
+          <a href="/politique" class="policy-link">Politique de confidentialité</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        © 2024 HZFlix.online l'Excellence digitale garantie
+      </div>
+    </footer>
+
+    <!-- Modal simplified -->
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-content">
+        <button id="closeModal" class="modal-close" aria-label="Fermer">✕</button>
+        <h3>Créer mon site vitrine premium</h3>
+        <p>1200€ - Livraison 48h avec Domaine + Hébergement 10€/mois</p>
+        <ul>
+          <li>Design responsive premium</li>
+          <li>Animations & transitions</li>
+          <li>Optimisation SEO avancé</li>
+          <li>Sécurité SSL premium</li>
+          <li>Support 7 jours</li>
+        </ul>
+        <div class="modal-actions">
+          <a class="btn" href="https://t.me/uvk240">Discuter du projet</a>
+          <a class="btn btn-primary" href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d">Commander maintenant</a>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- anim -->
-    <script src="animations.js"></script>
-    <script src="interactions.js"></script>
+  <script src="interactions.js" defer></script>
+  <script src="animations.js" defer></script>
 </body>
 </html>
