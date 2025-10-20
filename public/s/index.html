@@ -1,336 +1,584 @@
-<!doctype html>
-<html lang="fr">
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>HZFlix — Sites Vitrines Premium</title>
-<meta name="description" content="Créateur de sites vitrines premium pour startups et petites entreprises. Design sophistiqué, animations cinématiques, livraison 48h.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-body{font-family:Inter,system-ui,sans-serif;background:#000;color:#fff;overflow-x:hidden;line-height:1.6}
-:root{
---primary:#0066ff;
---secondary:#00d4ff;
---bg-dark:#000;
---bg-card:#0a0a0a;
---text-primary:#fff;
---text-muted:#999;
---spacing:clamp(20px,5vw,80px);
-}
-.wrapper{position:fixed;top:0;left:0;width:100%;height:100vh;overflow:hidden;perspective:1000px}
-.scroll-container{position:relative;width:100%;will-change:transform}
-section{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:var(--spacing);overflow:hidden}
-.container{max-width:1400px;width:100%;margin:0 auto;position:relative;z-index:2}
-.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:30px var(--spacing);display:flex;justify-content:space-between;align-items:center;mix-blend-mode:difference}
-.logo{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-links{display:flex;gap:40px;align-items:center}
-.nav-link{color:#fff;text-decoration:none;font-weight:500;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;transition:opacity 0.3s}
-.nav-link:hover{opacity:0.6}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;padding:16px 32px;border-radius:50px;font-weight:700;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:transform 0.3s,box-shadow 0.3s;box-shadow:0 10px 40px rgba(0,102,255,0.3)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 15px 60px rgba(0,102,255,0.5)}
-.hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center}
-.hero-content{text-align:center;position:relative;z-index:2}
-.hero-title{font-family:'Playfair Display',serif;font-size:clamp(48px,8vw,120px);font-weight:900;line-height:0.95;letter-spacing:-0.03em;margin-bottom:30px;background:linear-gradient(135deg,#fff 0%,#666 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;will-change:transform}
-.hero-subtitle{font-size:clamp(18px,2vw,24px);color:var(--text-muted);max-width:700px;margin:0 auto 50px;font-weight:300;letter-spacing:0.02em}
-.hero-bg{position:absolute;inset:0;z-index:1;opacity:0.4}
-.gradient-orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.6;will-change:transform}
-.orb-1{width:600px;height:600px;background:radial-gradient(circle,var(--primary),transparent);top:-200px;left:-100px}
-.orb-2{width:800px;height:800px;background:radial-gradient(circle,var(--secondary),transparent);bottom:-300px;right:-200px}
-.section-title{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,72px);font-weight:900;line-height:1.1;letter-spacing:-0.02em;margin-bottom:60px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;will-change:background-position;background-size:200% 200%}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:30px;margin-top:60px}
-.card{background:var(--bg-card);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:40px;position:relative;overflow:hidden;transition:transform 0.3s,border-color 0.3s;will-change:transform,opacity}
-.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,102,255,0.1),rgba(0,212,255,0.1));opacity:0;transition:opacity 0.3s}
-.card:hover{transform:translateY(-10px);border-color:rgba(0,102,255,0.3)}
-.card:hover::before{opacity:1}
-.card-title{font-size:24px;font-weight:700;margin-bottom:15px;color:#fff}
-.card-text{color:var(--text-muted);line-height:1.7}
-.feature-number{font-family:'Playfair Display',serif;font-size:72px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px;line-height:1}
-.cta-section{text-align:center;padding:120px var(--spacing)}
-.price-tag{font-size:clamp(48px,6vw,96px);font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:30px 0;line-height:1}
-.features-list{max-width:600px;margin:40px auto;text-align:left}
-.feature-item{display:flex;align-items:center;gap:15px;padding:15px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
-.feature-icon{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.footer{padding:60px var(--spacing);border-top:1px solid rgba(255,255,255,0.05);text-align:center}
-.footer-text{color:var(--text-muted);font-size:14px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
-.modal.active{opacity:1;pointer-events:all}
-.modal-content{background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:60px;max-width:600px;width:90%;position:relative;transform:scale(0.9);transition:transform 0.3s}
-.modal.active .modal-content{transform:scale(1)}
-.modal-close{position:absolute;top:20px;right:20px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;opacity:0.6;transition:opacity 0.3s}
-.modal-close:hover{opacity:1}
-.loader{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s}
-.loader.hidden{opacity:0;pointer-events:none}
-.loader-text{font-family:'Playfair Display',serif;font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-@media(max-width:768px){
-.nav-links{display:none}
-.cards-grid{grid-template-columns:1fr}
-section{padding:60px 20px}
-}
-.parallax-layer{position:absolute;inset:0;will-change:transform}
-.text-reveal{overflow:hidden;display:inline-block}
-.text-reveal span{display:inline-block;will-change:transform}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hzflix - Création de Sites Web Ultra-Professionnels pour Startups & PME</title>
+    <meta name="description" content="Hzflix transforme votre vision en une présence digitale percutante. Développement de sites web sur mesure, modernes et performants pour startups et petites entreprises. Offre spéciale : -40% pour les 2 premiers clients !">
+    <meta name="keywords" content="développement web, création site internet, startup, PME, site vitrine, e-commerce, applications web, design UI/UX, Hzflix, professionnel, sur mesure, rapide, agence web">
+    <meta name="author" content="Hzflix">
+    <meta property="og:title" content="Hzflix - Votre Partenaire Digital">
+    <meta property="og:description" content="Développement web d'excellence pour propulser votre entreprise en ligne.">
+    <meta property="og:url" content="https://hzflix.online">
+    <meta property="og:type" content="website">
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+
+ 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+    *{
+        overflow-x: hidden;
+    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000; /* Noir principal */
+            color: #fff; /* Blanc principal */
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+
+        /* Styles pour les icônes Google */
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+
+        /* Animations personnalisées Tailwind */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .animate-fade-in-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .animate-slide-in-left.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .animate-slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .animate-slide-in-right.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Animation spécifique pour le menu hamburger */
+        .hamburger-icon {
+            width: 30px;
+            height: 20px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease-in-out;
+            z-index: 100;
+        }
+
+        .hamburger-icon span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .hamburger-icon.open span:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+
+        .hamburger-icon.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-icon.open span:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* Overlay du menu mobile */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            z-index: 99;
+        }
+
+        .mobile-menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-overlay nav a {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            display: block; /* Pour que les transitions fonctionnent individuellement */
+        }
+
+        .mobile-menu-overlay.open nav a:nth-child(1) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+        .mobile-menu-overlay.open nav a:nth-child(2) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+        .mobile-menu-overlay.open nav a:nth-child(3) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+        .mobile-menu-overlay.open nav a:nth-child(4) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+
+        /* Popup overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .popup-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 2.5rem;
+            border-radius: 10px;
+            max-width: 800px;
+            max-height: 80vh; /* Limite la hauteur du contenu */
+            overflow-y: auto; /* Permet le défilement si le contenu est trop grand */
+            position: relative;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .popup-overlay.open .popup-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .popup-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        /* Effet de machine à écrire pour les titres */
+        .typewriter h1 {
+            overflow: hidden; /* Cache le texte jusqu'à l'animation */
+            white-space: nowrap; /* Empêche le retour à la ligne */
+            margin: 0 auto; /* Centre le texte */
+            letter-spacing: .15em; /* Ajuste l'espacement entre les lettres */
+            animation: typing 2.5s steps(40, end) forwards, blink-caret .75s step-end infinite;
+        }
+
+        /* L'animation de "machine à écrire" */
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        /* L'animation du curseur clignotant */
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: white; }
+        }
+
+        /* Pour les éléments qui s'animent au scroll, ils seront initialement cachés */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .scroll-animate.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Pour les éléments qui disparaissent au descroll */
+        .scroll-animate.is-hidden {
+            opacity: 0;
+            transform: translateY(20px); /* Ou une autre transformation pour la disparition */
+        }
+
+    </style>
 </head>
-<body>
-<div class="loader" id="loader">
-<div class="loader-text">HZFlix</div>
-</div>
+<body class="bg-black text-white antialiased">
 
-<nav class="nav">
-<div class="logo">HZFlix</div>
-<div class="nav-links">
-<a href="#services" class="nav-link">Services</a>
-<a href="#portfolio" class="nav-link">Portfolio</a>
-<a href="#contact" class="nav-link">Contact</a>
-</div>
-<button class="btn-primary" onclick="openModal()">Démarrer</button>
-</nav>
+   
+    <header class="fixed top-0 left-0 w-full z-50 py-6 px-8 md:px-16 flex justify-between items-center bg-black/80 backdrop-blur-sm">
+        <a href="#hero" class="text-3xl font-extrabold tracking-tight text-white transition-colors hover:text-gray-400">Hzflix</a>
 
-<div class="wrapper">
-<div class="scroll-container" id="scrollContainer">
+       
+        <div class="hidden md:block text-sm font-medium text-gray-400">
+            Réduction de -40% pour les 2 premiers clients ! Disponible jusqu'au 15 novembre.
+        </div>
 
-<section class="hero" id="hero">
-<div class="hero-bg">
-<div class="gradient-orb orb-1"></div>
-<div class="gradient-orb orb-2"></div>
-</div>
-<div class="hero-content">
-<h1 class="hero-title" id="heroTitle">Sites Vitrines<br>Premium</h1>
-<p class="hero-subtitle">Design sophistiqué, animations cinématiques, performance exceptionnelle. Créez une présence digitale qui marque les esprits.</p>
-<button class="btn-primary" onclick="openModal()">Commander Maintenant</button>
-</div>
-</section>
+        <button id="hamburger-menu-button" class="hamburger-icon relative z-50 focus:outline-none md:hidden">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
-<section id="services">
-<div class="container">
-<h2 class="section-title" id="servicesTitle">Notre Expertise</h2>
-<div class="cards-grid">
-<div class="card">
-<div class="feature-number">01</div>
-<h3 class="card-title">Design Cinématique</h3>
-<p class="card-text">Animations fluides inspirées des plus grandes productions. Chaque scroll raconte une histoire visuelle captivante.</p>
-</div>
-<div class="card">
-<div class="feature-number">02</div>
-<h3 class="card-title">Performance Optimale</h3>
-<p class="card-text">Temps de chargement ultra-rapides, SEO optimisé, hébergement premium. Votre site est une machine de conversion.</p>
-</div>
-<div class="card">
-<div class="feature-number">03</div>
-<h3 class="card-title">Livraison Express</h3>
-<p class="card-text">Prototype validé en 24h, livraison complète en 48h. Support technique et maintenance inclus pendant 7 jours.</p>
-</div>
-</div>
-</div>
-</section>
+       
+        <nav class="hidden md:flex space-x-8 text-lg font-medium">
+            <a href="#hero" class="hover:text-gray-400 transition-colors">Accueil</a>
+            <a href="#services" class="hover:text-gray-400 transition-colors">Services</a>
+            <a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" target="_blank" class="hover:text-gray-400 transition-colors">Commander</a>
+            <a href="#contact" class="hover:text-gray-400 transition-colors">Contact</a>
+        </nav>
+    </header>
 
-<section id="portfolio">
-<div class="container">
-<h2 class="section-title" id="portfolioTitle">Portfolio</h2>
-<div class="cards-grid">
-<div class="card">
-<h3 class="card-title">Startup Tech</h3>
-<p class="card-text">Plateforme SaaS avec animations interactives et dashboard dynamique. Conversion augmentée de 340%.</p>
-</div>
-<div class="card">
-<h3 class="card-title">Agence Créative</h3>
-<p class="card-text">Site vitrine minimaliste avec parallax avancé et transitions fluides. Temps de chargement sous 1 seconde.</p>
-</div>
-<div class="card">
-<h3 class="card-title">E-commerce Luxe</h3>
-<p class="card-text">Expérience shopping premium avec micro-interactions sophistiquées. Taux de rebond réduit de 65%.</p>
-</div>
-</div>
-</div>
-</section>
+    
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay">
+        <nav class="flex flex-col items-center space-y-8 text-4xl font-bold">
+            <a href="#hero" class="hover:text-gray-400 transition-colors" onclick="toggleMobileMenu()">Accueil</a>
+            <a href="#services" class="hover:text-gray-400 transition-colors" onclick="toggleMobileMenu()">Services</a>
+            <a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" target="_blank" class="hover:text-gray-400 transition-colors" onclick="toggleMobileMenu()">Commander</a>
+            <a href="#contact" class="hover:text-gray-400 transition-colors" onclick="toggleMobileMenu()">Contact</a>
+        </nav>
+        <div class="absolute bottom-16 text-sm font-medium text-gray-400 text-center px-4">
+            Réduction de -40% pour les 2 premiers clients ! Disponible jusqu'au 15 novembre.
+        </div>
+    </div>
 
-<section class="cta-section" id="pricing">
-<div class="container">
-<h2 class="section-title" id="pricingTitle">Tarification Transparente</h2>
-<div class="price-tag">1200€</div>
-<p class="hero-subtitle">Paiement unique. Livraison 48h. Support inclus.</p>
-<div class="features-list">
-<div class="feature-item">
-<div class="feature-icon"></div>
-<span>Design sur mesure et animations premium</span>
-</div>
-<div class="feature-item">
-<div class="feature-icon"></div>
-<span>Responsive parfait mobile et desktop</span>
-</div>
-<div class="feature-item">
-<div class="feature-icon"></div>
-<span>Hébergement et domaine (10€/mois)</span>
-</div>
-<div class="feature-item">
-<div class="feature-icon"></div>
-<span>SSL, CDN et optimisation SEO</span>
-</div>
-<div class="feature-item">
-<div class="feature-icon"></div>
-<span>Support technique 7 jours</span>
-</div>
-</div>
-<button class="btn-primary" onclick="openModal()" style="margin-top:40px">Lancer Mon Projet</button>
-</div>
-</section>
 
-</div>
-</div>
+   
+    <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-center px-8 py-24 relative overflow-hidden">
+        <h1 class="text-6xl md:text-8xl font-black leading-tight mb-6 typewriter">
+            Bienvenue
+        </h1>
+        <p class="text-3xl md:text-5xl font-light max-w-4xl mb-12 animate-fade-in-up">
+            Transformez votre vision en une réalité digitale percutante.
+        </p>
+        <a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" target="_blank" class="px-10 py-4 bg-white text-black text-xl font-semibold rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out shadow-lg animate-fade-in-up" style="animation-delay: 0.5s;">
+            Commander votre site web à <strike>1200€</strike><br><b>720€</b>
+        </a>
+        <p class="text-sm text-gray-500 mt-4 animate-fade-in-up" style="animation-delay: 0.7s; font-size: 14px">
+            Offre spéciale : -40% pour les 2 premiers clients!<br> Disponible <b style="font-size: 17px">jusqu'au 15 novembre 2025</b>.
+        </p>
+        <div class="absolute bottom-10 animate-bounce">
+            <a href="#services" aria-label="Défiler vers le bas">
+                <span class="material-symbols-outlined text-white text-5xl">
+                    keyboard_double_arrow_down
+                </span>
+            </a>
+        </div>
+    </section>
 
-<footer class="footer">
-<p class="footer-text">© 2024 HZFlix — Excellence Digitale</p>
-<p class="footer-text" style="margin-top:10px">Contact: <a href="mailto:admin@hzflix.online" style="color:var(--primary)">admin@hzflix.online</a></p>
-</footer>
+   
+    <section id="services" class="py-24 px-8 md:px-16 bg-gray-900">
+        <h2 class="text-5xl md:text-7xl font-bold text-center mb-16 scroll-animate">
+            <span class="block animate-slide-in-left">Nos Services.</span>
+        </h2>
 
-<div class="modal" id="modal">
-<div class="modal-content">
-<button class="modal-close" onclick="closeModal()">×</button>
-<h2 style="font-family:'Playfair Display',serif;font-size:36px;margin-bottom:20px">Démarrer Votre Projet</h2>
-<p style="color:var(--text-muted);margin-bottom:30px">Transformez votre vision en réalité digitale. Notre équipe vous accompagne de la conception à la livraison.</p>
-<div style="margin-bottom:30px">
-<div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">1200€</div>
-<p style="color:var(--text-muted);font-size:14px">+ 10€/mois (hébergement et domaine)</p>
-</div>
-<div style="display:flex;gap:15px;flex-wrap:wrap">
-<a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" class="btn-primary" style="text-decoration:none;display:inline-block">Commander</a>
-<a href="mailto:admin@hzflix.online" class="btn-primary" style="text-decoration:none;display:inline-block;background:transparent;border:1px solid var(--primary)">Discuter</a>
-</div>
-</div>
-</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    desktop_windows
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">Sites Vitrine</h3>
+                <p class="text-gray-300 text-lg">
+                    Présentez votre entreprise avec élégance et professionnalisme. Un design épuré, une navigation intuitive et un référencement optimisé pour capter l'attention de vos futurs clients.
+                </p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate" style="transition-delay: 0.1s;">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    shopping_cart
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">E-commerce</h3>
+                <p class="text-gray-300 text-lg">
+                    Lancez votre boutique en ligne avec une solution robuste et sécurisée. Gérez vos produits, vos commandes et vos clients facilement, et maximisez vos ventes.
+                </p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate" style="transition-delay: 0.2s;">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    app_settings_alt
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">Applications Web</h3>
+                <p class="text-gray-300 text-lg">
+                    Des outils sur mesure pour optimiser vos processus internes ou offrir des services innovants à vos utilisateurs. Efficacité et performance garanties.
+                </p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate" style="transition-delay: 0.3s;">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    palette
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">Design UI/UX</h3>
+                <p class="text-gray-300 text-lg">
+                    Une interface utilisateur intuitive et une expérience utilisateur agréable sont clés. Nous concevons des parcours fluides qui engagent vos visiteurs.
+                </p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate" style="transition-delay: 0.4s;">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    trending_up
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">Optimisation SEO</h3>
+                <p class="text-gray-300 text-lg">
+                    Soyez visible là où vos clients vous cherchent. Nous intégrons les meilleures pratiques SEO pour un meilleur classement dans les moteurs de recherche.
+                </p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700 scroll-animate" style="transition-delay: 0.5s;">
+                <span class="material-symbols-outlined text-5xl text-white mb-4">
+                    support
+                </span>
+                <h3 class="text-3xl font-semibold mb-4">Maintenance & Support</h3>
+                <p class="text-gray-300 text-lg">
+                    Votre site reste performant et sécurisé. Nous assurons la maintenance technique et un support réactif pour une tranquillité d'esprit totale.
+                </p>
+            </div>
+        </div>
+    </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script>
-gsap.registerPlugin(ScrollTrigger);
+   
+    <section id="why-hzflix" class="py-24 px-8 md:px-16 bg-black">
+        <h2 class="text-5xl md:text-7xl font-bold text-center mb-16 scroll-animate">
+            <span class="block animate-slide-in-right">Pourquoi nous choisir ?</span>
+        </h2>
+        <div class="max-w-4xl mx-auto space-y-12">
+            <div class="flex items-start space-x-6 scroll-animate">
+                <span class="material-symbols-outlined text-6xl text-white mt-1 flex-shrink-0">
+                    rocket_launch
+                </span>
+                <div>
+                    <h3 class="text-4xl font-semibold mb-2">Expertise & Innovation</h3>
+                    <p class="text-gray-300 text-xl">
+                        Nous maîtrisons les dernières technologies pour créer des sites web non seulement beaux, mais aussi performants, sécurisés et évolutifs. Votre succès est notre moteur.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-start space-x-6 scroll-animate" style="transition-delay: 0.2s;">
+                <span class="material-symbols-outlined text-6xl text-white mt-1 flex-shrink-0">
+                    handshake
+                </span>
+                <div>
+                    <h3 class="text-4xl font-semibold mb-2">Partenariat & Proximité</h3>
+                    <p class="text-gray-300 text-xl">
+                        Nous travaillons main dans la main avec vous, de la conception au déploiement. Votre vision est au cœur de notre processus de création, garantissant un résultat qui vous ressemble.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-start space-x-6 scroll-animate" style="transition-delay: 0.4s;">
+                <span class="material-symbols-outlined text-6xl text-white mt-1 flex-shrink-0">
+                    verified
+                </span>
+                <div>
+                    <h3 class="text-4xl font-semibold mb-2">Qualité & Fiabilité</h3>
+                    <p class="text-gray-300 text-xl">
+                        Chaque ligne de code est pensée pour la robustesse et la pérennité. Nous livrons des solutions sans compromis sur la qualité, pour une présence en ligne sans faille.
+                    </p>
+                </div>
+            </div>
+            <div class="text-center mt-16 scroll-animate" style="transition-delay: 0.6s;">
+                <a href="https://hzflix.online/s/model1" target="_blank" class="px-8 py-3 border border-white text-white text-lg font-medium rounded-full hover:bg-#333 hover:text-darkgrey transition-all duration-300 ease-in-out">
+                    Découvrir un modèle de site
+                </a>
+            </div>
+        </div>
+    </section>
 
-window.addEventListener('load',function(){
-setTimeout(function(){
-document.getElementById('loader').classList.add('hidden');
-initAnimations();
-},1500);
-});
+   
+    <section id="cta" class="py-24 px-8 md:px-16 bg-gray-900 text-center">
+        <h2 class="text-5xl md:text-7xl font-bold mb-8 scroll-animate">
+            <span class="block animate-fade-in-up">Prêt à propulser votre business ?</span>
+        </h2>
+        <p class="text-2xl md:text-3xl max-w-3xl mx-auto mb-12 text-gray-300 scroll-animate" style="transition-delay: 0.2s;">
+            Obtenez un site web professionnel, sur mesure et optimisé pour 1200€.
+            <br>Une opportunité unique de marquer votre présence en ligne.
+        </p>
+        <a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" target="_blank" class="px-12 py-5 bg-white text-black text-2xl font-bold rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out shadow-xl animate-fade-in-up" style="transition-delay: 0.4s;">
+            Commander maintenant
+        </a>
+        <p class="text-md text-gray-500 mt-6 scroll-animate" style="transition-delay: 0.6s;">
+            N'oubliez pas : -40% pour les 2 premiers clients ! Offre valide jusqu'au 15 novembre.
+        </p>
+    </section>
 
-function initAnimations(){
-const scrollContainer=document.getElementById('scrollContainer');
-const sections=gsap.utils.toArray('section');
+   
+    <section id="contact" class="py-24 px-8 md:px-16 bg-black text-center">
+        <h2 class="text-5xl md:text-7xl font-bold mb-8 scroll-animate">
+            <span class="block animate-slide-in-left">Contactez-nous.</span>
+        </h2>
+        <p class="text-2xl md:text-3xl max-w-3xl mx-auto mb-12 text-gray-300 scroll-animate" style="transition-delay: 0.2s;">
+            Une question, un projet spécifique ? Nous sommes là pour vous écouter et vous conseiller.
+        </p>
+        <div class="flex items-center justify-center space-x-4 scroll-animate" style="transition-delay: 0.4s;">
+            <span class="material-symbols-outlined text-5xl text-white">
+                mail
+            </span>
+            <a href="mailto:admin@hzflix.online" class="text-2xl md:text-4xl font-semibold text-white hover:text-gray-400 transition-colors">
+                admin@hzflix.online
+            </a>
+        </div>
+    </section>
 
-let currentScroll=0;
-let targetScroll=0;
-let ease=0.075;
+   
+    <footer class="py-12 px-8 md:px-16 bg-gray-900 text-center text-gray-400 text-lg">
+        <p class="mb-4">&copy; 2025 Hzflix. Tous droits réservés.</p>
+        <div class="flex justify-center space-x-8">
+            <button class="hover:text-white transition-colors popup-trigger" data-popup="privacy-policy">Politique de Confidentialité</button>
+        </div>
+    </footer>
 
-sections.forEach(function(section,index){
-gsap.set(section,{
-zIndex:sections.length-index,
-position:'absolute',
-top:0,
-left:0,
-width:'100%'
-});
-});
+   
+    <div id="privacy-policy-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close-btn">&times;</button>
+            <h3 class="text-4xl font-bold mb-6">Politique de Confidentialité</h3>
+            <p class="text-lg mb-4">
+                Chez Hzflix, nous nous engageons à protéger la confidentialité de nos utilisateurs. Cette politique explique comment nous collectons, utilisons et protégeons vos informations personnelles.
+            </p>
+            <p class="text-lg mb-4">
+                **Collecte d'informations :** Nous collectons les informations que vous nous fournissez directement, par exemple lorsque vous nous contactez par e-mail (`admin@hzflix.online`) ou via un formulaire de contact (si applicable). Ces informations peuvent inclure votre nom, votre adresse e-mail et le contenu de votre message.
+            </p>
+            <p class="text-lg mb-4">
+                **Utilisation des informations :** Nous utilisons vos informations pour répondre à vos demandes, fournir nos services de développement web, améliorer notre site et, avec votre consentement, vous envoyer des communications marketing.
+            </p>
+            <p class="text-lg mb-4">
+                **Partage des informations :** Nous ne vendons, n'échangeons ni ne louons vos informations personnelles à des tiers. Nous pouvons partager vos informations avec des prestataires de services tiers qui nous aident à exploiter notre site web ou à mener nos activités, à condition que ces parties acceptent de garder ces informations confidentielles.
+            </p>
+            <p class="text-lg mb-4">
+                **Sécurité des données :** Nous mettons en œuvre des mesures de sécurité raisonnables pour protéger vos informations personnelles contre l'accès non autorisé, l'altération, la divulgation ou la destruction.
+            </p>
+            <p class="text-lg mb-4">
+                **Vos droits :** Conformément au RGPD, vous avez le droit d'accéder à vos données personnelles, de les rectifier, de demander leur suppression, de vous opposer à leur traitement ou de demander la limitation de leur traitement. Pour exercer ces droits, veuillez nous contacter à `admin@hzflix.online`.
+            </p>
+            <p class="text-lg">
+                Cette politique peut être mise à jour occasionnellement. La date de la dernière révision sera indiquée en bas de page.
+                <br>Dernière mise à jour : 20 octobre 2025.
+            </p>
+        </div>
+    </div>
 
-function updateScroll(){
-currentScroll+=(targetScroll-currentScroll)*ease;
-gsap.set(scrollContainer,{
-y:currentScroll
-});
 
-sections.forEach(function(section,index){
-const distance=Math.abs(currentScroll+index*window.innerHeight);
-const scale=1-Math.min(distance/window.innerHeight*0.1,0.2);
-const opacity=1-Math.min(distance/window.innerHeight*0.5,0.7);
-const blur=Math.min(distance/window.innerHeight*10,20);
 
-gsap.set(section,{
-scale:scale,
-opacity:opacity,
-filter:'blur('+blur+'px)',
-y:-currentScroll*0.5
-});
-});
 
-requestAnimationFrame(updateScroll);
-}
+    <script>
+        const hamburgerButton = document.getElementById('hamburger-menu-button');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 
-window.addEventListener('wheel',function(e){
-e.preventDefault();
-targetScroll+=e.deltaY*0.5;
-targetScroll=Math.max(-(sections.length-1)*window.innerHeight,Math.min(0,targetScroll));
-},{passive:false});
+        function toggleMobileMenu() {
+            hamburgerButton.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+            document.body.classList.toggle('overflow-hidden'); // Empêche le scroll du body quand le menu est ouvert
+        }
+        hamburgerButton.addEventListener('click', toggleMobileMenu);
 
-updateScroll();
+        const popupTriggers = document.querySelectorAll('.popup-trigger');
+        const popupCloseButtons = document.querySelectorAll('.popup-close-btn');
 
-const titles=document.querySelectorAll('.section-title, .hero-title');
-titles.forEach(function(title){
-let scrollPos=0;
-ScrollTrigger.create({
-trigger:title,
-start:'top bottom',
-end:'bottom top',
-scrub:true,
-onUpdate:function(self){
-scrollPos=self.progress*200;
-title.style.backgroundPosition=scrollPos+'% 50%';
-}
-});
-});
+        popupTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const popupId = trigger.dataset.popup + '-popup';
+                document.getElementById(popupId).classList.add('open');
+                document.body.classList.add('overflow-hidden'); // Empêche le scroll du body
+            });
+        });
 
-const orbs=document.querySelectorAll('.gradient-orb');
-orbs.forEach(function(orb,index){
-gsap.to(orb,{
-x:function(){return index%2===0?100:-100},
-y:function(){return index%2===0?-100:100},
-rotation:360,
-duration:20,
-repeat:-1,
-yoyo:true,
-ease:'none'
-});
-});
+        popupCloseButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.popup-overlay').classList.remove('open');
+                document.body.classList.remove('overflow-hidden');
+            });
+        });
 
-const cards=document.querySelectorAll('.card');
-cards.forEach(function(card){
-ScrollTrigger.create({
-trigger:card,
-start:'top 80%',
-end:'bottom 20%',
-onEnter:function(){
-gsap.fromTo(card,
-{y:100,opacity:0,scale:0.8},
-{y:0,opacity:1,scale:1,duration:0.8,ease:'power3.out'}
-);
-},
-onLeave:function(){
-gsap.to(card,{y:-100,opacity:0,scale:0.8,duration:0.6});
-},
-onEnterBack:function(){
-gsap.to(card,{y:0,opacity:1,scale:1,duration:0.6});
-},
-onLeaveBack:function(){
-gsap.to(card,{y:100,opacity:0,scale:0.8,duration:0.6});
-}
-});
-});
-}
+  
+        document.querySelectorAll('.popup-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('open');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            });
+        });
 
-function openModal(){
-document.getElementById('modal').classList.add('active');
-}
 
-function closeModal(){
-document.getElementById('modal').classList.remove('active');
-}
+      
+        document.addEventListener('DOMContentLoaded', () => {
+            const animateElements = document.querySelectorAll('.scroll-animate');
 
-document.addEventListener('keydown',function(e){
-if(e.key==='Escape'){
-closeModal();
-}
-});
-</script>
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        entry.target.classList.remove('is-hidden');
+                    } else {
+                        entry.target.classList.remove('is-visible');
+                        entry.target.classList.add('is-hidden');
+                    }
+                });
+            }, observerOptions);
+
+            animateElements.forEach(element => {
+                observer.observe(element);
+            });
+
+            const heroTextElements = document.querySelectorAll('#hero .animate-fade-in-up');
+            heroTextElements.forEach(el => {
+                setTimeout(() => {
+                    el.classList.add('active');
+                }, el.style.animationDelay ? parseFloat(el.style.animationDelay) * 1000 : 100);
+            });
+
+          
+            const mainTitle = document.querySelector('.typewriter h1');
+            if (mainTitle) {
+            }
+
+          
+            const sectionTitles = document.querySelectorAll('h2 span[class*="animate-slide-in"]');
+            sectionTitles.forEach(titleSpan => {
+                const parentH2 = titleSpan.closest('h2');
+                const titleObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            titleSpan.classList.add('active');
+                        } else {
+                            titleSpan.classList.remove('active');
+                        }
+                    });
+                }, { threshold: 0.5 });
+                titleObserver.observe(parentH2);
+            });
+        });
+    </script>
 </body>
 </html>
+
