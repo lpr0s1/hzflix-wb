@@ -40,12 +40,11 @@
     }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000; /* Noir principal */
-            color: #fff; /* Blanc principal */
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
         }
 
-        /* Styles pour les icônes Google */
         .material-symbols-outlined {
             font-variation-settings:
                 'FILL' 0,
@@ -54,7 +53,6 @@
                 'opsz' 24
         }
 
-        /* Animations personnalisées Tailwind */
         .animate-fade-in-up {
             opacity: 0;
             transform: translateY(20px);
@@ -84,8 +82,6 @@
             opacity: 1;
             transform: translateX(0);
         }
-
-        /* Animation spécifique pour le menu hamburger */
         .hamburger-icon {
             width: 30px;
             height: 20px;
@@ -118,8 +114,7 @@
         .hamburger-icon.open span:nth-child(3) {
             transform: translateY(-9px) rotate(-45deg);
         }
-
-        /* Overlay du menu mobile */
+     
         .mobile-menu-overlay {
             position: fixed;
             top: 0;
@@ -154,7 +149,6 @@
         .mobile-menu-overlay.open nav a:nth-child(3) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
         .mobile-menu-overlay.open nav a:nth-child(4) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
 
-        /* Popup overlay */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -182,8 +176,8 @@
             padding: 2.5rem;
             border-radius: 10px;
             max-width: 800px;
-            max-height: 80vh; /* Limite la hauteur du contenu */
-            overflow-y: auto; /* Permet le défilement si le contenu est trop grand */
+            max-height: 80vh; 
+            overflow-y: auto;
             position: relative;
             transform: scale(0.9);
             opacity: 0;
@@ -207,28 +201,21 @@
             line-height: 1;
         }
 
-        /* Effet de machine à écrire pour les titres */
         .typewriter h1 {
-            overflow: hidden; /* Cache le texte jusqu'à l'animation */
-            white-space: nowrap; /* Empêche le retour à la ligne */
-            margin: 0 auto; /* Centre le texte */
-            letter-spacing: .15em; /* Ajuste l'espacement entre les lettres */
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: .15em;
             animation: typing 2.5s steps(40, end) forwards, blink-caret .75s step-end infinite;
         }
-
-        /* L'animation de "machine à écrire" */
         @keyframes typing {
             from { width: 0 }
             to { width: 100% }
         }
-
-        /* L'animation du curseur clignotant */
         @keyframes blink-caret {
             from, to { border-color: transparent }
             50% { border-color: white; }
         }
-
-        /* Pour les éléments qui s'animent au scroll, ils seront initialement cachés */
         .scroll-animate {
             opacity: 0;
             transform: translateY(20px);
@@ -238,10 +225,9 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* Pour les éléments qui disparaissent au descroll */
         .scroll-animate.is-hidden {
             opacity: 0;
-            transform: translateY(20px); /* Ou une autre transformation pour la disparition */
+            transform: translateY(20px);
         }
 
     </style>
@@ -295,7 +281,7 @@
             Transformez votre vision en une réalité digitale percutante.
         </p>
         <a href="https://buy.stripe.com/8x2bJ1bTjg5v6jNeEd6wE0d" target="_blank" class="px-10 py-4 bg-white text-black text-xl font-semibold rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out shadow-lg animate-fade-in-up" style="animation-delay: 0.5s;">
-            Commander votre site web à <strike>1200€</strike><br><b>720€</b>
+            Commander votre site web à <strike>1200€</strike> HT<br><b>720€</b> HT
         </a>
         <p class="text-sm text-gray-500 mt-4 animate-fade-in-up" style="animation-delay: 0.7s; font-size: 14px">
             Offre spéciale : -40% pour les 2 premiers clients!<br> Disponible <b style="font-size: 17px">jusqu'au 15 novembre 2025</b>.
