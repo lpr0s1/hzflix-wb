@@ -15,6 +15,39 @@ OneSignalDeferred.push(async function(OneSignal) {
     notifyButton: { enable: false },
     welcomeNotification: { disable: true }
   });
+
+  OneSignal.on && OneSignal.on('subscriptionChange', async function(isSubscribed) {
+    try {
+      if (isSubscribed) {
+        await OneSignal.sendTags({ channel: "test" });
+        console.log('[HzFlix] tagged channel=test for user');
+      } else {
+        console.log('[HzFlix] user unsubscribed');
+      }
+    } catch (err) {
+      console.error('[HzFlix] sendTags error', err);
+    }
+  });
+
+  try {
+    const perm = await OneSignal.getNotificationPermission().catch(()=>null);
+    if (perm !== 'granted') {
+      setTimeout(async ()=> {
+        await OneSignal.showNativePrompt().catch(err=>{
+          console.error('[HzFlix] OneSignal showNativePrompt error', err);
+        });
+      }, 500);
+    } else {
+      console.log('[HzFlix] notification permission already granted');
+      const enabled = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
+      if (enabled) {
+        try { await OneSignal.sendTags({ channel: "test" }); console.log('[HzFlix] tagged channel=test (already enabled)'); }
+        catch(err){ console.error('[HzFlix] sendTags error', err); }
+      }
+    }
+  } catch (e) {
+    console.error('[HzFlix] OneSignal init error', e);
+  }
 });
 </script>
 <style>
@@ -89,7 +122,7 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Helvetica
 
 <script>
 const subscribeBtn = document.getElementById('onesignal-subscribe');
-function log(...args){ console.log('[HzFlix]', ...args) }
+function log(...a){ console.log('[HzFlix]', ...a) }
 
 subscribeBtn.addEventListener('click', async () => {
   if (!window.OneSignal) { log('OneSignal SDK non chargé'); alert('SDK OneSignal non chargé'); return; }
@@ -100,17 +133,10 @@ subscribeBtn.addEventListener('click', async () => {
       log('isPushNotificationsEnabled:', isEnabled);
       if (isEnabled) { subscribeBtn.textContent = 'Notifications activées'; subscribeBtn.disabled = true; return; }
 
-      const permissionBefore = await OneSignal.getNotificationPermission().catch(()=>null);
-      log('permission before:', permissionBefore);
-
-      await OneSignal.showNativePrompt();
-      const permissionAfter = await OneSignal.getNotificationPermission().catch(()=>null);
-      log('permission after:', permissionAfter);
-
+      await OneSignal.showNativePrompt().catch(err=>{ log('showNativePrompt err', err); });
       const subscribed = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
       log('subscribed:', subscribed);
-
-      if (subscribed) { subscribeBtn.textContent = 'Notifications activées'; subscribeBtn.disabled = true; }
+      if (subscribed) { subscribeBtn.textContent = 'Notifications activées'; subscribeBtn.disabled = true; try{ await OneSignal.sendTags({ channel: "test" }); log('tag sent after manual prompt'); }catch(e){log('tag error',e)} }
       else alert('Inscription refusée ou échouée');
     });
   } catch (err) {
@@ -146,3 +172,4 @@ document.getElementById('installBannerBtn').addEventListener('click', async ()=>
 </script>
 </body>
 </html>
+
