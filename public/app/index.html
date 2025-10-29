@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="manifest" href="/app/manifest.json">
 <title>HzFlix Live</title>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "75a0d415-186c-4407-9c17-f184db7e3529",
+      safari_web_id: "web.onesignal.auto.00e855ed-5f66-45b8-ad03-54b1e142944e",
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
+</script>
 <style>
 @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
 :root{--bg:#0b1220;--card:#0f172a;--accent:#ff4d6d}
