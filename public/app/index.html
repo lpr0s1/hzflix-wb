@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="manifest" href="/app/manifest.json">
+<meta name="theme-color" content="#0f172a">
 <title>HzFlix Live</title>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
@@ -21,8 +22,6 @@ OneSignalDeferred.push(async function(OneSignal) {
       if (isSubscribed) {
         await OneSignal.sendTags({ channel: "test" });
         console.log('[HzFlix] tagged channel=test for user');
-      } else {
-        console.log('[HzFlix] user unsubscribed');
       }
     } catch (err) {
       console.error('[HzFlix] sendTags error', err);
@@ -38,7 +37,6 @@ OneSignalDeferred.push(async function(OneSignal) {
         });
       }, 500);
     } else {
-      console.log('[HzFlix] notification permission already granted');
       const enabled = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
       if (enabled) {
         try { await OneSignal.sendTags({ channel: "test" }); console.log('[HzFlix] tagged channel=test (already enabled)'); }
@@ -95,8 +93,6 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Helvetica
     <div class="player-wrapper" id="player">
       <iframe src="https://kick.com/hanzo-x65" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="no-referrer"></iframe>
     </div>
-
-    
   </main>
 </div>
 
@@ -119,7 +115,7 @@ subscribeBtn.addEventListener('click', async () => {
     OneSignalDeferred.push(async function(OneSignal) {
       const isEnabled = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
       log('isPushNotificationsEnabled:', isEnabled);
-      if (isEnabled) { subscribeBtn.textContent = 'Notifications activées'; subscribeBtn.disabled = true; return; }
+      if (isEnabled) { subscribeBtn.textContent = 'Notifications activées'; subscribeBtn.disabled = true; try{ await OneSignal.sendTags({ channel: "test" }); log('tag sent already enabled'); }catch(e){log('tag error',e)} return; }
 
       await OneSignal.showNativePrompt().catch(err=>{ log('showNativePrompt err', err); });
       const subscribed = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
@@ -160,4 +156,5 @@ document.getElementById('installBannerBtn').addEventListener('click', async ()=>
 </script>
 </body>
 </html>
+
 
