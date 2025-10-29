@@ -88,53 +88,6 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Helvetica
   <button id="installBannerBtn" class="btn">Installer</button>
 </div>
 
-<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
-<script>
-const OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-  OneSignal.init({
-    appId: "REPLACE_WITH_ONESIGNAL_APP_ID",
-    safari_web_id: "REPLACE_WITH_SAFARI_WEB_ID_IF_USED",
-    notifyButton: { enable: false },
-    welcomeNotification: { disable: true }
-  });
-});
-const subscribeBtn = document.getElementById("onesignal-subscribe");
-subscribeBtn.addEventListener("click", async function(){
-  OneSignal.push(function(){
-    OneSignal.isPushNotificationsEnabled().then(function(isEnabled){
-      if(isEnabled){
-        subscribeBtn.textContent = "Notifications activées";
-        subscribeBtn.disabled = true;
-        return;
-      }
-      OneSignal.showNativePrompt();
-    });
-  });
-});
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e=>{
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBtn').classList.remove('hidden');
-  document.getElementById('installBanner').classList.remove('hidden');
-});
-document.getElementById('installBtn').addEventListener('click', async ()=>{
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('installBtn').classList.add('hidden');
-  document.getElementById('installBanner').classList.add('hidden');
-});
-document.getElementById('installBannerBtn').addEventListener('click', async ()=>{
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('installBtn').classList.add('hidden');
-  document.getElementById('installBanner').classList.add('hidden');
-});
-</script>
+
 </body>
 </html>
