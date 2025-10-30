@@ -3,113 +3,91 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>S'abonner aux notifications ntfy</title>
+  <title>S'abonner ntfy - hzflix</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 24px; color:#111; background:#f7f7f8; }
-    .card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); max-width:720px; margin:auto; }
-    button, a.button { display:inline-block; padding:12px 18px; border-radius:10px; background:#0b66ff; color:#fff; text-decoration:none; border:none; font-weight:600; }
-    .muted { color:#666; font-size:0.95rem; margin-top:12px; }
-    .qr { margin-top:16px; display:flex; gap:16px; align-items:center; }
-    img.qr { width:120px; height:120px; border-radius:8px; background:#fff; padding:6px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
-    .links { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+    body{font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding:20px; background:#f6f7f9; color:#111}
+    .card{max-width:720px;margin:20px auto;padding:18px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    button,a.button{display:inline-block;padding:10px 14px;border-radius:10px;background:#0057ff;color:#fff;text-decoration:none;border:0;font-weight:600}
+    .qr{margin-top:12px;display:flex;gap:12px;align-items:center}
+    .muted{color:#666;margin-top:10px}
   </style>
 </head>
 <body>
   <div class="card">
-    <h3>S'abonner aux notifications ntfy</h3>
-    <p class="muted">Cliquez sur le bouton pour ouvrir l'application ntfy et accéder au topic. Si l'application n'est pas installée, un fallback ouvrira la page web du topic ou proposera d'installer l'app.</p>
+    <h3>S'abonner aux notifications ntfy (hzflix)</h3>
+    <p class="muted">Cliquer ouvre l'application ntfy si elle est installée. Sinon fallback vers la page web et QR.</p>
 
-    <div class="links">
-      <!-- Bouton JS : tente d'ouvrir le deep link natif -->
-      <button id="subscribeBtn">Ouvrir ntfy et s'abonner</button>
-
-      <!-- Intent Android (Chrome) : force l'ouverture de l'app installée ou propose le Play Store -->
-      <a class="button" id="intentLink"
-         href="intent://ntfy.sh/hzflix#Intent;scheme=ntfy;package=io.adev.ntfy;end">
-        Ouvrir ntfy (Android intent)
-      </a>
-
-      <!-- Lien web fallback si nécessaire -->
-      <a class="button" id="webLink" href="https://ntfy.sh/hzflix" style="background:#111;">
-        Ouvrir la page web du topic
-      </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="openBtn">Ouvrir ntfy / S'abonner</button>
+      <a id="webBtn" class="button" href="https://ntfy.sh/hzflix" style="background:#111">Ouvrir page web</a>
     </div>
 
-    <div class="muted" id="status">Statut : en attente</div>
+    <div id="status" class="muted">Statut : en attente</div>
 
     <div class="qr">
-      <div>
-        <div class="muted">Scanner le QR pour ouvrir le topic</div>
-        <!-- QR via chart.googleapis : encode l'URL web du topic -->
-        <img class="qr" alt="QR ntfy topic" src="https://chart.googleapis.com/chart?cht=qr&chs=240x240&chl=https%3A%2F%2Fntfy.sh%2Fhzflix" />
-      </div>
-      <div class="muted">QR code vers <br><strong>https://ntfy.sh/hzflix</strong></div>
+      <img alt="QR ntfy hzflix" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=https%3A%2F%2Fntfy.sh%2Fhzflix" width="120" height="120" />
+      <div class="muted">QR vers <strong>https://ntfy.sh/hzflix</strong></div>
     </div>
   </div>
 
   <script>
     (function () {
       const topic = 'hzflix';
-      const deep = `ntfy://ntfy.sh/${encodeURIComponent(topic)}`;
-      const web = `https://ntfy.sh/${encodeURIComponent(topic)}`;
-      const subscribeBtn = document.getElementById('subscribeBtn');
-      const statusEl = document.getElementById('status');
+      const httpsUrl = `https://ntfy.sh/${encodeURIComponent(topic)}`;
+      const intentUrl = `intent://ntfy.sh/${encodeURIComponent(topic)}#Intent;scheme=ntfy;package=io.adev.ntfy;end`;
+      const openBtn = document.getElementById('openBtn');
+      const status = document.getElementById('status');
 
-      // Timeout fallback (ms)
+      // heuristique delay avant fallback
       const FALLBACK_DELAY = 900;
-
-      // Utilitaire pour ouvrir un URI via navigation
-      function tryOpenURI(uri) {
-        // Crée un iframe uniquement si nécessaire pour certains anciens navigateurs (optionnel)
-        // Ici on utilise location.assign pour la compatibilité mobile moderne
-        window.location.href = uri;
-      }
-
-      // Détection via Page Visibility API
       let visibilityChanged = false;
-      function onVisibility() {
-        visibilityChanged = true;
-      }
+
+      function onVisibility() { visibilityChanged = true; }
+
       document.addEventListener('visibilitychange', onVisibility);
 
-      // Click handler
-      subscribeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        statusEl.textContent = 'Statut : tentative d\'ouverture de l\'application...';
+      function isAndroid() {
+        return /android/i.test(navigator.userAgent);
+      }
+      function isIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent);
+      }
 
-        // Enregistre la timestamp, lance le deep link
+      openBtn.addEventListener('click', function (e) {
+        e.preventDefault();
         visibilityChanged = false;
+        status.textContent = 'Statut : tentative d\'ouverture de l\'application...';
+
         const start = Date.now();
 
-        // Tentative d'ouverture native
-        tryOpenURI(deep);
+        if (isAndroid()) {
+          // Essayer intent (Chrome Android). Si app installée, l'intent ouvrira l'app.
+          // Sinon Chrome propose Play Store ou ne fait rien; on fallback vers https après délai.
+          window.location.href = intentUrl;
+        } else {
+          // iOS : ouvrir l'universal link https pour que iOS route vers l'app si configurée.
+          window.location.href = httpsUrl;
+        }
 
-        // Après un délai, si la page est toujours visible (l'utilisateur n'est pas passé à l'app),
-        // on propose le fallback web. Si visibilityChanged est true, l'app s'est ouverte.
-        setTimeout(() => {
-          const elapsed = Date.now() - start;
+        setTimeout(function () {
           if (visibilityChanged) {
-            statusEl.textContent = 'Statut : application ouverte';
-            // Ne pas faire de fallback
+            status.textContent = 'Statut : application ouverte';
             return;
           }
 
-          // Pour certains navigateurs, visibilitychange ne se déclenche pas.
-          // On utilise aussi heuristique du focus et du délai.
-          statusEl.textContent = 'Statut : l\'application ne s\'est pas ouverte automatiquement, ouverture du fallback web...';
-          // Ouvrir la page web du topic comme fallback
-          window.location.href = web;
+          // fallback : ouvrir la page web du topic (si l'app ne s'est pas ouverte)
+          status.textContent = 'Statut : l\'application ne s\'est pas ouverte, ouverture du fallback web...';
+          // On remplace la navigation uniquement si on n'a pas déjà basculé
+          window.location.href = httpsUrl;
         }, FALLBACK_DELAY);
       });
 
-      // Nettoyage listener si l'utilisateur navigue ou l'app s'ouvre
+      // nettoyage listener
       window.addEventListener('pagehide', () => {
         document.removeEventListener('visibilitychange', onVisibility);
       });
-
-      // Intuition UX : si l'utilisateur arrive avec l'app déjà ouverte en arrière-plan,
-      // l'intent / deep link peut encore fonctionner. Le code gère la détection minimale.
     })();
   </script>
 </body>
 </html>
+
