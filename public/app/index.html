@@ -10,69 +10,19 @@
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
-  <script>
-    // Initialisation OneSignal de manière sûre (attend le SDK)
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      try {
-        await OneSignal.init({
-          appId: "75a0d415-186c-4407-9c17-f184db7e3529",
-          safari_web_id: "web.onesignal.auto.00e855ed-5f66-45b8-ad03-54b1e142944e",
-          notifyButton: { enable: false },
-          welcomeNotification: { disable: true }
-        });
-
-        console.log('[HzFlix] OneSignal initialized');
-
-        // Lorsqu'un user devient abonné, on tagge "channel":"test"
-        if (OneSignal.on) {
-          OneSignal.on('subscriptionChange', async function(isSubscribed) {
-            console.log('[HzFlix] subscriptionChange', isSubscribed);
-            if (isSubscribed) {
-              try {
-                await OneSignal.sendTags({ channel: "test" });
-                console.log('[HzFlix] sendTags channel=test success');
-              } catch (err) {
-                console.error('[HzFlix] sendTags error', err);
-              }
-            }
-          });
-        }
-
-        // Demande la permission automatiquement si non-granted
-        try {
-          const perm = await OneSignal.getNotificationPermission().catch(()=>null);
-          console.log('[HzFlix] current permission:', perm);
-          if (perm !== 'granted') {
-            // Petit délai pour laisser le rendu se stabiliser
-            setTimeout(async () => {
-              try {
-                await OneSignal.showNativePrompt();
-                console.log('[HzFlix] showNativePrompt called');
-              } catch (err) {
-                console.error('[HzFlix] showNativePrompt error', err);
-              }
-            }, 500);
-          } else {
-            // déjà autorisé : s'assurer du tag
-            const enabled = await OneSignal.isPushNotificationsEnabled().catch(()=>false);
-            if (enabled) {
-              try {
-                await OneSignal.sendTags({ channel: "test" });
-                console.log('[HzFlix] already enabled — tag sent');
-              } catch (err) {
-                console.error('[HzFlix] sendTags error', err);
-              }
-            }
-          }
-        } catch (err) {
-          console.error('[HzFlix] permission check error', err);
-        }
-      } catch (err) {
-        console.error('[HzFlix] OneSignal.init error', err);
-      }
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "75a0d415-186c-4407-9c17-f184db7e3529",
+      safari_web_id: "web.onesignal.auto.00e855ed-5f66-45b8-ad03-54b1e142944e",
+      notifyButton: {
+        enable: true,
+      },
     });
-  </script>
+  });
+</script>
 
   <style>
     @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
