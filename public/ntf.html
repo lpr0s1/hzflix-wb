@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S abonner au notifications</title>
+  </head>
+<button id="subscribe">S'abonner</button>
+<script>
+const topic = 'monTopicSecret123';
+const deep = `ntfy://subscribe/${encodeURIComponent(topic)}`;
+const web = `https://ntfy.sh/${encodeURIComponent(topic)}`;
+
+document.getElementById('subscribe').addEventListener('click', () => {
+  window.location = deep;
+  setTimeout(() => {
+    alert('Si l’application ntfy ne s’est pas ouverte, utilisez ce lien : ' + web);
+  }, 700);
+});
+</script>
+</html>
