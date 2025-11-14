@@ -16,7 +16,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
-
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roaderly">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
 /* ========================== */
 /* Variables globales & couleurs */
@@ -310,6 +313,14 @@ html,body {
 </style>
 </head>
 <body>
+
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('Service Worker enregistré'))
+    .catch(err => console.warn('Erreur SW:', err));
+}
+</script>
 
 <script>
 async function requestLocation() {
