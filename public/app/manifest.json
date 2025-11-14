@@ -3,7 +3,7 @@
   "short_name": "Roaderly",
   "description": "Application de navigation, parkings et rasso en France",
   "start_url": "./index.html",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#071022",
   "theme_color": "#06b6d4",
