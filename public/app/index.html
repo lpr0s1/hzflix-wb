@@ -348,19 +348,31 @@ async function requestLocation() {
 }
 window.addEventListener('load', requestLocation);
 </script>
-<script>
+  <script>
 async function requestNotifications() {
-  if (!("Notification" in window)) return;
-  if (Notification.permission === "granted") return;
+  if (!("Notification" in window)) return console.warn("Notifications non supportées");
+  
+  if (Notification.permission === "granted") {
+    console.log("Notifications déjà autorisées ✅");
+    new Notification("Roaderly", { body: "Notifications activées.", icon: "icons/icon-192.png" });
+    return true;
+  }
+
   const permission = await Notification.requestPermission();
+  console.log("Permission demandée ->", permission);
+
   if (permission === "granted") {
     new Notification("Roaderly", { body: "Notifications activées.", icon: "icons/icon-192.png" });
+    return true;
   } else {
-    console.log("Notifications refusées");
+    console.log("Notifications refusées ❌");
+    return false;
   }
 }
-window.addEventListener('load', () => {
-  setTimeout(requestNotifications, 1000);
+
+window.addEventListener('load', async () => {
+  const ok = await requestNotifications();
+  console.log("Notifications OK ?", ok);
 });
 </script>
 <div id="map"></div>
