@@ -313,6 +313,19 @@ html,body {
 </style>
 </head>
 <body>
+  <script>
+window.onload = () => {
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      pos => console.log('Localisation activée', pos),
+      err => console.warn('Erreur géoloc', err),
+      { enableHighAccuracy: true }
+    );
+  } else {
+    console.warn('Géolocalisation non supportée');
+  }
+};
+</script>
 
   <script>
 if ('serviceWorker' in navigator) {
