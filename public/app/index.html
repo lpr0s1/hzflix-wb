@@ -609,105 +609,8 @@ btnPark.addEventListener('click', async ()=>{
   try{ await ensureGeolocation(); }catch(e){ return; }
   showMessage('Recherche parkings en cours…',2000);
   parkCluster.clearLayers();
-  const radius = Math.max(0.5, parseFloat(localStorage.getItem('roaderly_radius')||3))*1000;
-  const query = `[out:json][timeout:20];(node["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]});way["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]});relation["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]}););out center;`;
-  try{
-    const res = await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query});
-    const json = await res.json();
-    const elements = json.elements || [];
-    elements.slice(0,300).forEach(el=>{
-      const lat = el.lat || (el.center && el.center.lat);
-      const lon = el.lon || (el.center && el.center.lon);
-      if(!lat||!lon) return;
-      const name = (el.tags && (el.tags.name || el.tags.operator)) || 'Parking';
-      const mk = L.marker([lat,lon], {icon:L.divIcon({className:'',html:'<span style="font-size:20px">🅿️</span>'}), title:name});
-      mk.bindPopup(`<b>${name}</b><div style="margin-top:8px"><button class="navPark" data-lat="${lat}" data-lon="${lon}">Aller</button></div>`);
-      parkCluster.addLayer(mk);
-    });
-    showMessage(`Parkings trouvés (${elements.length})`,2500);
-  }catch(e){ console.warn(e); showMessage('Erreur récupération parkings',3000); }
+  loadParkings();
 });
-
-map.on('popupopen', (e)=>{
-  const btn = e.popup._container.querySelector('.navPark');
-  if(btn) btn.addEventListener('click', async ()=>{
-    const lat = parseFloat(btn.dataset.lat), lon = parseFloat(btn.dataset.lon);
-    try{ await ensureGeolocation(); }catch(e){ return; }
-    if(routingControl) map.removeControl(routingControl);
-    routingControl = L.Routing.control({
-      waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat,lon)],
-      lineOptions:{styles:[{color:varAccent(),weight:5}]},
-      show:false
-    }).addTo(map);
-    routingControl.on('routesfound', function(ev){
-      const summary = ev.routes[0].summary;
-      const km = summary.totalDistance/1000;
-      const min = Math.round(summary.totalTime/60);
-      showDistance(km);
-      showMessage(`Distance ${km.toFixed(1)} km • ${min} min`,4000);
-    });
-  });
-});
-
-/* ========================== */
-/* SIGNALER RASSO AVEC SUPPRESSION FIABLE AMÉLIORÉE */
-/* ========================== */
-let rassoMarkers = []; // référence de tous les rasso
-
-btnReport.addEventListener('click', async () => {
-  try { await ensureGeolocation(); } 
-  catch(e) { showMessage('Autorise la géolocalisation', 3000); return; }
-
-  const r = { lat: userPos[0], lon: userPos[1], ts: Date.now() };
-  const arr = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
-  arr.unshift(r);
-  localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
-
-  const mk = L.marker([r.lat, r.lon], {
-    icon: L.divIcon({ className: '', html: '<span style="font-size:22px">🚗</span>' })
-  }).addTo(map);
-
-  function updatePopup() {
-    mk.setPopupContent(`
-      <div style="font-weight:700; font-size:14px; line-height:1.4;">
-        Rasso signalé
-        <div style="margin-top:6px; display:flex; justify-content:space-between;">
-          <button class="deleteRasso" style="
-            padding:6px 12px;
-            border-radius:12px;
-            border:none;
-            background:#ff3b30;
-            color:#fff;
-            font-weight:700;
-            cursor:pointer;
-          ">Supprimer</button>
-        </div>
-      </div>
-    `);
-  }
-
-  updatePopup();
-
-  mk.on('popupopen', (e) => {
-    const btn = e.popup._container.querySelector('.deleteRasso');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        // Supprimer du stockage
-        const stored = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
-        const newArr = stored.filter(item => item.ts !== r.ts);
-        localStorage.setItem('roaderly_rassos', JSON.stringify(newArr));
-        // Supprimer marker
-        map.removeLayer(mk);
-        showMessage('Rasso supprimé', 2200);
-      }, { once: true }); // évite plusieurs listeners
-    }
-  });
-
-  rassoMarkers.push(mk);
-  showMessage('Rasso signalé (local)', 2200);
-  setCookie('roaderly_last_report_ts', r.ts, 7);
-});
-
 
 /* ========================== */
 /* HISTORIQUE ROUTES & CLICK MAP */
@@ -812,6 +715,7 @@ centerGo.addEventListener('click', async ()=>{
   });
 });
 </script>
+
 <script>
 /* ========================== */
 /* PWA & INSTALL PROMPT */
@@ -844,15 +748,14 @@ function createManifest(){
       src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22%3E%3Ctext y=%2236%22 font-size=%2236%22%3E🚗%3C/text%3E%3C/svg%3E',
       sizes:'48x48',
       type:'image/svg+xml'
-    }]
+         }]
   };
   const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
   const murl = URL.createObjectURL(blob);
   const link = document.getElementById('manifestLink'); 
   link.href = murl;
 }
-createManifest();
-
+createManifest()
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
@@ -909,74 +812,41 @@ function openSettings(){
     <label>Couleur accent:
       <input id="settingAccent" type="color" value="${localStorage.getItem('roaderly_accent') || '#06b6d4'}"/>
     </label>
-    <div style="margin-top:12px;text-align:right">
-      <button id="closeSettings" class="btn-ghost">Fermer</button>
-      <button id="saveSettings" class="btn">Sauvegarder</button>
-    </div>
-  `;
-  showPopup(content, {center:userPos, autoClose:0});
-  document.getElementById('closeSettings').addEventListener('click', ()=> popup.style.display='none');
+    <div style="margin-top:8px;display:flex;justify-content:flex-end">
+      <button id="saveSettings" class="btn">Enregistrer</button>
+    </div>`;
+  showPopup(content,{autoClose:0});
   document.getElementById('saveSettings').addEventListener('click', ()=>{
-    const r = parseFloat(document.getElementById('settingRadius').value);
-    const c = document.getElementById('settingAccent').value;
-    localStorage.setItem('roaderly_radius', r);
-    localStorage.setItem('roaderly_accent', c);
-    document.documentElement.style.setProperty('--accent', c);
+    const valR = parseFloat(document.getElementById('settingRadius').value);
+    const valC = document.getElementById('settingAccent').value;
+    localStorage.setItem('roaderly_radius', valR);
+    localStorage.setItem('roaderly_accent', valC);
+    loadSettings();
     popup.style.display='none';
-    showMessage('Paramètres sauvegardés',1800);
+    showMessage('Paramètres sauvegardés',2000);
   });
 }
-
-/* ========================== */
-/* INIT & DEMANDER LOCALISATION PWA */
-/* ========================== */
-(async function initApp(){
-  showMessage('Initialisation…',1500);
-  try{
-    await ensureGeolocation();
-    startWatch();
-    showMessage('Localisation active',1600);
-    debouncedReverse(userPos[0], userPos[1]);
-  }catch(e){
-    showPopup(`<div style="font-weight:700;margin-bottom:8px;">Activer votre localisation</div>
-      <div>Pour profiter pleinement de Roaderly, autorisez la géolocalisation.</div>
-      <div style="margin-top:12px;text-align:right">
-        <button id="askLocate" class="btn">Autoriser</button>
-      </div>`, {autoClose:0});
-    document.getElementById('askLocate').addEventListener('click', async ()=>{
-      popup.style.display='none';
-      try{ await ensureGeolocation(); startWatch(); showMessage('Localisation activée',1800); }catch(e){ showMessage('Impossible d’activer la localisation',3000); }
-    });
-  }
-})();
 </script>
+
 <script>
 /* ========================== */
-/* PARKINGS ET RASSOS AVANCES AMÉLIORÉ */
+/* PARKINGS & RASSOS CORRIGES (version prête à coller) */
 /* ========================== */
-
-/* Paramètres par défaut */
-const DEFAULT_PARK_RADIUS = parseFloat(localStorage.getItem('roaderly_radius') || 3); // km
-const PARK_ICON = '<span style="font-size:18px">🅿️</span>';
-const RASSO_ICON = '<span style="font-size:18px">🚗</span>';
-
-/* Références des markers rassos pour suppression fiable */
 let rassoMarkers = [];
-let activeRoute = null; // pour stocker le trajet en cours
+let activeRoute = null;
 
-/* ========================== */
-/* AFFICHAGE DES PARKINGS */
 async function loadParkings(){
-  if(!userPos) { showMessage('Position requise',2000); return; }
+  if(!userPos){ showMessage('Position requise',2000); return; }
   parkCluster.clearLayers();
-  showPopup(`<div style="font-weight:700">Recherche en cours…</div>`, {autoClose:0});
-  
-  const radiusMeters = Math.round(DEFAULT_PARK_RADIUS*1000);
+  showPopup(`<div style="font-weight:700">Recherche parkings…</div>`, {autoClose:0});
+
+  const radiusMeters = Math.round((parseFloat(localStorage.getItem('roaderly_radius')||3))*1000);
   const q = `[out:json][timeout:25];
     (node["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]});
      way["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]});
      relation["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]}););
-     out center;`;
+    out center;`;
+
   try {
     const res = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:q});
     const json = await res.json();
@@ -984,9 +854,9 @@ async function loadParkings(){
     els.slice(0,300).forEach(el=>{
       const lat = el.lat || (el.center && el.center.lat);
       const lon = el.lon || (el.center && el.center.lon);
-      if(!lat || !lon) return;
+      if(!lat||!lon) return;
       const name = el.tags?.name || el.tags?.operator || 'Parking';
-      const mk = L.marker([lat,lon], {icon:L.divIcon({className:'',html:PARK_ICON}), title:name});
+      const mk = L.marker([lat,lon], {icon:L.divIcon({className:'',html:'🅿️'}), title:name});
       mk.bindPopup(`
         <div style="font-weight:700;margin-bottom:6px">${name}</div>
         <div class="small">Distance: ${distanceKm(userPos,[lat,lon]).toFixed(1)} km</div>
@@ -998,90 +868,109 @@ async function loadParkings(){
     });
     popup.style.display='none';
     showMessage(`Parkings récupérés (${els.length})`,2500);
-  } catch(e) { console.warn(e); showMessage('Erreur récupération parkings',3000); }
+  } catch(e){ console.warn(e); showMessage('Erreur récupération parkings',3000); }
 }
 
-/* ========================== */
-/* NAVIGATION PARKINGS AVEC ANNULATION */
-map.on('popupopen', (e) => {
+map.on('popupopen', e => {
   const btnNav = e.popup._container.querySelector('.navPark');
-  if (!btnNav) return;
+  if(!btnNav) return;
 
   btnNav.addEventListener('click', async () => {
     const lat = parseFloat(btnNav.dataset.lat);
     const lon = parseFloat(btnNav.dataset.lon);
+    try { await ensureGeolocation(); } catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
 
-    try { await ensureGeolocation(); } 
-    catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
-
-    // Annuler trajet si on reclique sur le même parking
-    if (activeRoute && activeRoute.destLat === lat && activeRoute.destLon === lon) {
+    if(activeRoute && activeRoute.destLat===lat && activeRoute.destLon===lon){
       map.removeControl(activeRoute.routingControl);
-      activeRoute = null;
-      showMessage('Trajet annulé', 2200);
+      activeRoute=null;
+      showMessage('Trajet annulé',2200);
       return;
     }
-
-    if (activeRoute) map.removeControl(activeRoute.routingControl);
+    if(activeRoute) map.removeControl(activeRoute.routingControl);
 
     const routingControl = L.Routing.control({
-      waypoints: [L.latLng(userPos[0], userPos[1]), L.latLng(lat, lon)],
-      lineOptions: { styles: [{ color: varAccent(), weight: 5 }] },
-      show: false
+      waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat,lon)],
+      lineOptions:{styles:[{color:varAccent(),weight:5}]},
+      show:false
     }).addTo(map);
 
-    routingControl.on('routesfound', (e) => {
+    routingControl.on('routesfound', e=>{
       const summary = e.routes[0].summary;
-      const km = summary.totalDistance / 1000;
-      const min = Math.round(summary.totalTime / 60);
+      const km = summary.totalDistance/1000;
+      const min = Math.round(summary.totalTime/60);
       showDistance(km);
-      showMessage(`Distance: ${km.toFixed(1)} km • ${min} min`, 3500);
+      showMessage(`Distance: ${km.toFixed(1)} km • ${min} min`,3500);
     });
 
-    activeRoute = { routingControl, destLat: lat, destLon: lon };
+    activeRoute={routingControl,destLat:lat,destLon:lon};
   });
 });
 
-/* ========================== */
-/* HISTORIQUE AVANCE ET EXPORT CSV */
-/* ========================== */
-function exportHistoryCSV(){
-  const arr = JSON.parse(localStorage.getItem('roaderly_history')||'[]');
-  if(!arr.length){ showMessage('Historique vide',2000); return; }
-  let csv = 'type,lat,lng,label,timestamp\n';
-  arr.forEach(it=> csv+=`${it.type},${it.lat||''},${it.lng||''},${it.label||''},${it.ts}\n`);
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='roaderly_history.csv'; a.click();
-  showMessage('Historique exporté',2000);
-}
+btnReport.addEventListener('click', async ()=>{
+  try{ await ensureGeolocation(); }catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
+  const r = {lat:userPos[0], lon:userPos[1], ts:Date.now()};
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); arr.unshift(r);
+  localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
 
-/* ========================== */
-/* ALGOS SUPPLEMENTAIRES POUR PARKING ET RASSO */
-/* ========================== */
+  const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:'🚗'})}).addTo(map);
+  mk.setPopupContent(`
+    <div style="font-weight:700; font-size:14px; line-height:1.4;">
+      Rasso signalé
+      <div style="margin-top:6px;display:flex;justify-content:space-between;">
+        <button class="deleteRasso" style="padding:6px 12px;border-radius:12px;border:none;background:#ff3b30;color:#fff;font-weight:700;cursor:pointer;">Supprimer</button>
+      </div>
+    </div>
+  `);
 
-/* Filtrer parkings gratuits uniquement */
-function filterFreeParkings(elements){
-  return elements.filter(el=>{
-    return el.tags && (el.tags.fee === 'no' || el.tags.fee === '0' || !el.tags.fee);
+  mk.on('popupopen', e=>{
+    const btn = e.popup._container.querySelector('.deleteRasso');
+    if(btn){
+      btn.addEventListener('click', ()=>{
+        const stored = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]');
+        const newArr = stored.filter(item=>item.ts!==r.ts);
+        localStorage.setItem('roaderly_rassos', JSON.stringify(newArr));
+        map.removeLayer(mk);
+        showMessage('Rasso supprimé',2200);
+      }, {once:true});
+    }
+  });
+
+  rassoMarkers.push(mk);
+  showMessage('Rasso signalé (local)',2200);
+  setCookie('roaderly_last_report_ts', r.ts, 7);
+});
+
+function loadRassos(){
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]');
+  rassoMarkers.forEach(m=>map.removeLayer(m));
+  rassoMarkers=[];
+  arr.forEach(r=>{
+    const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:'🚗'})}).addTo(map);
+    mk.setPopupContent(`
+      <div style="font-weight:700; font-size:14px; line-height:1.4;">
+        Rasso
+        <div class="small">${new Date(r.ts).toLocaleString()}</div>
+        <div style="margin-top:6px;display:flex;justify-content:space-between;">
+          <button class="deleteRasso" style="padding:6px 12px;border-radius:12px;border:none;background:#ff3b30;color:#fff;font-weight:700;cursor:pointer;">Supprimer</button>
+        </div>
+      </div>
+    `);
+    mk.on('popupopen', e=>{
+      const btn = e.popup._container.querySelector('.deleteRasso');
+      if(btn){
+        btn.addEventListener('click', ()=>{
+          const stored = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]');
+          const newArr = stored.filter(item=>item.ts!==r.ts);
+          localStorage.setItem('roaderly_rassos', JSON.stringify(newArr));
+          map.removeLayer(mk);
+          showMessage('Rasso supprimé',2200);
+        }, {once:true});
+      }
+    });
+    rassoMarkers.push(mk);
   });
 }
 
-/* Calculer la meilleure route parmi plusieurs parkings */
-function bestParkingRoute(parkingList){
-  if(!userPos) return null;
-  let best = null;
-  let minDist = Infinity;
-  parkingList.forEach(p=>{
-    const d = distanceKm(userPos,[p.lat,p.lon]);
-    if(d<minDist){ minDist=d; best=p; }
-  });
-  return best;
-}
-
-/* ========================== */
-/* FONCTION INIT FINALE */
-/* ========================== */
 (async function finalInit(){
   try{
     await ensureGeolocation();
