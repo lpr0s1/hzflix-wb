@@ -292,11 +292,9 @@ html,body {
 <body>
 <script>
 window.onload = () => {
-  window.addEventListener('load', async () => {
-  if (!("Notification" in window)) {
-    console.warn("Notifications non supportées");
-    return;
-  }
+  async function notifyOnLoad() {
+  if (!("Notification" in window)) return console.warn("Notifications non supportées");
+  if (!("serviceWorker" in navigator)) return console.warn("Service Worker non supporté");
 
   // Demande la permission si nécessaire
   if (Notification.permission !== "granted") {
@@ -307,12 +305,19 @@ window.onload = () => {
     }
   }
 
-  // Affiche la notification directement
-  new Notification("Roaderly", {
+  // S'assure que le service worker est enregistré
+  const sw = await navigator.serviceWorker.register('/sw.js');
+
+  // Utilise le service worker pour déclencher une notification
+  sw.showNotification("Roaderly", {
     body: "Bonjour ! Notification affichée au lancement",
-    icon: "icons/icon-192.png"
+    icon: "icons/icon-192.png",
+    tag: "launch-notif",
+    vibrate: [100, 50, 100]
   });
-})
+}
+
+window.addEventListener('load', notifyOnLoad);
 
   
   if ('geolocation' in navigator) {
@@ -354,31 +359,7 @@ async function requestLocation() {
 window.addEventListener('load', requestLocation);
 </script>
   <script>
-async function requestNotifications() {
-  if (!("Notification" in window)) return console.warn("Notifications non supportées");
-  
-  if (Notification.permission === "granted") {
-    console.log("Notifications déjà autorisées ✅");
-    new Notification("Roaderly", { body: "Notifications activées.", icon: "icons/icon-192.png" });
-    return true;
-  }
 
-  const permission = await Notification.requestPermission();
-  console.log("Permission demandée ->", permission);
-
-  if (permission === "granted") {
-    new Notification("Roaderly", { body: "Notifications activées.", icon: "icons/icon-192.png" });
-    return true;
-  } else {
-    console.log("Notifications refusées ❌");
-    return false;
-  }
-}
-
-window.addEventListener('load', async () => {
-  const ok = await requestNotifications();
-  console.log("Notifications OK ?", ok);
-});
 </script>
 <div id="map"></div>
 <div class="ui">
