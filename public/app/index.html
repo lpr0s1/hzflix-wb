@@ -650,18 +650,63 @@ map.on('popupopen', (e)=>{
 });
 
 /* ========================== */
-/* SIGNALER RASSO */
+/* SIGNALER RASSO AVEC SUPPRESSION */
 /* ========================== */
-btnReport.addEventListener('click', async ()=>{
-  try{ await ensureGeolocation(); }catch(e){ return; }
-  const r = {lat:userPos[0],lon:userPos[1],ts:Date.now()};
-  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); 
-  arr.unshift(r); 
+let rassoMarkers = []; // pour garder la référence des markers
+
+btnReport.addEventListener('click', async () => {
+  try { await ensureGeolocation(); } 
+  catch(e) { showMessage('Autorise la géolocalisation', 3000); return; }
+
+  const r = { lat: userPos[0], lon: userPos[1], ts: Date.now() };
+
+  // Ajouter au stockage
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
+  arr.unshift(r);
   localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
-  L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:'<span style="font-size:22px">🚗</span>'})})
-    .addTo(map)
-    .bindPopup('Rasso signalé').openPopup();
-  showMessage('Rasso signalé (local)',2200);
+
+  // Ajouter marker sur la carte
+  const mk = L.marker([r.lat, r.lon], {
+    icon: L.divIcon({ className: '', html: '<span style="font-size:22px">🚗</span>' })
+  }).addTo(map);
+
+  // Popup stylé iOS avec bouton supprimer
+  mk.bindPopup(`
+    <div style="font-weight:700; font-size:14px; line-height:1.4;">
+      Rasso signalé
+      <div style="margin-top:6px; text-align:right;">
+        <button class="deleteRasso" style="
+          padding:6px 12px;
+          border-radius:12px;
+          border:none;
+          background:#ff3b30;
+          color:#fff;
+          font-weight:700;
+          cursor:pointer;
+        ">Supprimer</button>
+      </div>
+    </div>
+  `);
+
+  // Événement pour suppression
+  mk.on('popupopen', (e) => {
+    const btn = e.popup._container.querySelector('.deleteRasso');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        // Supprimer du localStorage
+        const stored = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
+        const newArr = stored.filter(item => item.ts !== r.ts);
+        localStorage.setItem('roaderly_rassos', JSON.stringify(newArr));
+
+        // Supprimer marker de la carte
+        map.removeLayer(mk);
+        showMessage('Rasso supprimé', 2200);
+      });
+    }
+  });
+
+  rassoMarkers.push(mk);
+  showMessage('Rasso signalé (local)', 2200);
   setCookie('roaderly_last_report_ts', r.ts, 7);
 });
 
