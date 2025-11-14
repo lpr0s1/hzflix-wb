@@ -650,58 +650,56 @@ map.on('popupopen', (e)=>{
 });
 
 /* ========================== */
-/* SIGNALER RASSO AVEC SUPPRESSION */
+/* SIGNALER RASSO AVEC SUPPRESSION FIABLE AMÉLIORÉE */
 /* ========================== */
-let rassoMarkers = []; // pour garder la référence des markers
+let rassoMarkers = []; // référence de tous les rasso
 
 btnReport.addEventListener('click', async () => {
   try { await ensureGeolocation(); } 
   catch(e) { showMessage('Autorise la géolocalisation', 3000); return; }
 
   const r = { lat: userPos[0], lon: userPos[1], ts: Date.now() };
-
-  // Ajouter au stockage
   const arr = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
   arr.unshift(r);
   localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
 
-  // Ajouter marker sur la carte
   const mk = L.marker([r.lat, r.lon], {
     icon: L.divIcon({ className: '', html: '<span style="font-size:22px">🚗</span>' })
   }).addTo(map);
 
-  // Popup stylé iOS avec bouton supprimer
-  mk.bindPopup(`
-    <div style="font-weight:700; font-size:14px; line-height:1.4;">
-      Rasso signalé
-      <div style="margin-top:6px; text-align:right;">
-        <button class="deleteRasso" style="
-          padding:6px 12px;
-          border-radius:12px;
-          border:none;
-          background:#ff3b30;
-          color:#fff;
-          font-weight:700;
-          cursor:pointer;
-        ">Supprimer</button>
+  function updatePopup() {
+    mk.setPopupContent(`
+      <div style="font-weight:700; font-size:14px; line-height:1.4;">
+        Rasso signalé
+        <div style="margin-top:6px; display:flex; justify-content:space-between;">
+          <button class="deleteRasso" style="
+            padding:6px 12px;
+            border-radius:12px;
+            border:none;
+            background:#ff3b30;
+            color:#fff;
+            font-weight:700;
+            cursor:pointer;
+          ">Supprimer</button>
+        </div>
       </div>
-    </div>
-  `);
+    `);
+  }
 
-  // Événement pour suppression
+  updatePopup();
+
   mk.on('popupopen', (e) => {
     const btn = e.popup._container.querySelector('.deleteRasso');
     if (btn) {
       btn.addEventListener('click', () => {
-        // Supprimer du localStorage
+        // Supprimer du stockage
         const stored = JSON.parse(localStorage.getItem('roaderly_rassos') || '[]');
         const newArr = stored.filter(item => item.ts !== r.ts);
         localStorage.setItem('roaderly_rassos', JSON.stringify(newArr));
-
-        // Supprimer marker de la carte
+        // Supprimer marker
         map.removeLayer(mk);
         showMessage('Rasso supprimé', 2200);
-      });
+      }, { once: true }); // évite plusieurs listeners
     }
   });
 
@@ -709,6 +707,7 @@ btnReport.addEventListener('click', async () => {
   showMessage('Rasso signalé (local)', 2200);
   setCookie('roaderly_last_report_ts', r.ts, 7);
 });
+
 
 /* ========================== */
 /* HISTORIQUE ROUTES & CLICK MAP */
@@ -953,7 +952,7 @@ function openSettings(){
 </script>
 <script>
 /* ========================== */
-/* PARKINGS ET RASSOS AVANCES */
+/* PARKINGS ET RASSOS AVANCES AMÉLIORÉ */
 /* ========================== */
 
 /* Paramètres par défaut */
@@ -961,7 +960,12 @@ const DEFAULT_PARK_RADIUS = parseFloat(localStorage.getItem('roaderly_radius') |
 const PARK_ICON = '<span style="font-size:18px">🅿️</span>';
 const RASSO_ICON = '<span style="font-size:18px">🚗</span>';
 
-/* Affichage des parkings avec calcul distance et popup amélioré */
+/* Références des markers rassos pour suppression fiable */
+let rassoMarkers = [];
+let activeRoute = null; // pour stocker le trajet en cours
+
+/* ========================== */
+/* AFFICHAGE DES PARKINGS */
 async function loadParkings(){
   if(!userPos) { showMessage('Position requise',2000); return; }
   parkCluster.clearLayers();
@@ -987,7 +991,7 @@ async function loadParkings(){
         <div style="font-weight:700;margin-bottom:6px">${name}</div>
         <div class="small">Distance: ${distanceKm(userPos,[lat,lon]).toFixed(1)} km</div>
         <div style="margin-top:8px;display:flex;justify-content:space-between">
-          <button class="navPark" data-lat="${lat}" data-lon="${lon}" class="btn">Aller</button>
+          <button class="navPark btn" data-lat="${lat}" data-lon="${lon}">Aller</button>
         </div>
       `);
       parkCluster.addLayer(mk);
@@ -997,57 +1001,46 @@ async function loadParkings(){
   } catch(e) { console.warn(e); showMessage('Erreur récupération parkings',3000); }
 }
 
-/* Boutons dans popup pour navigation vers parking */
-map.on('popupopen', e => {
-  const btn = e.popup._container.querySelector('.navPark');
-  if(btn){
-    btn.addEventListener('click', async ()=>{
-      const lat = parseFloat(btn.dataset.lat);
-      const lon = parseFloat(btn.dataset.lon);
-      if(!userPos) await ensureGeolocation();
-      if(routingControl) map.removeControl(routingControl);
-      routingControl = L.Routing.control({
-        waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat,lon)],
-        lineOptions:{styles:[{color:varAccent(),weight:5}]},
-        show:false
-      }).addTo(map);
-      routingControl.on('routesfound', function(e){
-        const summary = e.routes[0].summary;
-        const km = summary.totalDistance/1000;
-        const min = Math.round(summary.totalTime/60);
-        showDistance(km);
-        showMessage(`Distance ${km.toFixed(1)} km • ${min} min`,4000);
-        addHistory({type:'parking',lat:lat,lng:lon,label:'Parking',ts:Date.now()});
-      });
+/* ========================== */
+/* NAVIGATION PARKINGS AVEC ANNULATION */
+map.on('popupopen', (e) => {
+  const btnNav = e.popup._container.querySelector('.navPark');
+  if (!btnNav) return;
+
+  btnNav.addEventListener('click', async () => {
+    const lat = parseFloat(btnNav.dataset.lat);
+    const lon = parseFloat(btnNav.dataset.lon);
+
+    try { await ensureGeolocation(); } 
+    catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
+
+    // Annuler trajet si on reclique sur le même parking
+    if (activeRoute && activeRoute.destLat === lat && activeRoute.destLon === lon) {
+      map.removeControl(activeRoute.routingControl);
+      activeRoute = null;
+      showMessage('Trajet annulé', 2200);
+      return;
+    }
+
+    if (activeRoute) map.removeControl(activeRoute.routingControl);
+
+    const routingControl = L.Routing.control({
+      waypoints: [L.latLng(userPos[0], userPos[1]), L.latLng(lat, lon)],
+      lineOptions: { styles: [{ color: varAccent(), weight: 5 }] },
+      show: false
+    }).addTo(map);
+
+    routingControl.on('routesfound', (e) => {
+      const summary = e.routes[0].summary;
+      const km = summary.totalDistance / 1000;
+      const min = Math.round(summary.totalTime / 60);
+      showDistance(km);
+      showMessage(`Distance: ${km.toFixed(1)} km • ${min} min`, 3500);
     });
-  }
-});
 
-/* Signaler rasso */
-btnReport.addEventListener('click', async ()=>{
-  if(!userPos) { showMessage('Position requise',2000); return; }
-  const r = {lat:userPos[0],lon:userPos[1],ts:Date.now()};
-  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); 
-  arr.unshift(r); 
-  localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
-  
-  const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:RASSO_ICON})}).addTo(map);
-  mk.bindPopup(`<div style="font-weight:700">Rasso signalé</div>
-    <div class="small">${new Date(r.ts).toLocaleString()}</div>`).openPopup();
-    
-  showMessage('Rasso signalé (local)',2000);
-  addHistory({type:'rasso',lat:r.lat,lng:r.lon,label:'Rasso',ts:r.ts});
-});
-
-/* Affichage des rassos existants */
-function loadRassos(){
-  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]');
-  arr.forEach(r=>{
-    const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:RASSO_ICON})}).addTo(map);
-    mk.bindPopup(`<div style="font-weight:700">Rasso</div>
-      <div class="small">${new Date(r.ts).toLocaleString()}</div>`);
+    activeRoute = { routingControl, destLat: lat, destLon: lon };
   });
-}
+});
 
 /* ========================== */
 /* HISTORIQUE AVANCE ET EXPORT CSV */
