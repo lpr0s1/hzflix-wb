@@ -292,6 +292,12 @@ html,body {
 <body>
 <script>
 window.onload = () => {
+  if (Notification.permission === "granted") {
+    new Notification("Roaderly", { 
+      body: "Bienvenue sur Roaderly !", 
+      icon: "icons/icon-192.png" 
+    });
+  }
   if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(
       pos => console.log('Localisation activée', pos),
@@ -301,24 +307,6 @@ window.onload = () => {
   } else {
     console.warn('Géolocalisation non supportée');
   }
-
-    // Vérifier et demander les notifications
-  (async () => {
-    if (!('Notification' in window)) return console.warn('Notifications non supportées');
-
-    const perm = await Notification.requestPermission();
-    console.log('Permission demandée ->', perm);
-
-    if (perm === 'granted') {
-      new Notification('Roaderly', {
-        body: 'Notifications activées ✅',
-        icon: 'icons/icon-192.png'
-      });
-      console.log('Notifications activées et test envoyée');
-    } else {
-      console.log('Notifications refusées ou bloquées');
-    }
-  })()
   
 };
 </script>
