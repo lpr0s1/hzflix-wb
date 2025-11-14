@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Roaderly — HZ</title>
+<link rel="manifest" href="#" id="manifestLink">
+
+<!-- Google Fonts Modernes -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Inter:wght@500;700&display=swap" rel="stylesheet">
+
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
+
+<style>
+/* ========================== */
+/* Variables globales & couleurs */
+/* ========================== */
+:root {
+  --accent:#06b6d4;
+  --bg:#071022;
+  --card:rgba(255,255,255,0.03);
+  --text:#e6eef6;
+  --muted:#9aa7b7;
+  --ios-radius:16px;
+  --shadow:0 12px 40px rgba(2,6,23,0.45);
+  --font-main:'Inter', sans-serif;
+}
+
+/* ========================== */
+/* Reset & layout général */
+/* ========================== */
+html,body {
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  font-family:var(--font-main);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+#map {
+  position:fixed;
+  inset:0;
+  height:100%;
+  width:100%;
+  z-index:0;
+}
+
+/* ========================== */
+/* UI générale */
+/* ========================== */
+.ui {
+  position:fixed;
+  left:50%;
+  top:14px;
+  transform:translateX(-50%);
+  z-index:2500;
+  width:92%;
+  max-width:760px;
+  pointer-events:none;
+}
+.header {
+  pointer-events:auto;
+  background:rgba(6,10,18,0.6);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:var(--text);
+  padding:12px 16px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  box-shadow:var(--shadow);
+  transition:transform .22s,opacity .22s;
+}
+.title {
+  font-weight:700;
+  font-size:18px;
+  font-family:var(--font-main);
+}
+.dev {
+  font-size:13px;
+  color:var(--muted);
+}
+.distance {
+  margin-left:auto;
+  background:linear-gradient(90deg,var(--accent),#0ea5a4);
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:700;
+  color:#022;
+  box-shadow:0 8px 20px rgba(6,182,173,0.12);
+  font-size:14px;
+  display:none;
+}
+
+/* ========================== */
+/* Cards et boutons modernes */
+/* ========================== */
+.card {
+  pointer-events:auto;
+  margin-top:10px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding:12px;
+  border-radius:var(--ios-radius);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:var(--shadow);
+  transition:opacity .24s,transform .24s;
+}
+.row {
+  display:flex;
+  gap:10px;
+}
+.input {
+  flex:1;
+  padding:12px;
+  border-radius:14px;
+  border:none;
+  background:var(--card);
+  color:var(--text);
+  outline:none;
+  font-size:16px;
+  font-weight:500;
+}
+.actions {
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+}
+.btn {
+  padding:10px 16px;
+  border-radius:14px;
+  border:none;
+  background:var(--accent);
+  color:#022;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(6,182,173,0.15);
+  transition:transform .15s;
+}
+.btn:hover { transform:scale(1.05); }
+.btn-ghost {
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.04);
+  color:var(--text);
+}
+
+/* ========================== */
+/* Contrôles flottants */
+/* ========================== */
+.controls {
+  position:fixed;
+  right:16px;
+  top:120px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  z-index:3200;
+  pointer-events:auto;
+  transform:scale(1);
+}
+.fab {
+  width:60px;
+  height:60px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.98);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 12px 30px rgba(2,6,23,0.25);
+  cursor:pointer;
+  font-size:24px;
+  transition:transform .18s;
+}
+.fab:hover { transform:scale(1.1); }
+
+/* ========================== */
+/* Zoom buttons fixes (non zoomables) */
+/* ========================== */
+.zoom-controls {
+  position:fixed;
+  right:16px;
+  bottom:120px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:3200;
+}
+.zoom-btn {
+  width:50px;
+  height:50px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.98);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 8px 18px rgba(2,6,23,0.18);
+  cursor:pointer;
+}
+.zoom-btn:hover { transform:scale(1.05); }
+
+/* ========================== */
+/* Suggestions & popups modernes iOS */
+/* ========================== */
+.suggestions {
+  position:relative;
+  max-height:260px;
+  overflow:auto;
+  border-radius:14px;
+  background:linear-gradient(180deg,#071022, rgba(255,255,255,0.02));
+  padding:8px;
+  border:1px solid rgba(255,255,255,0.03);
+  display:none;
+}
+.sug {
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  color:var(--text);
+  font-size:15px;
+  font-weight:600;
+}
+.sug:hover {
+  background:rgba(255,255,255,0.04);
+}
+.message {
+  position:fixed;
+  left:16px;
+  bottom:18px;
+  background:linear-gradient(90deg,#fff,#f1f5f9);
+  padding:10px 14px;
+  border-radius:14px;
+  z-index:3200;
+  color:#022024;
+  font-weight:700;
+  box-shadow:0 10px 28px rgba(2,6,23,0.12);
+  display:none;
+}
+.popup {
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:3600;
+  background:linear-gradient(180deg,#071022,#0c1320);
+  padding:16px;
+  border-radius:18px;
+  min-width:300px;
+  color:var(--text);
+  box-shadow:var(--shadow);
+  display:none;
+  font-weight:700;
+}
+.center-search {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: black;
+  z-index:4000;
+  opacity:0%;
+  pointer-events:none;
+  transition:opacity .22s;
+}
+.center-search.visible {
+  opacity:90%;
+  pointer-events:auto;
+}
+.center-card {
+  width:92%;
+  max-width:560px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  color:var(--text);
+  padding:16px;
+  border-radius:18px;
+  box-shadow:0 20px 50px rgba(2,6,23,0.25);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.small {
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ========================== */
+/* Leaflet map transparent container */
+.leaflet-container {
+  background:transparent;
+}
+
+/* ========================== */
+/* Mode light */
+@media (prefers-color-scheme:light){
+  :root {
+    --bg:#f6fbff;
+    --card:#fff;
+    --text:#021025;
+    --muted:#5b6b7a;
+  }
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- UI Header -->
+<div class="ui">
+  <div class="header" id="header">
+    <div class="title">Roaderly</div>
+    <div class="dev">by HZ</div>
+    <div id="distanceBadge" class="distance">0 km</div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls" role="toolbar" aria-label="contrôles">
+  <div id="btnSearch" class="fab" title="Recherche"><span class="material-icons">search</span></div>
+  <div id="btnLocate" class="fab" title="Localiser"><span class="material-icons">my_location</span></div>
+  <div id="btnPark" class="fab" title="Parkings"><span class="material-icons">local_parking</span></div>
+  <div id="btnReport" class="fab" title="Signaler rasso"><span class="material-icons">directions_car</span></div>
+  <div id="btnHistory" class="fab" title="Historique"><span class="material-icons">history</span></div>
+  <div id="btnInstall" class="fab" title="Installer" style="display:none"><span class="material-icons">file_download</span></div>
+</div>
+
+<div class="zoom-controls">
+  <div id="zoomIn" class="zoom-btn" title="Zoom +"><span class="material-icons">zoom_in</span></div>
+  <div id="zoomOut" class="zoom-btn" title="Zoom -"><span class="material-icons">zoom_out</span></div>
+</div>
+
+<div id="message" class="message">Message</div>
+<div id="popup" class="popup"></div>
+
+<!-- Center search modal -->
+<div id="centerSearch" class="center-search" aria-hidden="true">
+  <div class="center-card" id="centerCard" role="dialog" aria-modal="true" aria-label="Recherche trajet">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:800">Rechercher un trajet</div>
+      <div id="closeCenter" style="cursor:pointer" class="material-icons">close</div>
+    </div>
+    <input id="centerStart" class="input" placeholder="Départ (laisser vide = vous)" />
+    <div id="centerStartSug" class="suggestions"></div>
+    <input id="centerEnd" class="input" placeholder="Destination" />
+    <div id="centerEndSug" class="suggestions"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="small">Suivre position: <label style="font-weight:700;margin-left:6px"><input id="followToggle" type="checkbox" /> oui</label></div>
+      <div class="actions">
+        <button id="centerCancel" class="btn-ghost">Annuler</button>
+        <button id="centerClear" class="btn-ghost">Effacer</button>
+        <button id="centerGo" class="btn">Démarrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+
+<script>
+/* ========================== */
+/* INITIALISATION MAP & VARIABLES */
+/* ========================== */
+const map = L.map('map', {zoomControl:false}).setView([46.603354,1.888334],6);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap contributors', maxZoom:19
+}).addTo(map);
+
+const header = document.getElementById('header');
+const distanceBadge = document.getElementById('distanceBadge');
+const messageBox = document.getElementById('message');
+const popup = document.getElementById('popup');
+
+/* ========================== */
+/* CONTROLS BUTTONS */
+/* ========================== */
+const btnSearch = document.getElementById('btnSearch');
+const btnLocate = document.getElementById('btnLocate');
+const btnPark = document.getElementById('btnPark');
+const btnReport = document.getElementById('btnReport');
+const btnHistory = document.getElementById('btnHistory');
+const btnInstall = document.getElementById('btnInstall');
+const zoomIn = document.getElementById('zoomIn');
+const zoomOut = document.getElementById('zoomOut');
+
+const centerSearch = document.getElementById('centerSearch');
+const centerCard = document.getElementById('centerCard');
+const closeCenter = document.getElementById('closeCenter');
+const centerStart = document.getElementById('centerStart');
+const centerEnd = document.getElementById('centerEnd');
+const centerStartSug = document.getElementById('centerStartSug');
+const centerEndSug = document.getElementById('centerEndSug');
+const centerCancel = document.getElementById('centerCancel');
+const centerClear = document.getElementById('centerClear');
+const centerGo = document.getElementById('centerGo');
+const followToggle = document.getElementById('followToggle');
+
+let userPos = null;
+let userMarker = null;
+let watchId = null;
+let routingControl = null;
+let parkCluster = L.markerClusterGroup();
+map.addLayer(parkCluster);
+let acAbort = null;
+let cache = {};
+let deferredPrompt = null;
+let followUser = true;
+
+/* ========================== */
+/* COOKIES & MESSAGES UTILS */
+/* ========================== */
+function setCookie(name,value,days){
+  const d = new Date(); d.setTime(d.getTime() + (days*24*60*60*1000));
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+}
+function getCookie(name){
+  const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));
+  return m ? decodeURIComponent(m[2]) : null;
+}
+function showMessage(txt, timeout=2200){
+  messageBox.textContent = txt;
+  messageBox.style.display = 'block';
+  if(timeout) setTimeout(()=> messageBox.style.display='none', timeout);
+}
+function showDistance(km){
+  if(km === null){ distanceBadge.style.display='none'; return; }
+  distanceBadge.style.display = 'block';
+  distanceBadge.textContent = km.toFixed(1) + ' km';
+}
+function varAccent(){ return getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#06b6d4'; }
+
+/* ========================== */
+/* CENTER MODAL SEARCH */
+/* ========================== */
+btnSearch.addEventListener('click', ()=>{
+  if(centerSearch.classList.contains('visible')) closeCenterModal();
+  else openCenterModal();
+});
+function openCenterModal(){
+  centerSearch.classList.add('visible');
+  centerSearch.setAttribute('aria-hidden','false');
+  centerStart.focus();
+  if(userPos){
+    reverseGeocode(userPos[0], userPos[1]).then(name=>{
+      if(!centerStart.value) {
+        centerStart.value = name;
+        centerStart.dataset.lat = userPos[0];
+        centerStart.dataset.lon = userPos[1];
+        centerStart.dataset.auto = '1';
+      }
+    }).catch(()=>{});
+  }
+}
+function closeCenterModal(){
+  centerSearch.classList.remove('visible');
+  centerSearch.setAttribute('aria-hidden','true');
+}
+closeCenter.addEventListener('click', closeCenterModal);
+centerCancel.addEventListener('click', ()=>{
+  closeCenterModal();
+  centerStart.value=''; centerEnd.value='';
+  delete centerStart.dataset.lat; delete centerStart.dataset.lon;
+  delete centerEnd.dataset.lat; delete centerEnd.dataset.lon;
+  showDistance(null);
+});
+centerClear.addEventListener('click', ()=>{
+  centerStart.value=''; centerEnd.value='';
+  delete centerStart.dataset.lat; delete centerStart.dataset.lon;
+  delete centerEnd.dataset.lat; delete centerEnd.dataset.lon;
+  centerStartSug.innerHTML=''; centerEndSug.innerHTML='';
+  centerStartSug.style.display='none'; centerEndSug.style.display='none';
+  showDistance(null);
+});
+
+/* ========================== */
+/* GEOLOCATION PROGRESSIVE (PWA friendly) */
+/* ========================== */
+async function ensureGeolocation(){
+  if(userPos) return userPos;
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation) return reject('nogeo');
+    navigator.geolocation.getCurrentPosition(p=>{
+      userPos=[p.coords.latitude,p.coords.longitude];
+      if(!userMarker)
+        userMarker = L.marker(userPos,{icon:L.divIcon({className:'',html:'<span style="font-size:22px">📍</span>'})}).addTo(map);
+      else userMarker.setLatLng(userPos);
+      if(followUser) map.setView(userPos,14);
+      resolve(userPos);
+    }, err=>{
+      showMessage('Autorise la géolocalisation pour continuer',3000);
+      reject(err);
+    }, {enableHighAccuracy:true,timeout:10000,maximumAge:2000});
+  });
+}
+
+btnLocate.addEventListener('click', async ()=>{
+  try{
+    await ensureGeolocation();
+    startWatch();
+    showMessage('Localisation activée',2200);
+    setCookie('roaderly_session','localised',7);
+  }catch(e){ showMessage('Impossible d’accéder à la localisation',3000); }
+});
+
+function startWatch(){
+  if(watchId) return;
+  if(!navigator.geolocation) return;
+  watchId = navigator.geolocation.watchPosition(p=>{
+    userPos=[p.coords.latitude,p.coords.longitude];
+    if(!userMarker)
+      userMarker = L.marker(userPos,{icon:L.divIcon({className:'',html:'<span style="font-size:22px">📍</span>'})}).addTo(map);
+    else userMarker.setLatLng(userPos);
+    if(followUser) map.setView(userPos, Math.max(map.getZoom(),15), {animate:true});
+    if(routingControl && routingControl.getWaypoints && routingControl.getWaypoints().length>1){
+      try{
+        routingControl.setWaypoints([L.latLng(userPos[0],userPos[1]), routingControl.getWaypoints()[1].latLng]);
+      }catch(e){}
+    }
+    if(centerStart.dataset.auto==='1'){ debouncedReverse(userPos[0], userPos[1]); }
+  }, err=>{}, {enableHighAccuracy:true,maximumAge:1000,timeout:7000});
+}
+function stopWatch(){ if(watchId) navigator.geolocation.clearWatch(watchId); watchId=null; }
+
+/* ========================== */
+/* ZOOM BUTTONS NON ZOOMABLES */
+/* ========================== */
+zoomIn.addEventListener('click', ()=> map.zoomIn());
+zoomOut.addEventListener('click', ()=> map.zoomOut());
+
+/* ========================== */
+/* POPUPS STYLE IOS + ALGORITHMES PARKING & RASSO */
+/* ========================== */
+btnPark.addEventListener('click', async ()=>{
+  try{ await ensureGeolocation(); }catch(e){ return; }
+  showMessage('Recherche parkings en cours…',2000);
+  parkCluster.clearLayers();
+  const radius = Math.max(0.5, parseFloat(localStorage.getItem('roaderly_radius')||3))*1000;
+  const query = `[out:json][timeout:20];(node["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]});way["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]});relation["amenity"="parking"](around:${radius},${userPos[0]},${userPos[1]}););out center;`;
+  try{
+    const res = await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query});
+    const json = await res.json();
+    const elements = json.elements || [];
+    elements.slice(0,300).forEach(el=>{
+      const lat = el.lat || (el.center && el.center.lat);
+      const lon = el.lon || (el.center && el.center.lon);
+      if(!lat||!lon) return;
+      const name = (el.tags && (el.tags.name || el.tags.operator)) || 'Parking';
+      const mk = L.marker([lat,lon], {icon:L.divIcon({className:'',html:'<span style="font-size:20px">🅿️</span>'}), title:name});
+      mk.bindPopup(`<b>${name}</b><div style="margin-top:8px"><button class="navPark" data-lat="${lat}" data-lon="${lon}">Aller</button></div>`);
+      parkCluster.addLayer(mk);
+    });
+    showMessage(`Parkings trouvés (${elements.length})`,2500);
+  }catch(e){ console.warn(e); showMessage('Erreur récupération parkings',3000); }
+});
+
+map.on('popupopen', (e)=>{
+  const btn = e.popup._container.querySelector('.navPark');
+  if(btn) btn.addEventListener('click', async ()=>{
+    const lat = parseFloat(btn.dataset.lat), lon = parseFloat(btn.dataset.lon);
+    try{ await ensureGeolocation(); }catch(e){ return; }
+    if(routingControl) map.removeControl(routingControl);
+    routingControl = L.Routing.control({
+      waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat,lon)],
+      lineOptions:{styles:[{color:varAccent(),weight:5}]},
+      show:false
+    }).addTo(map);
+    routingControl.on('routesfound', function(ev){
+      const summary = ev.routes[0].summary;
+      const km = summary.totalDistance/1000;
+      const min = Math.round(summary.totalTime/60);
+      showDistance(km);
+      showMessage(`Distance ${km.toFixed(1)} km • ${min} min`,4000);
+    });
+  });
+});
+
+/* ========================== */
+/* SIGNALER RASSO */
+/* ========================== */
+btnReport.addEventListener('click', async ()=>{
+  try{ await ensureGeolocation(); }catch(e){ return; }
+  const r = {lat:userPos[0],lon:userPos[1],ts:Date.now()};
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); 
+  arr.unshift(r); 
+  localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
+  L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:'<span style="font-size:22px">🚗</span>'})})
+    .addTo(map)
+    .bindPopup('Rasso signalé').openPopup();
+  showMessage('Rasso signalé (local)',2200);
+  setCookie('roaderly_last_report_ts', r.ts, 7);
+});
+
+/* ========================== */
+/* HISTORIQUE ROUTES & CLICK MAP */
+/* ========================== */
+function addHistory(e){ 
+  const arr = JSON.parse(localStorage.getItem('roaderly_history')||'[]'); 
+  arr.unshift(e); 
+  if(arr.length>400) arr.length=400; 
+  localStorage.setItem('roaderly_history', JSON.stringify(arr)); 
+}
+map.on('click', e=> addHistory({type:'map_click',lat:e.latlng.lat,lng:e.latlng.lng,ts:Date.now()}));
+
+btnHistory.addEventListener('click', ()=>{
+  const h = JSON.parse(localStorage.getItem('roaderly_history')||'[]');
+  if(!h.length){ showMessage('Aucun historique',1600); return; }
+  popup.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-weight:800">Historique</div>
+    <div class="small">HZ</div></div>
+    <div style="margin-top:8px;max-height:420px;overflow:auto">
+    ${h.slice(0,120).map(it=>`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+      <b>[${it.type}]</b> ${new Date(it.ts).toLocaleString()} 
+      <div class="small">${it.label||''} ${it.lat?.toFixed(5)||''}, ${it.lng?.toFixed(5)||''}</div>
+    </div>`).join('')}
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px">
+      <button id="closePopup" class="btn-ghost">Fermer</button>
+    </div>`;
+  popup.style.display='block';
+  document.getElementById('closePopup').addEventListener('click', ()=> popup.style.display='none');
+});
+
+/* ========================== */
+/* AUTOCOMPLETE & REVERSE GEOCODE */
+/* ========================== */
+function fastAutocomplete(q, target){
+  if(!q || q.length<2){ target.style.display='none'; target.innerHTML=''; return; }
+  if(cache[q]) return renderSuggestions(cache[q], target);
+  if(acAbort) acAbort.abort();
+  acAbort = new AbortController();
+  fetch('https://nominatim.openstreetmap.org/search?format=json&countrycodes=fr&accept-language=fr&q='+encodeURIComponent(q)+'&limit=8', {signal:acAbort.signal})
+    .then(r=>r.json()).then(json=>{ cache[q]=json; renderSuggestions(json,target); })
+    .catch(e=>{ if(e.name!=='AbortError') console.warn(e); });
+}
+function renderSuggestions(list,target){
+  if(!list || !list.length){ target.style.display='none'; target.innerHTML=''; return; }
+  target.innerHTML = list.map(it=>`<div class="sug" data-lat="${it.lat}" data-lon="${it.lon}">${it.display_name}</div>`).join('');
+  target.style.display='block';
+}
+centerStart.addEventListener('input', ()=> { delete centerStart.dataset.auto; fastAutocomplete(centerStart.value, centerStartSug); });
+centerEnd.addEventListener('input', ()=> fastAutocomplete(centerEnd.value, centerEndSug));
+
+centerStartSug.addEventListener('click', ev=>{
+  const el = ev.target.closest('.sug'); if(!el) return;
+  centerStart.value = el.textContent; centerStart.dataset.lat=el.dataset.lat; centerStart.dataset.lon=el.dataset.lon;
+  centerStartSug.style.display='none'; delete centerStart.dataset.auto; updateDistanceBadgeCenter();
+});
+centerEndSug.addEventListener('click', ev=>{
+  const el = ev.target.closest('.sug'); if(!el) return;
+  centerEnd.value = el.textContent; centerEnd.dataset.lat=el.dataset.lat; centerEnd.dataset.lon=el.dataset.lon;
+  centerEndSug.style.display='none'; updateDistanceBadgeCenter();
+});
+
+function updateDistanceBadgeCenter(){
+  const s = centerStart.dataset.lat && centerStart.dataset.lon ? [parseFloat(centerStart.dataset.lat), parseFloat(centerStart.dataset.lon)] : userPos;
+  const e = centerEnd.dataset.lat && centerEnd.dataset.lon ? [parseFloat(centerEnd.dataset.lat), parseFloat(centerEnd.dataset.lon)] : null;
+  if(!s||!e){ showDistance(null); return; }
+  const d = distanceKm(s,e); showDistance(d);
+}
+function distanceKm(a,b){
+  if(!a||!b) return null;
+  const R = 6371;
+  const dLat = (b[0]-a[0])*Math.PI/180;
+  const dLon = (b[1]-a[1])*Math.PI/180;
+  const la1 = a[0]*Math.PI/180, la2 = b[0]*Math.PI/180;
+  const aa = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
+  const c = 2*Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+  return R*c;
+}
+
+/* ========================== */
+/* ROUTE CENTER GO BUTTON */
+/* ========================== */
+centerGo.addEventListener('click', async ()=>{
+  closeCenterModal();
+  const start = centerStart.dataset.lat && centerStart.dataset.lon ? [parseFloat(centerStart.dataset.lat), parseFloat(centerStart.dataset.lon)] : userPos;
+  const end = centerEnd.dataset.lat && centerEnd.dataset.lon ? [parseFloat(centerEnd.dataset.lat), parseFloat(centerEnd.dataset.lon)] : null;
+  if(!end){ alert('Saisis une destination valide'); return; }
+  if(!start){ try{ await ensureGeolocation(); }catch(e){ alert('Impossible d\'obtenir ta position'); return; } }
+  if(routingControl) map.removeControl(routingControl);
+  routingControl = L.Routing.control({
+    waypoints:[L.latLng(start[0],start[1]), L.latLng(end[0],end[1])],
+    lineOptions:{styles:[{color:varAccent(),weight:5}]},
+    show:false
+  }).addTo(map);
+  routingControl.on('routesfound', function(e){
+    const summary = e.routes[0].summary;
+    const km = summary.totalDistance/1000;
+    const min = Math.round(summary.totalTime/60);
+    showDistance(km);
+    showMessage(`Itinéraire: ${km.toFixed(1)} km • ${min} min`,3500);
+    addHistory({type:'route',lat:start[0],lng:start[1],label:centerEnd.value||'',ts:Date.now()});
+  });
+});
+</script>
+<script>
+/* ========================== */
+/* PWA & INSTALL PROMPT */
+/* ========================== */
+if ('serviceWorker' in navigator) {
+  const swCode = `
+self.addEventListener('install', e => { 
+  self.skipWaiting(); 
+  e.waitUntil(caches.open('roaderly-v1').then(c => c.addAll(['/'])));
+});
+self.addEventListener('fetch', e => { 
+  if(e.request.method!=='GET') return; 
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/')))); 
+});
+`;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+
+function createManifest(){
+  const manifest = {
+    name:'Roaderly',
+    short_name:'Roaderly',
+    start_url:'.',
+    display:'standalone',
+    background_color:'#071022',
+    theme_color:'#06b6d4',
+    icons:[{
+      src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22%3E%3Ctext y=%2236%22 font-size=%2236%22%3E🚗%3C/text%3E%3C/svg%3E',
+      sizes:'48x48',
+      type:'image/svg+xml'
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const murl = URL.createObjectURL(blob);
+  const link = document.getElementById('manifestLink'); 
+  link.href = murl;
+}
+createManifest();
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  btnInstall.style.display='block';
+  btnInstall.addEventListener('click', async ()=>{
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    btnInstall.style.display='none';
+  });
+});
+
+/* ========================== */
+/* FOLLOW TOGGLE & USER PREFERENCE */
+/* ========================== */
+followToggle.addEventListener('change', (e)=>{
+  followUser = !!e.target.checked;
+  showMessage(`Suivi ${followUser ? 'activé' : 'désactivé'}`,1400);
+  setCookie('roaderly_follow', followUser ? '1' : '0', 30);
+});
+
+/* ========================== */
+/* POPUPS STYLE IOS & DYNAMIQUE */
+/* ========================== */
+function showPopup(content, options={}) {
+  popup.innerHTML = content;
+  popup.style.display='block';
+  popup.style.opacity='0';
+  popup.style.transition='opacity 0.24s ease-in-out';
+  setTimeout(()=> popup.style.opacity='1', 10);
+  if(options.autoClose) setTimeout(()=> popup.style.opacity='0', options.autoClose);
+  if(options.center) map.setView(options.center, map.getZoom());
+}
+
+/* ========================== */
+/* PARAMS AVANCES — rayon parkings, couleur accent, police moderne */
+/* ========================== */
+function loadSettings(){
+  const r = parseFloat(localStorage.getItem('roaderly_radius')) || 3;
+  document.documentElement.style.setProperty('--accent', localStorage.getItem('roaderly_accent') || '#06b6d4');
+  document.body.style.fontFamily = `'Inter', 'Helvetica Neue', sans-serif`;
+}
+loadSettings();
+
+/* ========================== */
+/* SETTINGS MODAL (exemple) */
+/* ========================== */
+function openSettings(){
+  const content = `
+    <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Paramètres</div>
+    <label>Rayon parkings (km):
+      <input id="settingRadius" type="number" min="0.5" max="20" step="0.5" value="${parseFloat(localStorage.getItem('roaderly_radius')||3)}"/>
+    </label>
+    <label>Couleur accent:
+      <input id="settingAccent" type="color" value="${localStorage.getItem('roaderly_accent') || '#06b6d4'}"/>
+    </label>
+    <div style="margin-top:12px;text-align:right">
+      <button id="closeSettings" class="btn-ghost">Fermer</button>
+      <button id="saveSettings" class="btn">Sauvegarder</button>
+    </div>
+  `;
+  showPopup(content, {center:userPos, autoClose:0});
+  document.getElementById('closeSettings').addEventListener('click', ()=> popup.style.display='none');
+  document.getElementById('saveSettings').addEventListener('click', ()=>{
+    const r = parseFloat(document.getElementById('settingRadius').value);
+    const c = document.getElementById('settingAccent').value;
+    localStorage.setItem('roaderly_radius', r);
+    localStorage.setItem('roaderly_accent', c);
+    document.documentElement.style.setProperty('--accent', c);
+    popup.style.display='none';
+    showMessage('Paramètres sauvegardés',1800);
+  });
+}
+
+/* ========================== */
+/* INIT & DEMANDER LOCALISATION PWA */
+/* ========================== */
+(async function initApp(){
+  showMessage('Initialisation…',1500);
+  try{
+    await ensureGeolocation();
+    startWatch();
+    showMessage('Localisation active',1600);
+    debouncedReverse(userPos[0], userPos[1]);
+  }catch(e){
+    showPopup(`<div style="font-weight:700;margin-bottom:8px;">Activer votre localisation</div>
+      <div>Pour profiter pleinement de Roaderly, autorisez la géolocalisation.</div>
+      <div style="margin-top:12px;text-align:right">
+        <button id="askLocate" class="btn">Autoriser</button>
+      </div>`, {autoClose:0});
+    document.getElementById('askLocate').addEventListener('click', async ()=>{
+      popup.style.display='none';
+      try{ await ensureGeolocation(); startWatch(); showMessage('Localisation activée',1800); }catch(e){ showMessage('Impossible d’activer la localisation',3000); }
+    });
+  }
+})();
+</script>
+<script>
+/* ========================== */
+/* PARKINGS ET RASSOS AVANCES */
+/* ========================== */
+
+/* Paramètres par défaut */
+const DEFAULT_PARK_RADIUS = parseFloat(localStorage.getItem('roaderly_radius') || 3); // km
+const PARK_ICON = '<span style="font-size:18px">🅿️</span>';
+const RASSO_ICON = '<span style="font-size:18px">🚗</span>';
+
+/* Affichage des parkings avec calcul distance et popup amélioré */
+async function loadParkings(){
+  if(!userPos) { showMessage('Position requise',2000); return; }
+  parkCluster.clearLayers();
+  showPopup(`<div style="font-weight:700">Recherche en cours…</div>`, {autoClose:0});
+  
+  const radiusMeters = Math.round(DEFAULT_PARK_RADIUS*1000);
+  const q = `[out:json][timeout:25];
+    (node["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]});
+     way["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]});
+     relation["amenity"="parking"](around:${radiusMeters},${userPos[0]},${userPos[1]}););
+     out center;`;
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:q});
+    const json = await res.json();
+    const els = json.elements || [];
+    els.slice(0,300).forEach(el=>{
+      const lat = el.lat || (el.center && el.center.lat);
+      const lon = el.lon || (el.center && el.center.lon);
+      if(!lat || !lon) return;
+      const name = el.tags?.name || el.tags?.operator || 'Parking';
+      const mk = L.marker([lat,lon], {icon:L.divIcon({className:'',html:PARK_ICON}), title:name});
+      mk.bindPopup(`
+        <div style="font-weight:700;margin-bottom:6px">${name}</div>
+        <div class="small">Distance: ${distanceKm(userPos,[lat,lon]).toFixed(1)} km</div>
+        <div style="margin-top:8px;display:flex;justify-content:space-between">
+          <button class="navPark" data-lat="${lat}" data-lon="${lon}" class="btn">Aller</button>
+        </div>
+      `);
+      parkCluster.addLayer(mk);
+    });
+    popup.style.display='none';
+    showMessage(`Parkings récupérés (${els.length})`,2500);
+  } catch(e) { console.warn(e); showMessage('Erreur récupération parkings',3000); }
+}
+
+/* Boutons dans popup pour navigation vers parking */
+map.on('popupopen', e => {
+  const btn = e.popup._container.querySelector('.navPark');
+  if(btn){
+    btn.addEventListener('click', async ()=>{
+      const lat = parseFloat(btn.dataset.lat);
+      const lon = parseFloat(btn.dataset.lon);
+      if(!userPos) await ensureGeolocation();
+      if(routingControl) map.removeControl(routingControl);
+      routingControl = L.Routing.control({
+        waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat,lon)],
+        lineOptions:{styles:[{color:varAccent(),weight:5}]},
+        show:false
+      }).addTo(map);
+      routingControl.on('routesfound', function(e){
+        const summary = e.routes[0].summary;
+        const km = summary.totalDistance/1000;
+        const min = Math.round(summary.totalTime/60);
+        showDistance(km);
+        showMessage(`Distance ${km.toFixed(1)} km • ${min} min`,4000);
+        addHistory({type:'parking',lat:lat,lng:lon,label:'Parking',ts:Date.now()});
+      });
+    });
+  }
+});
+
+/* Signaler rasso */
+btnReport.addEventListener('click', async ()=>{
+  if(!userPos) { showMessage('Position requise',2000); return; }
+  const r = {lat:userPos[0],lon:userPos[1],ts:Date.now()};
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); 
+  arr.unshift(r); 
+  localStorage.setItem('roaderly_rassos', JSON.stringify(arr));
+  
+  const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:RASSO_ICON})}).addTo(map);
+  mk.bindPopup(`<div style="font-weight:700">Rasso signalé</div>
+    <div class="small">${new Date(r.ts).toLocaleString()}</div>`).openPopup();
+    
+  showMessage('Rasso signalé (local)',2000);
+  addHistory({type:'rasso',lat:r.lat,lng:r.lon,label:'Rasso',ts:r.ts});
+});
+
+/* Affichage des rassos existants */
+function loadRassos(){
+  const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]');
+  arr.forEach(r=>{
+    const mk = L.marker([r.lat,r.lon], {icon:L.divIcon({className:'',html:RASSO_ICON})}).addTo(map);
+    mk.bindPopup(`<div style="font-weight:700">Rasso</div>
+      <div class="small">${new Date(r.ts).toLocaleString()}</div>`);
+  });
+}
+
+/* ========================== */
+/* HISTORIQUE AVANCE ET EXPORT CSV */
+/* ========================== */
+function exportHistoryCSV(){
+  const arr = JSON.parse(localStorage.getItem('roaderly_history')||'[]');
+  if(!arr.length){ showMessage('Historique vide',2000); return; }
+  let csv = 'type,lat,lng,label,timestamp\n';
+  arr.forEach(it=> csv+=`${it.type},${it.lat||''},${it.lng||''},${it.label||''},${it.ts}\n`);
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='roaderly_history.csv'; a.click();
+  showMessage('Historique exporté',2000);
+}
+
+/* ========================== */
+/* ALGOS SUPPLEMENTAIRES POUR PARKING ET RASSO */
+/* ========================== */
+
+/* Filtrer parkings gratuits uniquement */
+function filterFreeParkings(elements){
+  return elements.filter(el=>{
+    return el.tags && (el.tags.fee === 'no' || el.tags.fee === '0' || !el.tags.fee);
+  });
+}
+
+/* Calculer la meilleure route parmi plusieurs parkings */
+function bestParkingRoute(parkingList){
+  if(!userPos) return null;
+  let best = null;
+  let minDist = Infinity;
+  parkingList.forEach(p=>{
+    const d = distanceKm(userPos,[p.lat,p.lon]);
+    if(d<minDist){ minDist=d; best=p; }
+  });
+  return best;
+}
+
+/* ========================== */
+/* FONCTION INIT FINALE */
+/* ========================== */
+(async function finalInit(){
+  try{
+    await ensureGeolocation();
+    startWatch();
+    loadRassos();
+    showMessage('Roaderly prêt 🚗',1500);
+  }catch(e){
+    console.warn(e);
+    showPopup(`<div style="font-weight:700">Localisation requise</div>
+      <div>Pour utiliser toutes les fonctionnalités, activez la géolocalisation.</div>
+      <div style="margin-top:12px;text-align:right"><button id="askLocate" class="btn">Autoriser</button></div>`,{autoClose:0});
+    document.getElementById('askLocate').addEventListener('click', async ()=>{
+      popup.style.display='none';
+      try{ await ensureGeolocation(); startWatch(); loadRassos(); showMessage('Localisation activée',1800); }catch(e){ showMessage('Impossible',3000); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
