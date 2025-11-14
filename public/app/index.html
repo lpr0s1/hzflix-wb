@@ -310,8 +310,8 @@ html,body {
 </style>
 </head>
 <body>
-  <script>
-    // DEMANDE DE LOCALISATION
+
+<script>
 async function requestLocation() {
   if (!navigator.geolocation) {
     alert("Votre navigateur ne supporte pas la géolocalisation.");
@@ -324,20 +324,20 @@ async function requestLocation() {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
     console.log("Localisation activée:", lat, lon);
-    // ici tu peux ajouter un marker ou stocker la position
+    // tu peux ici ajouter un marker sur la carte
   } catch (e) {
     console.warn("Localisation refusée ou erreur:", e);
   }
 }
 
-// Appelle automatiquement à l'ouverture
 window.addEventListener('load', requestLocation);
+</script>
 
-    // DEMANDE DE NOTIFICATIONS
+  <script>
 async function requestNotifications() {
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") return;
-  
+
   const permission = await Notification.requestPermission();
   if (permission === "granted") {
     console.log("Notifications autorisées !");
@@ -347,11 +347,11 @@ async function requestNotifications() {
   }
 }
 
-// Peut être appelé après localisation ou sur action utilisateur
 window.addEventListener('load', () => {
-  setTimeout(requestNotifications, 1000); // délai pour ne pas spam l'utilisateur
+  setTimeout(requestNotifications, 1000);
 });
-  </script>
+</script>
+  
 <div id="map"></div>
 
 <!-- UI Header -->
