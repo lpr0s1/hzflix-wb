@@ -14,36 +14,44 @@
     .container{padding:20px}
     h2{margin:0 0 16px 0;font-weight:600}
     .wrap{position:relative;display:inline-block;border-radius:8px;border:2px solid var(--accent);box-shadow:0 0 12px var(--accent);background:#000;overflow:hidden}
-    .frame{display:block;width:100%;height:100%;border:0;pointer-events:none;user-select:none}
-    .overlay{position:absolute;inset:0;pointer-events:auto;display:flex;align-items:flex-end;justify-content:flex-end;padding:10px;box-sizing:border-box}
-    .controls{display:flex;gap:8px;z-index:40}
+    .frame{display:block;width:100%;height:100%;border:0}
+    .overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:flex-end;justify-content:flex-end;padding:10px;box-sizing:border-box}
+    .controls{display:flex;gap:8px;z-index:40;pointer-events:auto}
     .btn{background:var(--ui-bg);color:#fff;border:1px solid rgba(255,255,255,0.08);padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px}
     .btn:hover{background:rgba(255,255,255,0.04)}
-    .blocker{position:absolute;inset:0;z-index:30;background:transparent}
+    .blocker{position:absolute;inset:0;z-index:30;background:transparent;pointer-events:auto}
+    .hint{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,0.45);padding:6px 10px;border-radius:6px;font-size:13px;z-index:40;pointer-events:none}
+    @media (min-width:800px){.responsive{width:800px;height:450px}}
+    .responsive{width:350px;height:200px}
     :fullscreen .wrap, :-webkit-full-screen .wrap{width:100%!important;height:100%!important;border-radius:0!important}
   </style>
 </head>
 <body>
   <div class="container">
     <h2>test</h2>
-    <div id="playerWrap" class="wrap" role="region" aria-label="Lecteur live">
-      <iframe id="kickFrame" class="frame" src="https://player.kick.com/hanzo-x65" allow="fullscreen; autoplay" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms" scrolling="no" title="Kick player"></iframe>
+    <div id="playerWrap" class="wrap responsive" role="region" aria-label="Lecteur live">
+      <iframe id="kickFrame" class="frame" src="https://player.kick.com/hanzo-x65" scrolling="no" allow="fullscreen; autoplay" allowfullscreen title="Kick player"></iframe>
       <div id="blocker" class="blocker" tabindex="0"></div>
+      <div class="hint" id="hint">Cliquer sur Play pour interagir avec le player</div>
       <div class="overlay">
         <div class="controls">
+          <button id="playBtn" class="btn">Play</button>
           <button id="fsBtn" class="btn">Fullscreen</button>
           <button id="openBtn" class="btn">Ouvrir Kick</button>
         </div>
       </div>
     </div>
   </div>
-
   <script>
     const wrap=document.getElementById('playerWrap');
     const frame=document.getElementById('kickFrame');
     const blocker=document.getElementById('blocker');
+    const playBtn=document.getElementById('playBtn');
     const fsBtn=document.getElementById('fsBtn');
     const openBtn=document.getElementById('openBtn');
+    const hint=document.getElementById('hint');
+
+    let isInteractive=false;
 
     function calcSize(){
       const vw=window.innerWidth;
@@ -53,9 +61,7 @@
       const chosenW = vw < 600 ? Math.max(320, Math.floor(vw*0.9)) : Math.max(minW, Math.min(maxW, 900));
       const ratio=16/9;
       let chosenH=Math.floor(chosenW/ratio);
-      if(chosenH > Math.floor(vh*0.85)){
-        chosenH = Math.floor(vh*0.85);
-      }
+      if(chosenH > Math.floor(vh*0.85)) chosenH = Math.floor(vh*0.85);
       wrap.style.width = chosenW + 'px';
       wrap.style.height = chosenH + 'px';
     }
@@ -78,11 +84,35 @@
       return Promise.resolve();
     }
 
+    function setInteractive(on){
+      isInteractive = !!on;
+      if(isInteractive){
+        blocker.style.display='none';
+        hint.style.display='none';
+        try{ frame.focus(); }catch(e){}
+        playBtn.textContent='Pause';
+      } else {
+        blocker.style.display='block';
+        hint.style.display='block';
+        playBtn.textContent='Play';
+      }
+    }
+
+    playBtn.addEventListener('click', ()=>{
+      if(!isInteractive){
+        setInteractive(true);
+        try{ frame.contentWindow.postMessage({type:'play'}, '*'); }catch(e){}
+      } else {
+        setInteractive(false);
+        try{ frame.contentWindow.postMessage({type:'pause'}, '*'); }catch(e){}
+      }
+    });
+
     fsBtn.addEventListener('click', ()=>{
       if(document.fullscreenElement || document.webkitFullscreenElement){
         exitFS();
       } else {
-        enterFS(wrap).catch(()=>enterFS(frame));
+        enterFS(wrap).catch(()=>enterFS(frame)).catch(()=>{});
       }
     });
 
@@ -92,14 +122,18 @@
 
     wrap.addEventListener('dblclick', ()=>{
       if(document.fullscreenElement) exitFS();
-      else enterFS(wrap).catch(()=>enterFS(frame));
+      else enterFS(wrap).catch(()=>enterFS(frame)).catch(()=>{});
     });
 
     document.addEventListener('keydown', (e)=>{
       const k=e.key.toLowerCase();
       if(k==='f'){
         if(document.fullscreenElement) exitFS();
-        else enterFS(wrap).catch(()=>enterFS(frame));
+        else enterFS(wrap).catch(()=>enterFS(frame)).catch(()=>{});
+      }
+      if(k===' '||k==='k'){
+        e.preventDefault();
+        playBtn.click();
       }
       if(e.key==='Escape') exitFS();
     });
@@ -108,9 +142,11 @@
       const isFS=!!(document.fullscreenElement || document.webkitFullscreenElement);
       fsBtn.textContent = isFS ? 'Quitter' : 'Fullscreen';
       if(isFS){
-        blocker.style.display='block';
+        blocker.style.display = isInteractive ? 'none' : 'block';
+        hint.style.display = isInteractive ? 'none' : 'block';
       } else {
-        blocker.style.display='block';
+        blocker.style.display = isInteractive ? 'none' : 'block';
+        hint.style.display = isInteractive ? 'none' : 'block';
       }
     });
 
@@ -118,8 +154,11 @@
     blocker.addEventListener('touchstart', (e)=>{ e.preventDefault(); blocker.focus(); });
 
     blocker.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter') enterFS(wrap).catch(()=>enterFS(frame));
+      if(e.key==='Enter') setInteractive(true);
     });
+
+    setInteractive(false);
   </script>
 </body>
 </html>
+
