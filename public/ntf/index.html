@@ -85,9 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <p style="color: #333;">Recevez les notification de live films de hanzo.</p>
         <br>
         <br>
+        <div id="ctnb">
         <h1>Veuillez patientez:</h1>
-        <span id="scd">5</span> secondes...
+        <span id="scd">5</span> secondes...<br>
         <small>Et cliquez sur <b>"subscribe"</b> pour activer les notifications.</small>
+        </div>
     </center>
 
     <script>
@@ -95,15 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
        var sd = document.getElementById("scd");
         sd.innerHTML = nm;
 
-        if(nm === 0){
-            sd.style.display = "none";
-        }
+        
         
 
         setInterval(function(){
             nm -= 1;
             sd.innerHTML = nm;
         }, 1000);
+        setInterval(function(){
+            document.getElementById("ctnb").style.display = "none";
+        },5000);
     </script>
 </body>
 </html>
