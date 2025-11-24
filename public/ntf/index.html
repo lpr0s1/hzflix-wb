@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Kick Live — Notifications</title>
+<title>Hzapp</title>
 
-<!-- PushAlert -->
 <script type="text/javascript">
 (function(d, t) {
     var g = d.createElement(t),
@@ -15,7 +14,6 @@
 }(document, "script"));
 </script>
 
-<!-- iOS PWA support -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Kick Live Notifs" />
@@ -26,15 +24,13 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script>
-// Configuration minimale PWA/notifications
 const ROOT_PATH = '/ntf/';
-const CHANNEL_TITLE = "Je suis en live sur Kick 🎮";
-const CHANNEL_BODY  = "Clique pour regarder — je suis live maintenant sur Kick!";
+const CHANNEL_TITLE = "";
+const CHANNEL_BODY  = "";
 
-// Génération du manifest inline
 const manifest = {
-    name: "Kick Live Notifs",
-    short_name: "KickLive",
+    name: "HzApp",
+    short_name: "HzApp",
     start_url: ROOT_PATH,
     display: "standalone",
     background_color: "#111827",
@@ -46,7 +42,6 @@ const manifest = {
 };
 document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:'application/json'})));
 
-// Enregistrement du Service Worker
 async function registerSW() {
     if (!('serviceWorker' in navigator)) return;
     try {
@@ -58,7 +53,7 @@ async function registerSW() {
     }
 }
 
-// Demande de permission notifications
+
 async function enableNotifications() {
     try {
         const permission = await Notification.requestPermission();
@@ -78,6 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </head>
+
+    <style>
+        body{
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        }
+    </style>
 <body>
+    <center>
+        <h2>Bienvenu</h2>
+        <p style="color: #333;">Recevez les notification de live films de hanzo.</p>
+        <br>
+        <br>
+        <h1>Veuillez patientez 5 secondes...</h1>
+        <small>Cliquez sur <b>"subscribe"</b> pour activer les notifications.</small>
+    </center>
 </body>
 </html>
