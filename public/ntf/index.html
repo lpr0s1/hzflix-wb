@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kick Live — Notifications</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- iOS PWA support -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kick Live Notifs" />
+<link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <meta name="theme-color" content="#111827" />
   <!-- manifest inline link updated to ntf scope -->
   <link rel="manifest" href="/ntf/manifest.webmanifest" id="manifest-link" />
@@ -51,7 +56,7 @@ const SERVER_SEND_URL = 'https://pushme.vercel.app/api/sendNotification';
 const CHANNEL_TITLE = "Je suis en live sur Kick 🎮";
 const CHANNEL_BODY  = "Clique pour regarder — je suis live maintenant sur Kick!";
 // scope / base pour ton dossier ntf (important pour GitHub Pages)
-const ROOT_PATH = '/ntf';
+const ROOT_PATH = '/ntf/';
 
 /* ---------------- UTIL ---------------- */
 function log(s){ const el=document.getElementById('log'); el.innerHTML = `<div>${new Date().toLocaleString()} — ${s}</div>` + el.innerHTML; }
@@ -67,7 +72,7 @@ function setLastSent(s){ document.getElementById('last-sent').textContent = s ? 
 const manifest = {
   name: "Kick Live Notifs",
   short_name: "KickLive",
-  start_url: ROOT_PATH + '/',
+  start_url: ROOT_PATH,
   display: "standalone",
   background_color: "#111827",
   theme_color: "#111827",
