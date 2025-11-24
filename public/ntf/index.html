@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kick Live — Notifications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#111827" />
+  <!-- manifest inline link updated to ntf scope -->
+  <link rel="manifest" href="/ntf/manifest.webmanifest" id="manifest-link" />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+  <main class="max-w-xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-3">Kick Live — Notifications</h1>
+    <p class="text-slate-600 mb-4">Installe cette PWA. Si tu l'actives, elle recevra une notification toutes les 18h pour dire que je suis en live sur Kick.</p>
+
+    <div class="bg-white p-6 rounded shadow space-y-4">
+      <div>
+        <p class="font-medium">État du Service Worker</p>
+        <p id="sw-status" class="text-sm text-slate-600">—</p>
+      </div>
+
+      <div>
+        <p class="font-medium">Permission Notifications</p>
+        <p id="perm-status" class="text-sm text-slate-600">—</p>
+      </div>
+
+      <div class="flex gap-3 flex-wrap">
+        <button id="btn-enable" class="px-4 py-2 bg-teal-600 text-white rounded">Activer notifications</button>
+        <button id="btn-install" class="px-4 py-2 bg-sky-600 text-white rounded" style="display:none">Installer</button>
+        <button id="btn-send-server" class="px-4 py-2 bg-indigo-600 text-white rounded">Envoyer test (serveur)</button>
+        <button id="btn-local-notif" class="px-4 py-2 bg-gray-600 text-white rounded">Afficher notif locale</button>
+      </div>
+
+      <div class="text-sm text-slate-500">
+        <p>Dernier envoi : <span id="last-sent">—</span></p>
+      </div>
+
+      <div id="log" class="text-xs text-slate-500 mt-3"></div>
+    </div>
+
+    <footer class="mt-6 text-xs text-slate-500">
+      <p>Déploiement recommandé : Vercel / GitHub Pages. Configure clés VAPID & ADMIN côté serveur si tu veux gérer des subscriptions server-side.</p>
+    </footer>
+  </main>
+
+<script>
+/* ---------------- CONFIG ---------------- */
+// endpoint public que tu as donné
+const SERVER_SEND_URL = 'https://pushme.vercel.app/api/sendNotification';
+const CHANNEL_TITLE = "Je suis en live sur Kick 🎮";
+const CHANNEL_BODY  = "Clique pour regarder — je suis live maintenant sur Kick!";
+// scope / base pour ton dossier ntf (important pour GitHub Pages)
+const ROOT_PATH = '/ntf';
+
+/* ---------------- UTIL ---------------- */
+function log(s){ const el=document.getElementById('log'); el.innerHTML = `<div>${new Date().toLocaleString()} — ${s}</div>` + el.innerHTML; }
+function setSWStatus(s){ document.getElementById('sw-status').textContent = s; }
+function setPerm(s){ document.getElementById('perm-status').textContent = s; }
+function setLastSent(s){ document.getElementById('last-sent').textContent = s ? new Date(s).toLocaleString() : '—'; }
+
+/* ---------------- manifest (programmatique) ---------------- */
+/* On génère un manifest et on le met à disposition via URL.createObjectURL.
+   Pour GitHub Pages tu peux aussi ajouter un fichier /ntf/manifest.webmanifest statique;
+   ici la création inline fonctionne pour le test local mais GitHub Pages peut préférer un fichier statique.
+*/
+const manifest = {
+  name: "Kick Live Notifs",
+  short_name: "KickLive",
+  start_url: ROOT_PATH + '/',
+  display: "standalone",
+  background_color: "#111827",
+  theme_color: "#111827",
+  icons: [
+    { src: ROOT_PATH + "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    { src: ROOT_PATH + "/icons/icon-512.png", sizes: "512x512", type: "image/png" }
+  ]
+};
+document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:'application/json'})));
+
+/* ---------------- service worker registration (file in same folder) ---------------- */
+/* Pour fiabilité (notamment iOS/WebKit), on enregistre un fichier sw.js placé dans /ntf/sw.js
+   : assure-toi d'ajouter /ntf/sw.js dans ton repo.
+*/
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) {
+    setSWStatus('Non supporté');
+    log('Service Worker non supporté');
+    return null;
+  }
+  try {
+    // register with explicit scope pointing to the ntf folder
+    const swUrl = ROOT_PATH + '/sw.js';
+    const reg = await navigator.serviceWorker.register(swUrl, {scope: ROOT_PATH + '/'});
+    await navigator.serviceWorker.ready;
+    setSWStatus('Enregistré — scope: ' + reg.scope);
+    log('SW enregistré depuis ' + swUrl);
+    return reg;
+  } catch (err) {
+    setSWStatus('Erreur enregistrement');
+    log('Erreur SW: ' + err);
+    return null;
+  }
+}
+
+/* ---------------- iOS / WebKit consideration ---------------- */
+/* iOS 16.4+ supporte le Push standard ; toutefois :
+   - requiert HTTPS (ou localhost)
+   - le SW doit être servi depuis le même scope (on utilise /ntf/sw.js)
+   - vérifie que l'utilisateur a iOS >= 16.4 pour s'attendre au Push
+*/
+function isIOSWebKit() {
+  const ua = navigator.userAgent || '';
+  return /iP(hone|od|ad)/.test(ua) && /WebKit/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
+}
+function iOSPushCompatible() {
+  // iOS supports web push from 16.4; we can't reliably detect minor version in UA across all cases,
+  // but we approximate by checking 'Version/16' or higher in UA (best-effort).
+  const m = (navigator.userAgent || '').match(/OS (\d+)_?(\d+)?/);
+  if (!m) return false;
+  const major = parseInt(m[1], 10);
+  return major >= 16; // coarse check; assume 16.4+ in practice
+}
+
+/* ---------------- permission + minimal subscription flow ---------------- */
+async function enableNotifications() {
+  try {
+    // request permission
+    const p = await Notification.requestPermission();
+    setPerm('Permission: ' + p);
+    if (p !== 'granted') { log('Permission non accordée'); return; }
+
+    // register SW from /ntf/sw.js
+    const reg = await registerSW();
+    if (!reg) return;
+
+    // detect PushManager availability
+    if (!('PushManager' in window) || !reg.pushManager) {
+      // iOS WebKit might not expose PushManager in some versions - warn user
+      log('PushManager non disponible dans ce navigateur. Si tu es sur iOS, assure-toi d\'être sur iOS 16.4+ et Safari (ou WebKit-based).');
+      return;
+    }
+
+    log('Notifications prêtes. Pour pousser depuis le serveur il faut que l\'utilisateur s\'inscrive côté serveur (VAPID).');
+  } catch (err) {
+    log('Erreur enableNotifications: ' + (err && err.message ? err.message : err));
+  }
+}
+
+/* ---------------- envoyer au serveur (ton snippet adapté) ---------------- */
+async function sendToServer(title = CHANNEL_TITLE, message = CHANNEL_BODY) {
+  try {
+    log('Envoi au serveur: ' + message);
+    const res = await fetch(SERVER_SEND_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: '',      // si ton serveur requiert un code admin, le renseigner ici
+        title: title,
+        message: message
+      })
+    });
+    const text = await res.text();
+    log('Serveur répondu: ' + res.status + ' — ' + text);
+    setLastSent(Date.now());
+  } catch (err) {
+    log('Erreur envoi serveur: ' + err);
+  }
+}
+
+/* ---------------- afficher notification locale via SW (debug) ---------------- */
+async function showLocalNotification(title = CHANNEL_TITLE, body = CHANNEL_BODY) {
+  try {
+    if (!('serviceWorker' in navigator)) {
+      log('SW non disponible pour afficher notifs locales');
+      return;
+    }
+    const reg = await navigator.serviceWorker.getRegistration(ROOT_PATH + '/');
+    if (!reg) {
+      log('Aucun SW trouvé — tentative d\'enregistrement...');
+      await registerSW();
+    }
+    // message to SW to show notification
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        title,
+        options: { body, icon: ROOT_PATH + '/icons/icon-192.png' }
+      });
+      log('Demande de notification locale envoyée au SW');
+    } else {
+      // fallback: use registration.showNotification if available
+      const r = await navigator.serviceWorker.getRegistration(ROOT_PATH + '/');
+      if (r && r.showNotification) {
+        r.showNotification(title, { body, icon: ROOT_PATH + '/icons/icon-192.png' });
+        log('Notification locale affichée via registration.showNotification');
+      } else {
+        log('Impossible d\'afficher la notification localement (pas de controller ni showNotification)');
+      }
+    }
+  } catch (err) {
+    log('Erreur notif locale: ' + err);
+  }
+}
+
+/* ---------------- UI handlers & install prompt ---------------- */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('btn-install').style.display = 'inline-block';
+  log('Install prompt disponible');
+});
+document.getElementById('btn-install').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  log('Install: ' + choice.outcome);
+  deferredPrompt = null;
+  document.getElementById('btn-install').style.display = 'none';
+});
+
+document.getElementById('btn-enable').addEventListener('click', enableNotifications);
+document.getElementById('btn-send-server').addEventListener('click', () => sendToServer());
+document.getElementById('btn-local-notif').addEventListener('click', () => showLocalNotification());
+
+/* ---------------- bootstrap ---------------- */
+(async function init(){
+  setPerm('Permission: ' + Notification.permission);
+  // attempt to register SW early so the status is visible
+  await registerSW();
+
+  // quick hint for iOS users
+  if (isIOSWebKit()) {
+    if (!iOSPushCompatible()) {
+      log('Tu es sur iOS WebKit mais la version iOS semble < 16 — les notifications push web demandent iOS 16.4+.');
+    } else {
+      log('iOS WebKit détecté — iOS 16.4+ requis, vérifie les réglages et le scope /ntf.');
+    }
+  }
+})();
+</script>
+</body>
+</html>
