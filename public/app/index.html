@@ -308,8 +308,8 @@ window.onload = () => {
 
   const sw = await navigator.serviceWorker.register('/sw.js');
   sw.showNotification("Roaderly", {
-    body: "Bonjour ! Notification affichée au lancement",
-    icon: "icons/icon-192.png",
+    body: "Bonjour ! Trouvez un parking gratuit a proximité.",
+    icon: "logo.jpeg",
     tag: "launch-notif",
     vibrate: [100, 50, 100]
   });
@@ -366,6 +366,7 @@ window.addEventListener('load', requestLocation);
   <div class="header" id="header">
     <div class="title">Roaderly</div>
     <div class="dev">by HZ</div>
+    <div>v<b>1.0.0</b></div>
     <div id="distanceBadge" class="distance">0 km</div>
   </div>
 </div>
