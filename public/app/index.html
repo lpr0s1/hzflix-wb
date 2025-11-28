@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Roaderly">
@@ -31,6 +31,7 @@
   --font-main:'Inter', sans-serif;
 }
 html,body {
+  overflow:hidden;
   height:100%;
   margin:0;
   background:var(--bg);
@@ -374,13 +375,8 @@ window.addEventListener('load', requestLocation);
   <div id="btnSearch" class="fab" title="Recherche"><span class="material-icons">search</span></div>
   <div id="btnLocate" class="fab" title="Localiser"><span class="material-icons">my_location</span></div>
   <div id="btnPark" class="fab" title="Parkings"><span class="material-icons">local_parking</span></div>
-  <div id="btnReport" class="fab" title="Signaler rasso"><span class="material-icons">directions_car</span></div>
   <div id="btnHistory" class="fab" title="Historique"><span class="material-icons">history</span></div>
   <div id="btnInstall" class="fab" title="Installer" style="display:none"><span class="material-icons">file_download</span></div>
-</div>
-<div class="zoom-controls">
-  <div id="zoomIn" class="zoom-btn" title="Zoom +"><span class="material-icons">zoom_in</span></div>
-  <div id="zoomOut" class="zoom-btn" title="Zoom -"><span class="material-icons">zoom_out</span></div>
 </div>
 <div id="message" class="message">Message</div>
 <div id="popup" class="popup"></div>
