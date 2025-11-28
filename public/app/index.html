@@ -296,7 +296,7 @@ window.onload = () => {
   if (!("Notification" in window)) return console.warn("Notifications non supportées");
   if (!("serviceWorker" in navigator)) return console.warn("Service Worker non supporté");
 
-  // Demande la permission si nécessaire
+
   if (Notification.permission !== "granted") {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
@@ -305,10 +305,8 @@ window.onload = () => {
     }
   }
 
-  // S'assure que le service worker est enregistré
-  const sw = await navigator.serviceWorker.register('/sw.js');
 
-  // Utilise le service worker pour déclencher une notification
+  const sw = await navigator.serviceWorker.register('/sw.js');
   sw.showNotification("Roaderly", {
     body: "Bonjour ! Notification affichée au lancement",
     icon: "icons/icon-192.png",
@@ -368,6 +366,7 @@ window.addEventListener('load', requestLocation);
   <div class="header" id="header">
     <div class="title">Roaderly</div>
     <div class="dev">by HZ</div>
+    <div class="version">1.0.0</div>
     <div id="distanceBadge" class="distance">0 km</div>
   </div>
 </div>
@@ -680,6 +679,7 @@ function createManifest(){
   const manifest = {
     name:'Roaderly',
     short_name:'Roaderly',
+    version: 1.0.0,
     start_url:'.',
     display:'standalone',
     background_color:'#071022',
