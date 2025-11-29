@@ -67,6 +67,7 @@ html,body {
   align-items:center;
   gap:14px;
   box-shadow:var(--shadow);
+  -webkit-box-shadow:var(--shadow);
   transition:transform .22s,opacity .22s;
 }
 .title {
@@ -86,6 +87,7 @@ html,body {
   font-weight:700;
   color:#022;
   box-shadow:0 8px 20px rgba(6,182,173,0.12);
+  -webkit-box-shadow:0 8px 20px rgba(6,182,173,0.12);
   font-size:14px;
   display:none;
 }
@@ -95,10 +97,12 @@ html,body {
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   padding:12px;
   border-radius:var(--ios-radius);
+  -webkit-border-radius:var(--ios-radius);
   display:flex;
   flex-direction:column;
   gap:10px;
   box-shadow:var(--shadow);
+  -webkit-box-shadow:var(--shadow);
   transition:opacity .24s,transform .24s;
 }
 .row {
@@ -109,12 +113,14 @@ html,body {
   flex:1;
   padding:12px;
   border-radius:14px;
+  -webkit-border-radius:14px;
   border:none;
   background:var(--card);
   color:var(--text);
   outline:none;
   font-size:16px;
   font-weight:500;
+  -webkit-appearance:none;
 }
 .actions {
   display:flex;
@@ -124,15 +130,18 @@ html,body {
 .btn {
   padding:10px 16px;
   border-radius:14px;
+  -webkit-border-radius:14px;
   border:none;
   background:var(--accent);
   color:#022;
   font-weight:700;
   cursor:pointer;
   box-shadow:0 10px 25px rgba(6,182,173,0.15);
+  -webkit-box-shadow:0 10px 25px rgba(6,182,173,0.15);
   transition:transform .15s;
+  touch-action:manipulation;
 }
-.btn:hover { transform:scale(1.05); }
+.btn:hover { transform:scale(1.05); -webkit-transform:scale(1.05); }
 .btn-ghost {
   background:transparent;
   border:1px solid rgba(255,255,255,0.04);
@@ -153,16 +162,19 @@ html,body {
   width:60px;
   height:60px;
   border-radius:16px;
+  -webkit-border-radius:16px;
   background:rgba(255,255,255,0.98);
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow:0 12px 30px rgba(2,6,23,0.25);
+  -webkit-box-shadow:0 12px 30px rgba(2,6,23,0.25);
   cursor:pointer;
   font-size:24px;
   transition:transform .18s;
+  -webkit-tap-highlight-color: transparent;
 }
-.fab:hover { transform:scale(1.1); }
+.fab:hover { transform:scale(1.1); -webkit-transform:scale(1.1); }
 .zoom-controls {
   position:fixed;
   right:16px;
@@ -181,18 +193,25 @@ html,body {
   align-items:center;
   justify-content:center;
   box-shadow:0 8px 18px rgba(2,6,23,0.18);
+  -webkit-box-shadow:0 8px 18px rgba(2,6,23,0.18);
   cursor:pointer;
 }
-.zoom-btn:hover { transform:scale(1.05); }
+.zoom-btn:hover { transform:scale(1.05); -webkit-transform:scale(1.05); }
 .suggestions {
-  position:relative;
+  position:absolute;
+  left:0;
+  right:0;
+  margin-top:6px;
+  z-index:4500;
   max-height:260px;
   overflow:auto;
-  border-radius:14px;
+  border-radius:12px;
   background:linear-gradient(180deg,#071022, rgba(255,255,255,0.02));
-  padding:8px;
+  padding:6px;
   border:1px solid rgba(255,255,255,0.03);
   display:none;
+  box-shadow:0 14px 36px rgba(2,6,23,0.45);
+  -webkit-box-shadow:0 14px 36px rgba(2,6,23,0.45);
 }
 .sug {
   padding:12px;
@@ -230,6 +249,7 @@ html,body {
   min-width:300px;
   color:var(--text);
   box-shadow:var(--shadow);
+  -webkit-box-shadow:var(--shadow);
   display:none;
   font-weight:700;
 }
@@ -239,7 +259,7 @@ html,body {
   display:flex;
   align-items:center;
   justify-content:center;
-  background: black;
+  background: rgba(2,4,8,0.6);
   z-index:4000;
   opacity:0%;
   pointer-events:none;
@@ -260,6 +280,7 @@ html,body {
   display:flex;
   flex-direction:column;
   gap:12px;
+  position:relative;
 }
 .small {
   font-size:13px;
@@ -287,37 +308,31 @@ html,body {
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
+.center-card .input { background: rgba(255,255,255,0.02); padding-right:12px; }
+.popup .actions { margin-top:12px; display:flex; gap:10px; justify-content:flex-end; }
 </style>
 </head>
 <body>
 <script>
 window.onload = () => {
   async function notifyOnLoad() {
-  if (!("Notification" in window)) return console.warn("Notifications non supportées");
-  if (!("serviceWorker" in navigator)) return console.warn("Service Worker non supporté");
-
-
-  if (Notification.permission !== "granted") {
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      console.log("Notifications refusées");
-      return;
+    if (!("Notification" in window)) return;
+    if (!("serviceWorker" in navigator)) return;
+    if (Notification.permission !== "granted") {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        return;
+      }
     }
+    const sw = await navigator.serviceWorker.register('/sw.js');
+    sw.showNotification("Roaderly", {
+      body: "Trouvez un parking gratuit a proximité.",
+      icon: "icons/icon.png",
+      tag: "launch-notif",
+      vibrate: [100, 50, 100]
+    });
   }
-
-
-  const sw = await navigator.serviceWorker.register('/sw.js');
-  sw.showNotification("Roaderly", {
-    body: "Trouvez un parking gratuit a proximité.",
-    icon: "icons/icon.png",
-    tag: "launch-notif",
-    vibrate: [100, 50, 100]
-  });
-}
-
-window.addEventListener('load', notifyOnLoad);
-
-  
+  window.addEventListener('load', notifyOnLoad);
   if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(
       pos => console.log('Localisation activée', pos),
@@ -327,7 +342,6 @@ window.addEventListener('load', notifyOnLoad);
   } else {
     console.warn('Géolocalisation non supportée');
   }
-  
 };
 </script>
 <script>
@@ -356,9 +370,6 @@ async function requestLocation() {
 }
 window.addEventListener('load', requestLocation);
 </script>
-  <script>
-
-</script>
 <div id="map"></div>
 <div class="ui">
   <br>
@@ -373,21 +384,26 @@ window.addEventListener('load', requestLocation);
   <div id="btnSearch" class="fab" title="Recherche"><span class="material-icons">search</span></div>
   <div id="btnLocate" class="fab" title="Localiser"><span class="material-icons">my_location</span></div>
   <div id="btnPark" class="fab" title="Parkings"><span class="material-icons">local_parking</span></div>
+  <div id="btnReport" class="fab" title="Signaler" style="display:none"><span class="material-icons">report</span></div>
   <div id="btnHistory" class="fab" title="Historique"><span class="material-icons">history</span></div>
   <div id="btnInstall" class="fab" title="Installer" style="display:none"><span class="material-icons">file_download</span></div>
 </div>
 <div id="message" class="message">Message</div>
-<div id="popup" class="popup"></div>
+<div id="popup" class="popup" role="dialog" aria-modal="true"></div>
 <div id="centerSearch" class="center-search" aria-hidden="true">
   <div class="center-card" id="centerCard" role="dialog" aria-modal="true" aria-label="Recherche trajet">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-weight:800">Rechercher un trajet</div>
       <div id="closeCenter" style="cursor:pointer" class="material-icons">close</div>
     </div>
-    <input id="centerStart" class="input" placeholder="Départ (laisser vide = vous)" />
-    <div id="centerStartSug" class="suggestions"></div>
-    <input id="centerEnd" class="input" placeholder="Destination" />
-    <div id="centerEndSug" class="suggestions"></div>
+    <div style="position:relative">
+      <input id="centerStart" class="input" placeholder="Départ (laisser vide = vous)" autocomplete="off" />
+      <div id="centerStartSug" class="suggestions"></div>
+    </div>
+    <div style="position:relative">
+      <input id="centerEnd" class="input" placeholder="Destination" autocomplete="off" />
+      <div id="centerEndSug" class="suggestions"></div>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div class="small">Suivre position: <label style="font-weight:700;margin-left:6px"><input id="followToggle" type="checkbox" /> oui</label></div>
       <div class="actions">
@@ -541,8 +557,8 @@ function startWatch(){
   }, err=>{}, {enableHighAccuracy:true,maximumAge:1000,timeout:7000});
 }
 function stopWatch(){ if(watchId) navigator.geolocation.clearWatch(watchId); watchId=null; }
-zoomIn.addEventListener('click', ()=> map.zoomIn());
-zoomOut.addEventListener('click', ()=> map.zoomOut());
+if(zoomIn) zoomIn.addEventListener('click', ()=> map.zoomIn());
+if(zoomOut) zoomOut.addEventListener('click', ()=> map.zoomOut());
 btnPark.addEventListener('click', async ()=>{
   try{ await ensureGeolocation(); }catch(e){ return; }
   showMessage('Recherche parkings en cours…',2000);
@@ -769,37 +785,57 @@ async function loadParkings(){
       mk.bindPopup(`<div style="font-weight:700;margin-bottom:6px">${name}</div>
         <div class="small">Distance: ${distanceKm(userPos,[lat,lon]).toFixed(1)} km</div>
         <div style="margin-top:8px;display:flex;justify-content:space-between">
-          <button class="navPark btn" data-lat="${lat}" data-lon="${lon}">Aller</button>
+          <button class="confirmPark btn-ghost" data-lat="${lat}" data-lon="${lon}">Y'aller</button>
+          <button class="cancelPark btn-ghost">Annuler</button>
         </div>`);
       mk.on('popupopen', e=>{
-        const btnNav = e.popup._container.querySelector('.navPark');
-        if(!btnNav) return;
-        btnNav.addEventListener('click', async () => {
-          const lat2 = parseFloat(btnNav.dataset.lat);
-          const lon2 = parseFloat(btnNav.dataset.lon);
-          try { await ensureGeolocation(); } catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
-          if(activeRoute && activeRoute.destLat===lat2 && activeRoute.destLon===lon2){
-            map.removeControl(activeRoute.routingControl);
-            activeRoute=null;
-            showMessage('Trajet annulé',2200);
-            return;
-          }
-          if(activeRoute) map.removeControl(activeRoute.routingControl);
-          const routingControlLocal = L.Routing.control({
-            waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat2,lon2)],
-            lineOptions:{styles:[{color:varAccent(),weight:5}]},
-            show:false
-          }).addTo(map);
-          routingControlLocal.on('routesfound', e=>{
-            const summary = e.routes[0].summary;
-            const km = summary.totalDistance/1000;
-            const min = Math.round(summary.totalTime/60);
-            showDistance(km);
-            showMessage(`Distance: ${km.toFixed(1)} km • ${min} min`,3500);
-          });
-          activeRoute={routingControl:routingControlLocal,destLat:lat2,destLon:lon2};
-          if(userPos) map.setView(userPos, Math.max(map.getZoom(),15), {animate:true});
-        }, {once:true});
+        const container = e.popup._container;
+        const btnConfirm = container.querySelector('.confirmPark');
+        const btnCancel = container.querySelector('.cancelPark');
+        if(btnCancel){
+          btnCancel.addEventListener('click', ()=> {
+            map.closePopup();
+          }, {once:true});
+        }
+        if(btnConfirm){
+          btnConfirm.addEventListener('click', async () => {
+            const lat2 = parseFloat(btnConfirm.dataset.lat);
+            const lon2 = parseFloat(btnConfirm.dataset.lon);
+            try { await ensureGeolocation(); } catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
+            popup.innerHTML = `<div style="font-weight:800;margin-bottom:8px">Confirmer</div>
+              <div>Vous voulez lancer la navigation vers ce parking ?</div>
+              <div style="margin-top:12px;display:flex;justify-content:flex-end">
+                <button id="cancelGo" class="btn-ghost">Annuler</button>
+                <button id="goNow" class="btn">Y'aller</button>
+              </div>`;
+            popup.style.display='block';
+            document.getElementById('cancelGo').addEventListener('click', ()=> popup.style.display='none', {once:true});
+            document.getElementById('goNow').addEventListener('click', ()=> {
+              popup.style.display='none';
+              if(activeRoute && activeRoute.destLat===lat2 && activeRoute.destLon===lon2){
+                map.removeControl(activeRoute.routingControl);
+                activeRoute=null;
+                showMessage('Trajet annulé',2200);
+                return;
+              }
+              if(activeRoute) map.removeControl(activeRoute.routingControl);
+              const routingControlLocal = L.Routing.control({
+                waypoints:[L.latLng(userPos[0],userPos[1]), L.latLng(lat2,lon2)],
+                lineOptions:{styles:[{color:varAccent(),weight:5}]},
+                show:false
+              }).addTo(map);
+              routingControlLocal.on('routesfound', e=>{
+                const summary = e.routes[0].summary;
+                const km = summary.totalDistance/1000;
+                const min = Math.round(summary.totalTime/60);
+                showDistance(km);
+                showMessage(`Distance: ${km.toFixed(1)} km • ${min} min`,3500);
+              });
+              activeRoute={routingControl:routingControlLocal,destLat:lat2,destLon:lon2};
+              if(userPos) map.setView(userPos, Math.max(map.getZoom(),15), {animate:true});
+            }, {once:true});
+          }, {once:true});
+        }
       });
       parkCluster.addLayer(mk);
     });
@@ -808,7 +844,7 @@ async function loadParkings(){
   } catch(e){ console.warn(e); showMessage('Erreur récupération parkings',3000); }
 }
 map.on('popupopen', e => {});
-btnReport.addEventListener('click', async ()=>{
+if(btnReport) btnReport.addEventListener('click', async ()=>{
   try{ await ensureGeolocation(); }catch(e){ showMessage('Autorise la géolocalisation',3000); return; }
   const r = {lat:userPos[0], lon:userPos[1], ts:Date.now()};
   const arr = JSON.parse(localStorage.getItem('roaderly_rassos')||'[]'); arr.unshift(r);
