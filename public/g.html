@@ -2,219 +2,131 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<title>SpaceGame - vaisseau .glb (module)</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SpaceGame - Vaisseau GLB</title>
 <style>
-  html,body{margin:0;height:100%;background:#000;user-select:none}
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
   canvas{display:block}
-  #loader{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;z-index:1000}
-  #loader-ok{margin-top:12px;color:#0f0;opacity:0;transition:opacity .3s}
-  .joystick{position:absolute;left:20px;bottom:20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none}
-  .joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-  .btn{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.12);text-align:center;line-height:60px;right:20px}
-  .btn.up{bottom:100px}.btn.down{bottom:20px}
-  #log{position:fixed;left:8px;top:8px;max-width:40%;max-height:40%;overflow:auto;background:rgba(0,0,0,0.6);padding:6px;border-radius:6px;font-size:12px;color:#ddd;display:none;z-index:1001}
+  #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;z-index:10}
+  .ui{position:absolute;left:12px;bottom:12px;z-index:11}
+  .btn{display:inline-block;padding:10px 14px;margin:6px;background:rgba(255,255,255,0.08);color:#fff;border-radius:8px}
 </style>
 </head>
 <body>
-  <div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
-  <div id="log"></div>
-  <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
-  <div class="btn up" id="btnUp">↑</div>
-  <div class="btn down" id="btnDown">↓</div>
+<div id="loader">Chargement des ressources...</div>
+<div class="ui">
+  <div id="joy" style="width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none"></div>
+  <div style="margin-top:8px">
+    <span class="btn" id="up">↑</span>
+    <span class="btn" id="down">↓</span>
+  </div>
+</div>
 
-  <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-    import { GLTFLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
+import { GLTFLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
 
-    const loaderDiv = document.getElementById('loader');
-    const okDiv = document.getElementById('loader-ok');
-    const logEl = document.getElementById('log');
-    function log(...a){ console.log(...a); logEl.style.display='block'; logEl.innerHTML += '<div>'+a.map(x=> typeof x==='object'? JSON.stringify(x): String(x)).join(' ') +'</div>'; logEl.scrollTop = logEl.scrollHeight; }
+const loaderEl = document.getElementById('loader');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000010);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+camera.position.set(0,3,10);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    // textures (non bloquantes)
-    const texUrls = {
-      earth: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
-      clouds: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-      spec: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
-      normal: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
-      moon: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg'
-    };
+scene.add(new THREE.AmbientLight(0x666666));
+const sun = new THREE.PointLight(0xffffff,2); sun.position.set(0,0,0); scene.add(sun);
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc})));
 
-    async function loadTextureSafe(url){
-      try{
-        return await new THREE.TextureLoader().loadAsync(url);
-      }catch(e){
-        log('Texture failed:', url, e.message || e);
-        return null;
-      }
-    }
+const texLoader = new THREE.TextureLoader();
+const earthTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg').catch(()=>null);
+const cloudsTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png').catch(()=>null);
+const moonTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg').catch(()=>null);
 
-    try{
-      // scene / camera / renderer
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x000010);
-      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-      camera.position.set(0,5,15);
-      const renderer = new THREE.WebGLRenderer({antialias:true});
-      renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-      renderer.setSize(innerWidth, innerHeight);
-      document.body.appendChild(renderer.domElement);
+const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), new THREE.MeshPhongMaterial({map:earthTex, shininess:5}));
+earth.position.set(50,0,0); scene.add(earth);
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), new THREE.MeshPhongMaterial({map:cloudsTex, transparent:true, depthWrite:false, opacity:0.9}));
+earth.add(clouds);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:moonTex}));
+moon.position.set(8,0,0); earth.add(moon);
 
-      // lights
-      scene.add(new THREE.AmbientLight(0x666666));
-      const sunLight = new THREE.PointLight(0xffffff,2); sunLight.position.set(0,0,0); scene.add(sunLight);
-      const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc})); scene.add(sun);
+const starGeom = new THREE.BufferGeometry();
+const starCount = 2000;
+const pos = new Float32Array(starCount*3);
+for(let i=0;i<starCount;i++){ pos[i*3]=(Math.random()-0.5)*2000; pos[i*3+1]=(Math.random()-0.5)*2000; pos[i*3+2]=(Math.random()-0.5)*2000; }
+starGeom.setAttribute('position', new THREE.BufferAttribute(pos,3));
+scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({color:0x99ddff,size:1.5,transparent:true,opacity:0.9})));
 
-      // load textures in parallel (non blocking)
-      const [earthTex, cloudsTex, specTex, normalTex, moonTex] = await Promise.all([
-        loadTextureSafe(texUrls.earth),
-        loadTextureSafe(texUrls.clouds),
-        loadTextureSafe(texUrls.spec),
-        loadTextureSafe(texUrls.normal),
-        loadTextureSafe(texUrls.moon)
-      ]);
+function withTimeout(p,ms,label){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout '+label)), ms))]); }
 
-      // earth, clouds, moon
-      const earthMat = new THREE.MeshPhongMaterial({map:earthTex||null, specularMap:specTex||null, normalMap:normalTex||null, shininess:5});
-      const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), earthMat);
-      earth.position.set(50,0,0); scene.add(earth);
-      const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), new THREE.MeshPhongMaterial({map:cloudsTex||null, transparent:true, depthWrite:false, opacity:0.9}));
-      earth.add(clouds);
-      const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:moonTex||null}));
-      moon.position.set(8,0,0); earth.add(moon);
+// **VRAI** .glb public sur GitHub (rawcdn.githack) — remplace par ton .glb rawcdn.githack si besoin [9F742443-6C92-4C44-BF58-8F5A7C53B6F1](https://github.com/Gancus98/SpaceGame/blob/master/SpaceShip.glb?citationMarker=9F742443-6C92-4C44-BF58-8F5A7C53B6F1&citationId=49168075-3834-470F-8D6B-00ECF6D0976A&citationTitle=Github&citationFullTitle=Github&chatItemId=XtoCobA2jqGYkhNiQSovj).
+const shipUrl = 'https://rawcdn.githack.com/Gancus98/SpaceGame/master/SpaceShip.glb';
 
-      // stars
-      const starGeom = new THREE.BufferGeometry();
-      const starCount = 2000;
-      const pos = new Float32Array(starCount*3);
-      for(let i=0;i<starCount;i++){ pos[i*3]=(Math.random()-0.5)*2000; pos[i*3+1]=(Math.random()-0.5)*2000; pos[i*3+2]=(Math.random()-0.5)*2000; }
-      starGeom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-      scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({color:0x99ddff, size:1.5, transparent:true, opacity:0.9})));
+let ship = null;
+try{
+  await withTimeout(fetch(shipUrl, {method:'HEAD', mode:'cors'}), 9000, 'HEAD');
+  const loader = new GLTFLoader();
+  const gltf = await withTimeout(new Promise((res,rej)=>loader.load(shipUrl, res, undefined, rej)), 25000, 'GLTF');
+  ship = gltf.scene;
+  ship.scale.set(0.6,0.6,0.6);
+  ship.position.set(0,0,0);
+  scene.add(ship);
+}catch(e){
+  // fallback geometry if network/CORS fails (ensures app never blocks)
+  ship = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color:0xff5555});
+  const body = new THREE.Mesh(new THREE.ConeGeometry(0.8,2.5,16), mat); body.rotation.x = Math.PI/2;
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.6,1.2), mat); wingL.position.set(-0.9,0,-0.2);
+  const wingR = wingL.clone(); wingR.position.set(0.9,0,-0.2);
+  ship.add(body, wingL, wingR);
+  scene.add(ship);
+}
+loaderEl.style.display='none';
 
-      // GLB model URLs (remplace la première par ton .glb GitHub si tu en as un)
-      // IMPORTANT: pour un .glb dans ton repo GitHub, utilise rawcdn.githack.com pour éviter CORS
-      const shipCandidates = [
-        // Remplace la ligne ci‑dessous par l'URL rawcdn.githack de ton propre .glb si tu en as un
-        'https://rawcdn.githack.com/your-username/your-repo/main/path/to/ship.glb',
-        // fallback public (Khronos sample) — remplace si tu as un vrai vaisseau dans ton repo
-        'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb',
-        'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb'
-      ];
+let move = {x:0,y:0,up:false,down:false};
+const joy = document.getElementById('joy');
+joy.addEventListener('pointerdown', e=>{ joy.setPointerCapture(e.pointerId); handle(e.clientX,e.clientY); });
+window.addEventListener('pointermove', e=>{ if(e.buttons) handle(e.clientX,e.clientY); });
+window.addEventListener('pointerup', ()=>{ move.x=0; move.y=0; });
+function handle(cx,cy){
+  const r = joy.getBoundingClientRect();
+  move.x = Math.max(-1, Math.min(1, (cx - (r.left + r.width/2)) / (r.width/2)));
+  move.y = Math.max(-1, Math.min(1, - (cy - (r.top + r.height/2)) / (r.height/2)));
+}
 
-      // helper: test URL accessibility (HEAD then GET)
-      async function testUrl(url, timeoutMs=8000){
-        try{
-          const head = await Promise.race([fetch(url, {method:'HEAD', mode:'cors'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout HEAD')), timeoutMs))]);
-          if(!head.ok) throw new Error('HEAD status '+head.status);
-          return true;
-        }catch(e){
-          try{
-            const get = await Promise.race([fetch(url, {method:'GET', mode:'cors'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout GET')), timeoutMs))]);
-            if(!get.ok) throw new Error('GET status '+get.status);
-            return true;
-          }catch(e2){
-            throw e2;
-          }
-        }
-      }
+document.getElementById('up').addEventListener('pointerdown', ()=> move.up=true);
+document.getElementById('up').addEventListener('pointerup', ()=> move.up=false);
+document.getElementById('down').addEventListener('pointerdown', ()=> move.down=true);
+document.getElementById('down').addEventListener('pointerup', ()=> move.down=false);
 
-      // load GLTF (essaye les candidats)
-      const loader = new GLTFLoader();
-      let ship = null;
-      let lastErr = null;
-      for(const url of shipCandidates){
-        try{
-          // si tu utilises ton propre .glb sur GitHub, remplace la première URL ci‑dessus
-          log('Test URL:', url);
-          await testUrl(url, 9000);
-          log('Chargement GLB:', url);
-          const gltf = await new Promise((res, rej) => loader.load(url, res, (xhr)=>{ if(xhr && xhr.total) log('progress', Math.round(xhr.loaded/xhr.total*100)+'%'); }, rej));
-          ship = gltf.scene;
-          ship.scale.set(0.6,0.6,0.6);
-          ship.position.set(0,0,0);
-          ship.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
-          scene.add(ship);
-          log('Modèle chargé depuis', url);
-          break;
-        }catch(e){
-          lastErr = e;
-          log('Impossible de charger:', url, e.message || e);
-        }
-      }
+const velocity = new THREE.Vector3(), direction = new THREE.Vector3(), forward = new THREE.Vector3(0,0,-1);
+function animate(){
+  requestAnimationFrame(animate);
+  const t = Date.now()*0.00005;
+  earth.position.x = 50 * Math.cos(t);
+  earth.position.z = 50 * Math.sin(t);
+  clouds.rotation.y += 0.0006;
+  moon.rotation.y += 0.0012;
+  direction.set(0,0,0);
+  const localF = forward.clone().applyEuler(ship.rotation);
+  direction.add(localF.multiplyScalar(move.y * 0.25));
+  if(move.up) direction.y += 0.12;
+  if(move.down) direction.y -= 0.12;
+  velocity.lerp(direction, 0.08);
+  ship.position.add(velocity);
+  ship.rotation.y -= move.x * 0.04;
+  const desired = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(ship.position);
+  renderer.render(scene, camera);
+}
+animate();
 
-      // si aucun .glb n'est accessible, créer un vaisseau fallback (adapter web)
-      if(!ship){
-        log('Aucun .glb accessible, création d\'un vaisseau fallback');
-        const mat = new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.6, roughness:0.3});
-        ship = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.ConeGeometry(0.8,2.5,16), mat); body.rotation.x = Math.PI/2;
-        const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.6,1.2), mat); wingL.position.set(-0.9,0,-0.2);
-        const wingR = wingL.clone(); wingR.position.set(0.9,0,-0.2);
-        const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.45,16,16), new THREE.MeshPhysicalMaterial({color:0x2233ff, transmission:0.6, transparent:true, opacity:0.9}));
-        cockpit.position.set(0,0.45,0.6);
-        ship.add(body, wingL, wingR, cockpit);
-        scene.add(ship);
-      }
-
-      okDiv.style.opacity = '1';
-      setTimeout(()=> loaderDiv.style.display = 'none', 300);
-
-      // controls (joystick)
-      let move = {x:0,y:0,up:false,down:false};
-      const joy = document.getElementById('joystick'), joyInner = document.getElementById('joyInner');
-      function pointerToMove(cx,cy){
-        const r = joy.getBoundingClientRect();
-        const mx = (cx - (r.left + r.width/2)) / (r.width/2);
-        const my = - (cy - (r.top + r.height/2)) / (r.height/2);
-        move.x = Math.max(-1, Math.min(1, mx));
-        move.y = Math.max(-1, Math.min(1, my));
-        joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
-      }
-      joy.addEventListener('pointerdown', e=>{ joy.setPointerCapture(e.pointerId); pointerToMove(e.clientX,e.clientY); });
-      window.addEventListener('pointermove', e=>{ if(e.buttons) pointerToMove(e.clientX,e.clientY); });
-      window.addEventListener('pointerup', ()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
-
-      document.getElementById('btnUp').addEventListener('pointerdown', ()=> move.up=true);
-      document.getElementById('btnUp').addEventListener('pointerup', ()=> move.up=false);
-      document.getElementById('btnDown').addEventListener('pointerdown', ()=> move.down=true);
-      document.getElementById('btnDown').addEventListener('pointerup', ()=> move.down=false);
-
-      // motion
-      const velocity = new THREE.Vector3(), direction = new THREE.Vector3(), forward = new THREE.Vector3(0,0,-1);
-      function animate(){
-        requestAnimationFrame(animate);
-        const t = Date.now()*0.00005;
-        earth.position.x = 50 * Math.cos(t);
-        earth.position.z = 50 * Math.sin(t);
-        clouds.rotation.y += 0.0006;
-        moon.rotation.y += 0.0012;
-        direction.set(0,0,0);
-        const localForward = forward.clone().applyEuler(ship.rotation);
-        direction.add(localForward.multiplyScalar(move.y * 0.25));
-        if(move.up) direction.y += 0.12;
-        if(move.down) direction.y -= 0.12;
-        velocity.lerp(direction, 0.08);
-        ship.position.add(velocity);
-        ship.rotation.y -= move.x * 0.04;
-        const desiredCam = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
-        camera.position.lerp(desiredCam, 0.12);
-        camera.lookAt(ship.position);
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
-
-      if(lastErr) log('Dernière erreur:', lastErr.message || lastErr);
-      log('Initialisation terminée');
-
-    }catch(e){
-      console.error(e);
-      log('Erreur critique:', e.message || e);
-      document.getElementById('loader').innerText = 'Erreur: ' + (e.message || e);
-    }
-  </script>
+window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+</script>
 </body>
 </html>
+
 
