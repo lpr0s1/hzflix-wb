@@ -2,170 +2,238 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame Mobile 3D vaisseau stylé</title>
+<title>SpaceGame Mobile 3D vaisseau .glb</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
 <style>
 html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; }
 canvas { display:block; }
-#loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:24px; z-index:1000; }
-#loader-ok { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s ease-in-out; }
-.joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
-.joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
-.btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
+#loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:20px; z-index:1000; }
+#loader-status { margin-top:8px; font-size:16px; color:#ddd; }
+#loader-ok { margin-top:12px; font-size:28px; color:#0f0; opacity:0; transition:opacity 0.35s ease-in-out; }
+.joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.08); touch-action:none; -webkit-tap-highlight-color: transparent; }
+.joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.18); top:25px; left:25px; pointer-events:none; transform:translate(0,0); transition:transform 0.05s linear; }
+.btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.12); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; -webkit-user-select:none; user-select:none; }
 .btn.up { bottom:100px; right:20px; }
 .btn.down { bottom:20px; right:20px; }
+#log { position:fixed; left:10px; top:10px; max-width:40%; max-height:40%; overflow:auto; background:rgba(0,0,0,0.6); padding:8px; border-radius:6px; font-size:12px; color:#ddd; z-index:1001; display:none; }
 </style>
 </head>
 <body>
-<div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
+<div id="loader">Chargement des ressources...<div id="loader-status">Initialisation</div><div id="loader-ok">✔ OK</div></div>
+<div id="log"></div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
+
 <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+
 <script>
 (async function(){
-const loaderDiv = document.getElementById('loader');
-const okDiv = document.getElementById('loader-ok');
-const textureUrls = {
-  earth:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg',
-  earth_clouds:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_clouds_1024.png',
-  earth_specular:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg',
-  earth_normal:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg',
-  moon:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/moon_1024.jpg'
-};
-const textures = {};
-const texLoader = new THREE.TextureLoader();
-const promises = [];
-for(const key in textureUrls){
-  promises.push(new Promise(res=>{ texLoader.load(textureUrls[key], tex=>{ textures[key]=tex; res(); }, undefined, ()=>res()); }));
-}
-await Promise.all(promises);
-okDiv.style.opacity='1';
-await new Promise(r=>setTimeout(r,500));
-loaderDiv.style.display='none';
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000010);
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0,5,15);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
-const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0,0); scene.add(sunLight);
-const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc})); scene.add(sun);
-const earthGeom = new THREE.SphereGeometry(5,64,64);
-const earthMat = new THREE.MeshPhongMaterial({map:textures['earth'] || null, specularMap:textures['earth_specular'] || null, normalMap:textures['earth_normal'] || null, shininess:5});
-const earth = new THREE.Mesh(earthGeom, earthMat); earth.position.set(50,0,0); scene.add(earth);
-const cloudMat = new THREE.MeshPhongMaterial({map:textures['earth_clouds'] || null, transparent:true, depthWrite:false});
-const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), cloudMat); earth.add(clouds);
-const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:textures['moon'] || null})); moon.position.set(8,0,0); earth.add(moon);
-(function(){ const g=new THREE.BufferGeometry(); const n=2000; const pos=new Float32Array(n*3); for(let i=0;i<n;i++){ pos[i*3]=(Math.random()-0.5)*2000; pos[i*3+1]=(Math.random()-0.5)*2000; pos[i*3+2]=(Math.random()-0.5)*2000; } g.setAttribute('position', new THREE.BufferAttribute(pos,3)); scene.add(new THREE.Points(g, new THREE.PointsMaterial({color:0x99ddff, size:1.5, transparent:true, opacity:0.9}))); })();
-function createShipAdapter(options){
-  const group = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({color: options.colorBody || 0xff5555, metalness:0.6, roughness:0.3});
-  const glassMat = new THREE.MeshPhysicalMaterial({color: options.colorGlass || 0x2233ff, metalness:0.1, roughness:0.2, transmission:0.6, transparent:true, opacity:0.9});
-  const engineMat = new THREE.MeshBasicMaterial({color:0xffaa00});
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.2, 20), bodyMat);
-  cone.rotation.x = Math.PI/2;
-  cone.position.set(0,0,0);
-  group.add(cone);
-  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 16), glassMat);
-  cockpit.position.set(0,0.45,0.6);
-  group.add(cockpit);
-  const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.6, 1.2), bodyMat);
-  wingL.position.set(-0.9, 0, -0.2);
-  wingL.rotation.z = 0.05;
-  const wingR = wingL.clone();
-  wingR.position.set(0.9, 0, -0.2);
-  group.add(wingL, wingR);
-  const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.8), bodyMat);
-  fin.position.set(0, -0.6, -0.2);
-  fin.rotation.x = 0.2;
-  group.add(fin);
-  const thrusterLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.5, 12), engineMat);
-  thrusterLeft.rotation.x = Math.PI/2;
-  thrusterLeft.position.set(-0.35, -1.05, 0);
-  const thrusterRight = thrusterLeft.clone();
-  thrusterRight.position.set(0.35, -1.05, 0);
-  group.add(thrusterLeft, thrusterRight);
-  const exhaustCount = 40;
-  const exhaustGeom = new THREE.BufferGeometry();
-  const exPos = new Float32Array(exhaustCount * 3);
-  for(let i=0;i<exhaustCount;i++){
-    exPos[i*3] = (Math.random()-0.5) * 0.2;
-    exPos[i*3+1] = -1.4 - Math.random() * 0.6;
-    exPos[i*3+2] = (Math.random()-0.5) * 0.2;
-  }
-  exhaustGeom.setAttribute('position', new THREE.BufferAttribute(exPos, 3));
-  const exhaustMat = new THREE.PointsMaterial({color:0xffaa66, size:0.12, transparent:true, opacity:0.9, depthWrite:false});
-  const exhaust = new THREE.Points(exhaustGeom, exhaustMat);
-  group.add(exhaust);
-  group.userData.exhaust = {geom:exhaustGeom, mat:exhaustMat, basePositions:exPos.slice()};
-  group.userData.adapter = {
-    setColor(c){ bodyMat.color.set(c); },
-    setScale(s){ group.scale.setScalar(s); },
-    setThrusterPower(p){
-      const op = Math.max(0, Math.min(1, p));
-      exhaustMat.size = 0.06 + op * 0.18;
-      exhaustMat.opacity = 0.3 + op * 0.7;
+  const loaderDiv = document.getElementById('loader');
+  const statusEl = document.getElementById('loader-status');
+  const okEl = document.getElementById('loader-ok');
+  const logEl = document.getElementById('log');
+  function log(...a){ console.log(...a); logEl.style.display='block'; logEl.innerHTML += '<div>'+a.map(x=> (typeof x==='object'? JSON.stringify(x): String(x))).join(' ') +'</div>'; logEl.scrollTop = logEl.scrollHeight; }
+  function setStatus(s){ statusEl.innerText = s; log('STATUS:', s); }
+
+  try{
+    setStatus('Chargement textures...');
+    const textureUrls = {
+      earth: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+      earth_clouds: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
+      earth_specular: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
+      earth_normal: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
+      moon: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg'
+    };
+    const texLoader = new THREE.TextureLoader();
+    const textures = {};
+    const texPromises = Object.keys(textureUrls).map(k=>{
+      return new Promise(res=>{
+        texLoader.load(textureUrls[k], t=>{ textures[k]=t; res(); }, undefined, ()=>{ log('Texture failed:', textureUrls[k]); res(); });
+      });
+    });
+    await Promise.all(texPromises);
+
+    setStatus('Initialisation scène...');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000010);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
+    camera.position.set(0,5,15);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
+    const sunLight = new THREE.PointLight(0xffffff, 2, 0, 2); sunLight.position.set(0,0,0); scene.add(sunLight);
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc})); scene.add(sun);
+
+    const earthMat = new THREE.MeshPhongMaterial({map:textures['earth']||null, specularMap:textures['earth_specular']||null, normalMap:textures['earth_normal']||null, shininess:5});
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), earthMat);
+    earth.position.set(50,0,0);
+    scene.add(earth);
+
+    const cloudsMat = new THREE.MeshPhongMaterial({map:textures['earth_clouds']||null, transparent:true, depthWrite:false, opacity:0.9});
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), cloudsMat);
+    earth.add(clouds);
+
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:textures['moon']||null}));
+    moon.position.set(8,0,0);
+    earth.add(moon);
+
+    const starGeom = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const positions = new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){
+      positions[i*3] = (Math.random()-0.5)*2000;
+      positions[i*3+1] = (Math.random()-0.5)*2000;
+      positions[i*3+2] = (Math.random()-0.5)*2000;
     }
-  };
-  return group;
-}
-const ship = createShipAdapter({colorBody:0xff5555, colorGlass:0x3333ff});
-ship.position.set(0,0,0);
-scene.add(ship);
-let move={x:0,y:0,up:false,down:false};
-const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
-joy.addEventListener('touchstart',e=>e.preventDefault());
-joy.addEventListener('touchmove',e=>{
-  const t=e.touches[0];
-  const r=joy.getBoundingClientRect();
-  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
-  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
-  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
-});
-joy.addEventListener('touchend',()=>{move.x=0; move.y=0; joyInner.style.transform='translate(0,0)';});
-document.getElementById('btnUp').addEventListener('touchstart',()=> move.up=true);
-document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false);
-document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
-document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
-let velocity=new THREE.Vector3(); let direction=new THREE.Vector3(); const forward=new THREE.Vector3(0,0,-1);
-function animate(){
-  requestAnimationFrame(animate);
-  earth.position.x=50*Math.cos(Date.now()*0.00005);
-  earth.position.z=50*Math.sin(Date.now()*0.00005);
-  clouds.rotation.y += 0.0006;
-  moon.rotation.y += 0.0012;
-  direction.set(0,0,0);
-  const localForward = forward.clone().applyEuler(ship.rotation);
-  direction.add(localForward.multiplyScalar(move.y*0.25));
-  if(move.up) direction.y += 0.12;
-  if(move.down) direction.y -= 0.12;
-  velocity.lerp(direction,0.08);
-  ship.position.add(velocity);
-  ship.rotation.y -= move.x*0.04;
-  const thrusterPower = Math.min(1, Math.abs(move.y));
-  ship.userData.adapter.setThrusterPower(thrusterPower);
-  const exhaust = ship.userData.exhaust;
-  if(exhaust){
-    const pos = exhaust.geom.attributes.position.array;
-    for(let i=0;i<pos.length/3;i++){
-      const baseY = exhaust.basePositions[i*3+1];
-      pos[i*3+1] = baseY - Math.random()*0.02*thrusterPower;
-      pos[i*3] += (Math.random()-0.5)*0.002;
-      pos[i*3+2] += (Math.random()-0.5)*0.002;
+    starGeom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const stars = new THREE.Points(starGeom, new THREE.PointsMaterial({color:0x99ddff, size:1.5, transparent:true, opacity:0.9}));
+    scene.add(stars);
+
+    setStatus('Chargement vaisseau .glb depuis GitHub (rawcdn.githack)...');
+
+    const shipUrls = [
+      // tentative 1: modèle "ship" public sur GitHub (si vous avez un repo, remplacez ici)
+      'https://rawcdn.githack.com/zgk11/3D-model/main/ship.glb',
+      // tentative 2: Khronos sample (fiable) - si vous préférez un vrai vaisseau, remplacez par votre .glb sur GitHub
+      'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb',
+      // tentative 3: autre sample (DamagedHelmet)
+      'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb'
+    ];
+
+    function withTimeout(promise, ms, label){
+      return Promise.race([promise, new Promise((_, rej)=> setTimeout(()=> rej(new Error('timeout '+label)), ms))]);
     }
-    exhaust.geom.attributes.position.needsUpdate = true;
+
+    async function testUrl(url, timeoutMs=8000){
+      try{
+        const head = await withTimeout(fetch(url, {method:'HEAD', mode:'cors'}), timeoutMs, 'HEAD '+url);
+        if(!head.ok) throw new Error('HEAD status '+head.status);
+        return true;
+      }catch(e){
+        try{
+          const get = await withTimeout(fetch(url, {method:'GET', mode:'cors'}), timeoutMs, 'GET '+url);
+          if(!get.ok) throw new Error('GET status '+get.status);
+          return true;
+        }catch(e2){
+          throw e2;
+        }
+      }
+    }
+
+    const gltfLoader = new THREE.GLTFLoader();
+    let ship = null;
+    let lastErr = null;
+    for(let i=0;i<shipUrls.length;i++){
+      const url = shipUrls[i];
+      try{
+        setStatus('Vérification URL: ' + url);
+        await testUrl(url, 9000);
+        setStatus('Téléchargement modèle: ' + url);
+        const gltf = await withTimeout(new Promise((res, rej) => {
+          gltfLoader.load(url, res, (xhr) => {
+            if(xhr && xhr.total) setStatus('Téléchargement modèle: ' + Math.round(xhr.loaded/xhr.total*100) + '%');
+          }, rej);
+        }), 25000, 'GLTF '+url);
+        ship = gltf.scene;
+        ship.scale.set(0.6,0.6,0.6);
+        ship.position.set(0,0,0);
+        ship.traverse(c => { if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
+        scene.add(ship);
+        log('Modèle chargé depuis', url);
+        break;
+      }catch(err){
+        lastErr = err;
+        log('Échec chargement depuis', url, err.message || err);
+      }
+    }
+
+    if(!ship){
+      setStatus('Aucun .glb accessible, création d\'un vaisseau de secours');
+      const mat = new THREE.MeshStandardMaterial({color:0x88ccff, metalness:0.5, roughness:0.4});
+      ship = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.ConeGeometry(0.8,2.5,16), mat); body.rotation.x = Math.PI/2;
+      const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.1,1.2,0.6), mat); wingL.position.set(-0.9,0,0);
+      const wingR = wingL.clone(); wingR.position.set(0.9,0,0);
+      ship.add(body, wingL, wingR);
+      scene.add(ship);
+      log('Vaisseau fallback créé');
+    }
+
+    okEl.style.opacity = '1';
+    setTimeout(()=> loaderDiv.style.display = 'none', 350);
+
+    let move = {x:0,y:0,up:false,down:false};
+    const joy = document.getElementById('joystick');
+    const joyInner = document.getElementById('joyInner');
+
+    function handlePointerMove(clientX, clientY){
+      const r = joy.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      move.x = Math.max(-1, Math.min(1, (clientX - cx) / (r.width/2)));
+      move.y = Math.max(-1, Math.min(1, -(clientY - cy) / (r.height/2)));
+      joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
+    }
+
+    joy.addEventListener('touchstart', e => { e.preventDefault(); handlePointerMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+    joy.addEventListener('touchmove', e => { e.preventDefault(); handlePointerMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+    joy.addEventListener('touchend', () => { move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; }, {passive:false});
+    joy.addEventListener('pointerdown', e => { joy.setPointerCapture(e.pointerId); handlePointerMove(e.clientX, e.clientY); });
+    window.addEventListener('pointermove', e => { if(e.buttons) handlePointerMove(e.clientX, e.clientY); });
+    window.addEventListener('pointerup', () => { move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
+
+    const btnUp = document.getElementById('btnUp');
+    const btnDown = document.getElementById('btnDown');
+    btnUp.addEventListener('touchstart', ()=> move.up=true, {passive:true});
+    btnUp.addEventListener('touchend', ()=> move.up=false, {passive:true});
+    btnDown.addEventListener('touchstart', ()=> move.down=true, {passive:true});
+    btnDown.addEventListener('touchend', ()=> move.down=false, {passive:true});
+    btnUp.addEventListener('mousedown', ()=> move.up=true);
+    btnUp.addEventListener('mouseup', ()=> move.up=false);
+    btnDown.addEventListener('mousedown', ()=> move.down=true);
+    btnDown.addEventListener('mouseup', ()=> move.down=false);
+
+    let velocity = new THREE.Vector3();
+    let direction = new THREE.Vector3();
+    const forward = new THREE.Vector3(0,0,-1);
+
+    function animate(){
+      requestAnimationFrame(animate);
+      const t = Date.now() * 0.00005;
+      earth.position.x = 50 * Math.cos(t);
+      earth.position.z = 50 * Math.sin(t);
+      clouds.rotation.y += 0.0006;
+      moon.rotation.y += 0.0012;
+      direction.set(0,0,0);
+      const localForward = forward.clone().applyEuler(ship.rotation);
+      direction.add(localForward.multiplyScalar(move.y * 0.25));
+      if(move.up) direction.y += 0.12;
+      if(move.down) direction.y -= 0.12;
+      velocity.lerp(direction, 0.08);
+      ship.position.add(velocity);
+      ship.rotation.y -= move.x * 0.04;
+      const desiredCam = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
+      camera.position.lerp(desiredCam, 0.12);
+      camera.lookAt(ship.position);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', ()=>{ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+    if(lastErr) log('Dernière erreur rencontrée:', lastErr.message || lastErr);
+    log('Initialisation terminée');
+
+  }catch(err){
+    console.error(err);
+    document.getElementById('loader-status').innerText = 'Erreur: ' + (err && err.message ? err.message : err);
+    log('Erreur critique:', err);
   }
-  const desiredCam = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
-  camera.position.lerp(desiredCam,0.12);
-  camera.lookAt(ship.position);
-  renderer.render(scene,camera);
-}
-animate();
-window.addEventListener('resize',()=>{ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 })();
 </script>
 </body>
