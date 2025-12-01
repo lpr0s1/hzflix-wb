@@ -115,7 +115,7 @@ manager.onError = function(url){ throw new Error('Impossible de charger: '+url);
 const gltfLoader = new THREE.GLTFLoader(manager);
 ship = await new Promise((res,rej)=>{
   gltfLoader.load(
-    'https://raw.githubusercontent.com/lpr0s1/hzflix-wb/main/public/spaceship.glb',
+    'https://hzflix.online/spaceship.glb',
     gltf=>res(gltf.scene),
     xhr=>console.log('Vaisseau chargé : '+(xhr.loaded/xhr.total*100).toFixed(0)+'%'),
     rej
