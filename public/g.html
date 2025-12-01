@@ -2,102 +2,81 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur Spatial Mobile avec Loader</title>
+<title>Jeu Spatial 3D Mobile</title>
 <style>
-html, body { margin: 0; padding: 0; overflow: hidden; background: black; font-family: Arial, sans-serif; }
-canvas { display: block; }
+html, body { margin: 0; padding: 0; overflow: hidden; background:black; font-family:Arial,sans-serif; }
+canvas { display:block; }
 
 /* Loader */
 #loader {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: black;
-  color: white;
-  font-size: 24px;
-  -webkit-user-drag: none;
+  position:absolute;
+  top:0; left:0; width:100%; height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:black;
+  color:white;
+  font-size:24px;
 }
-
-#loader span {
-  margin-top: 20px;
-  font-size: 32px;
-  color: #0f0;
-  opacity: 0;
-  -webkit-transition: opacity 0.5s ease-in-out;
-  transition: opacity 0.5s ease-in-out;
-}
+#loader span { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s; }
 
 /* Contrôles tactiles */
-.joystick {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  width: 100px; height: 100px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-}
-
-.joystick-inner {
-  position: absolute;
-  width: 50px; height: 50px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  top: 25px; left: 25px;
-}
-
-.btn {
-  position: absolute;
-  width: 60px; height: 60px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  text-align:center;
-  line-height:60px;
-  font-weight:bold;
-  color:white;
-  user-select:none;
-}
-.btn.up { bottom: 100px; right: 20px; }
-.btn.down { bottom: 20px; right: 20px; }
+.joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); }
+.joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; }
+.btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; user-select:none; }
+.btn.up { bottom:100px; right:20px; }
+.btn.down { bottom:20px; right:20px; }
 </style>
 </head>
 <body>
-<!-- Loader -->
-<div id="loader">
-  Chargement des ressources...
-  <span id="loader-ok">✔ OK</span>
-</div>
 
-<!-- Contrôles tactiles -->
+<!-- Loader -->
+<div id="loader">Chargement des ressources...<span id="loader-ok">✔ OK</span></div>
+
+<!-- Contrôles -->
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.min.js"></script>
-
 <script>
 (async function(){
-  // Simuler chargement des ressources
-  await new Promise(resolve=>setTimeout(resolve, 1000)); // 1s loader
-  document.getElementById('loader-ok').style.opacity = 1;
+  // ================== Loader réel ==================
+  const textures = {};
+  const loader = new THREE.TextureLoader();
 
-  // Puis attendre encore un peu pour que l'utilisateur voie
-  await new Promise(resolve=>setTimeout(resolve, 500));
-  document.getElementById('loader').style.display = 'none';
+  const planetData = [
+    {name:'Mercure', size:2, distance:20, color:0xaaaaaa},
+    {name:'Vénus', size:4, distance:30, color:0xffcc88},
+    {name:'Terre', size:5, distance:40, color:0x0000ff},
+    {name:'Mars', size:3, distance:50, color:0xff0000},
+    {name:'Jupiter', size:10, distance:70, color:0xffaa00},
+    {name:'Saturne', size:8, distance:90, color:0xffddaa},
+    {name:'Uranus', size:6, distance:110, color:0x00ffff},
+    {name:'Neptune', size:6, distance:130, color:0x0000aa}
+  ];
 
-  // ================== Initialisation Three.js ==================
+  // Charger textures simulé (réel jeu pourrait charger images)
+  for(const p of planetData){
+    textures[p.name] = await new Promise(resolve=>{
+      loader.load('', ()=>resolve(null), undefined, ()=>resolve(null));
+    });
+  }
+
+  document.getElementById('loader-ok').style.opacity=1;
+  await new Promise(r=>setTimeout(r,500));
+  document.getElementById('loader').style.display='none';
+
+  // ================== Initialisation ==================
   const scene = new THREE.Scene();
-
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-  camera.position.set(0,5,20);
+  camera.position.set(0,10,30);
 
   const renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // Lumières
   const ambient = new THREE.AmbientLight(0x555555); 
   scene.add(ambient);
   const sunLight = new THREE.PointLight(0xffffff,2);
@@ -108,15 +87,16 @@ canvas { display: block; }
   const sun = new THREE.Mesh(new THREE.SphereGeometry(10,32,32), new THREE.MeshPhongMaterial({color:0xffff00}));
   scene.add(sun);
 
-  // Terre
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(5,32,32), new THREE.MeshPhongMaterial({color:0x0000ff}));
-  earth.position.set(50,0,0);
-  scene.add(earth);
-
-  // Vaisseau
-  const ship = new THREE.Mesh(new THREE.ConeGeometry(1,3,8), new THREE.MeshPhongMaterial({color:0xff0000}));
-  ship.rotation.x = Math.PI/2;
-  scene.add(ship);
+  // Planètes
+  const planets = [];
+  for(const p of planetData){
+    const mat = new THREE.MeshPhongMaterial({color:p.color});
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.size,32,32), mat);
+    mesh.userData = {distance:p.distance, angle:Math.random()*Math.PI*2, speed:0.001 + Math.random()*0.001};
+    mesh.position.set(p.distance,0,0);
+    scene.add(mesh);
+    planets.push(mesh);
+  }
 
   // Étoiles
   const starGeom = new THREE.BufferGeometry();
@@ -128,27 +108,26 @@ canvas { display: block; }
     positions.push((Math.random()-0.5)*2000);
   }
   starGeom.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
-  const stars = new THREE.Points(starGeom, new THREE.PointsMaterial({color:0xffffff}));
-  scene.add(stars);
+  scene.add(new THREE.Points(starGeom,new THREE.PointsMaterial({color:0xffffff})));
+
+  // Vaisseau
+  const ship = new THREE.Mesh(new THREE.ConeGeometry(1,3,8), new THREE.MeshPhongMaterial({color:0xff0000}));
+  ship.rotation.x = Math.PI/2;
+  scene.add(ship);
 
   // ================== Contrôles tactiles ==================
   let move = {x:0,y:0,up:false,down:false};
   const joy = document.getElementById('joystick');
   const joyInner = document.getElementById('joyInner');
-
   joy.addEventListener('touchstart', e=>e.preventDefault());
   joy.addEventListener('touchmove', e=>{
-    const touch = e.touches[0];
+    const t = e.touches[0];
     const rect = joy.getBoundingClientRect();
-    const dx = touch.clientX - (rect.left + rect.width/2);
-    const dy = touch.clientY - (rect.top + rect.height/2);
-    const max = rect.width/2;
-    move.x = Math.max(-1,Math.min(1,dx/max));
-    move.y = Math.max(-1,Math.min(1,-dy/max));
+    move.x = Math.max(-1,Math.min(1,(t.clientX-(rect.left+rect.width/2))/(rect.width/2)));
+    move.y = Math.max(-1,Math.min(1,-(t.clientY-(rect.top+rect.height/2))/(rect.height/2)));
     joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
   });
-  joy.addEventListener('touchend', e=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0px,0px)'; });
-
+  joy.addEventListener('touchend', e=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
   document.getElementById('btnUp').addEventListener('touchstart', ()=>move.up=true);
   document.getElementById('btnUp').addEventListener('touchend', ()=>move.up=false);
   document.getElementById('btnDown').addEventListener('touchstart', ()=>move.down=true);
@@ -159,10 +138,17 @@ canvas { display: block; }
   function animate(){
     requestAnimationFrame(animate);
 
+    // Orbites planètes
+    planets.forEach(p=>{
+      p.userData.angle += p.userData.speed;
+      p.position.x = Math.cos(p.userData.angle)*p.userData.distance;
+      p.position.z = Math.sin(p.userData.angle)*p.userData.distance;
+    });
+
+    // Pilotage vaisseau
     const speed=0.2, rotSpeed=0.05;
     ship.rotation.z -= move.x*rotSpeed;
     ship.rotation.x -= move.y*rotSpeed;
-
     const forward = new THREE.Vector3(0,0,-1).applyEuler(ship.rotation);
     velocity.add(forward.clone().multiplyScalar(move.y*speed));
     if(move.up) velocity.y+=speed*0.5;
@@ -170,11 +156,9 @@ canvas { display: block; }
     ship.position.add(velocity);
     velocity.multiplyScalar(0.95);
 
+    // Caméra suit
     camera.position.lerp(ship.position.clone().add(new THREE.Vector3(0,5,20).applyEuler(ship.rotation)),0.1);
     camera.lookAt(ship.position);
-
-    earth.position.x = 50*Math.cos(Date.now()*0.0005);
-    earth.position.z = 50*Math.sin(Date.now()*0.0005);
 
     renderer.render(scene,camera);
   }
