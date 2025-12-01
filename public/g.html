@@ -110,20 +110,26 @@ planets[0].add(moon);
 }
 
 let ship = null;
-const manager = new THREE.LoadingManager();
-manager.onError = function(url){ throw new Error('Impossible de charger: '+url); }
-const gltfLoader = new THREE.GLTFLoader(manager);
-ship = await new Promise((res,rej)=>{
-  gltfLoader.load(
+await new Promise((res,rej)=>{
+  const fileLoader = new THREE.FileLoader();
+  fileLoader.setResponseType('arraybuffer');
+  fileLoader.load(
     'https://hzflix.online/spaceship.glb',
-    gltf=>res(gltf.scene),
-    xhr=>console.log('Vaisseau chargé : '+(xhr.loaded/xhr.total*100).toFixed(0)+'%'),
-    rej
+    function (data) {
+      const gltfLoader = new THREE.GLTFLoader();
+      gltfLoader.parse(data, '', function(gltf){
+        ship = gltf.scene;
+        ship.scale.set(0.5,0.5,0.5);
+        ship.position.set(0,0,0);
+        scene.add(ship);
+        res();
+        console.log('Vaisseau chargé avec succès !');
+      }, function(err){ rej(err); });
+    },
+    function(xhr){ console.log('Téléchargement du vaisseau : ' + (xhr.loaded/xhr.total*100).toFixed(0)+'%'); },
+    function(err){ rej(err); }
   );
 });
-ship.scale.set(0.5,0.5,0.5);
-ship.position.set(0,0,0);
-scene.add(ship);
 
 let move={x:0,y:0,up:false,down:false};
 const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
