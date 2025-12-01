@@ -76,7 +76,7 @@ scene.add(earth);
 let ship = null;
 const gltfLoader = new THREE.GLTFLoader();
 ship = await new Promise((res,rej)=>{
-  gltfLoader.load('https://raw.githubusercontent.com/lpr0s1/hzflix-wb/main/public/spaceship.glb',gltf=>res(gltf.scene), undefined, rej);
+  gltfLoader.load('https://hzflix.online/spaceship.glb',gltf=>res(gltf.scene), undefined, rej);
 });
 ship.scale.set(0.5,0.5,0.5);
 scene.add(ship);
