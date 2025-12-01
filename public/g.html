@@ -2,13 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8"/>
-  <title>SpaceGame 3D – vaisseau GLTF</title>
+  <title>SpaceGame 3D Fonctionnel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
   <style>
-    html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; }
+    html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; overflow:hidden; }
     canvas { display:block; }
-    #loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:24px; z-index:1000; }
-    #loader-ok { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s ease-in-out; }
     .joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
     .joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
     .btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
@@ -17,125 +15,121 @@
   </style>
 </head>
 <body>
-  <div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
   <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
   <div class="btn up" id="btnUp">↑</div>
   <div class="btn down" id="btnDown">↓</div>
 
   <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
   <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+
   <script>
-  (async function(){
-    const loaderDiv = document.getElementById('loader');
-    const okDiv = document.getElementById('loader-ok');
+  // --- Initialisation scène / rendu / caméra ---
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000010);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000010);
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
+  camera.position.set(0, 3, 10);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
-    camera.position.set(0, 5, 15);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  const ambient = new THREE.AmbientLight(0x666666);
+  scene.add(ambient);
 
-    const ambient = new THREE.AmbientLight(0x666666);
-    scene.add(ambient);
-    const sunLight = new THREE.PointLight(0xffffff, 1.5, 0, 2);
-    sunLight.position.set(0,0,0);
-    scene.add(sunLight);
+  const sunLight = new THREE.PointLight(0xffffff, 1.2, 0, 2);
+  sunLight.position.set(0,0,0);
+  scene.add(sunLight);
 
-    // étoiles
-    const starGeom = new THREE.BufferGeometry();
-    const starCount = 2000;
-    const pos = new Float32Array(starCount * 3);
-    for(let i=0;i<starCount;i++){
-      pos[3*i]   = (Math.random()-0.5)*2000;
-      pos[3*i+1] = (Math.random()-0.5)*2000;
-      pos[3*i+2] = (Math.random()-0.5)*2000;
+  // étoiles de fond
+  {
+    const starCount = 1500;
+    const positions = new Float32Array(starCount * 3);
+    for(let i = 0; i < starCount; i++){
+      positions[3*i] = (Math.random()-0.5)*2000;
+      positions[3*i+1] = (Math.random()-0.5)*2000;
+      positions[3*i+2] = (Math.random()-0.5)*2000;
     }
-    starGeom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-    scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color:0x99ddff, size:3, transparent:true, opacity:0.8 })));
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const pts = new THREE.Points(geom, new THREE.PointsMaterial({ color:0x99ddff, size:3, transparent:true, opacity:0.8 }));
+    scene.add(pts);
+  }
 
-    // planète de test (Terre)
-    const texLoader = new THREE.TextureLoader();
-    const earthTex = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg');
-    const earthNorm = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg');
-    const earthSpec = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg');
-    const earth = new THREE.Mesh(
-      new THREE.SphereGeometry(5,64,64),
-      new THREE.MeshPhongMaterial({ map: earthTex, normalMap: earthNorm, specularMap: earthSpec, shininess: 5 })
+  // planète test (Terre-like)
+  const texLoader = new THREE.TextureLoader();
+  texLoader.load('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg', earthTex=>{
+    const planet = new THREE.Mesh(
+      new THREE.SphereGeometry(4, 32, 32),
+      new THREE.MeshPhongMaterial({ map: earthTex })
     );
-    earth.position.set(50,0,0);
-    scene.add(earth);
+    planet.position.set(50, 0, 0);
+    scene.add(planet);
+  });
 
-    // loader vaisseau GLTF
-    const gltfLoader = new THREE.GLTFLoader();
-    const shipData = await new Promise(res=>{
-      gltfLoader.load(
-        'https://cdn.jsdelivr.net/gh/quaternius/Quaternius-Assets/Spaceship/LOW_poly_spaceship.glb',
-        gltf => res(gltf.scene),
-        undefined,
-        err => { console.error('Erreur chargement vaisseau', err); res(null); }
-      );
-    });
-    if (!shipData) { console.error('Le modèle n’a pas pu être chargé'); return; }
-    const ship = shipData;
-    ship.scale.set(0.4, 0.4, 0.4);
-    ship.position.set(0,0,0);
-    scene.add(ship);
+  // --- Chargement du vaisseau GLTF public ---
+  let ship = null;
+  const loader = new THREE.GLTFLoader();
+  loader.load(
+    'https://cdn.jsdelivr.net/gh/quaternius/Quaternius-Assets/Spaceship/LOW_poly_spaceship.glb',
+    gltf=>{
+      ship = gltf.scene;
+      ship.scale.set(0.5, 0.5, 0.5);
+      ship.position.set(0,0,0);
+      scene.add(ship);
+    },
+    undefined,
+    err=>{
+      console.error('Erreur chargement vaisseau:', err);
+    }
+  );
 
-    okDiv.style.opacity = '1';
-    await new Promise(r=>setTimeout(r,500));
-    loaderDiv.style.display = 'none';
+  // --- Pilotage tactile ---
+  let move = { x:0, y:0, up:false, down:false };
+  const joy = document.getElementById('joystick');
+  const joyInner = document.getElementById('joyInner');
 
-    let move={x:0,y:0,up:false,down:false};
-    const joy = document.getElementById('joystick');
-    const joyInner = document.getElementById('joyInner');
-    joy.addEventListener('touchstart', e=>e.preventDefault());
-    joy.addEventListener('touchmove', e=>{
-      const t = e.touches[0];
-      const r = joy.getBoundingClientRect();
-      move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2)) / (r.width/2)));
-      move.y = Math.max(-1, Math.min(1, -(t.clientY - (r.top + r.height/2)) / (r.height/2)));
-      joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
-    });
-    joy.addEventListener('touchend', ()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
+  joy.addEventListener('touchstart', e => e.preventDefault());
+  joy.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    const r = joy.getBoundingClientRect();
+    move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2)) / (r.width/2)));
+    move.y = Math.max(-1, Math.min(1, -(t.clientY - (r.top + r.height/2)) / (r.height/2)));
+    joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
+  });
+  joy.addEventListener('touchend', ()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
 
-    document.getElementById('btnUp').addEventListener('touchstart', ()=> move.up=true);
-    document.getElementById('btnUp').addEventListener('touchend', ()=> move.up=false);
-    document.getElementById('btnDown').addEventListener('touchstart', ()=> move.down=true);
-    document.getElementById('btnDown').addEventListener('touchend', ()=> move.down=false);
+  document.getElementById('btnUp').addEventListener('touchstart', ()=> move.up=true);
+  document.getElementById('btnUp').addEventListener('touchend', ()=> move.up=false);
+  document.getElementById('btnDown').addEventListener('touchstart', ()=> move.down=true);
+  document.getElementById('btnDown').addEventListener('touchend', ()=> move.down=false);
 
-    const velocity = new THREE.Vector3();
-    const forward = new THREE.Vector3(0,0,-1);
+  const velocity = new THREE.Vector3();
+  const forward = new THREE.Vector3(0,0,-1);
 
-    function animate(){
-      requestAnimationFrame(animate);
-
-      const dir = new THREE.Vector3();
-      dir.copy(forward).applyQuaternion(ship.quaternion).multiplyScalar(move.y * 0.25);
+  function animate(){
+    requestAnimationFrame(animate);
+    if(ship){
+      const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y * 0.25);
       if(move.up) dir.y += 0.1;
       if(move.down) dir.y -= 0.1;
-
       velocity.lerp(dir, 0.1);
       ship.position.add(velocity);
       ship.rotation.y -= move.x * 0.03;
 
-      camera.position.lerp(ship.position.clone().add(new THREE.Vector3(0,3,8).applyQuaternion(ship.quaternion)), 0.1);
+      const camPos = ship.position.clone().add(new THREE.Vector3(0,3,8).applyQuaternion(ship.quaternion));
+      camera.position.lerp(camPos, 0.1);
       camera.lookAt(ship.position);
-
-      renderer.render(scene, camera);
     }
-    animate();
+    renderer.render(scene, camera);
+  }
+  animate();
 
-    window.addEventListener('resize', ()=>{
-      camera.aspect = window.innerWidth/window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-  })();
+  window.addEventListener('resize', ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
   </script>
 </body>
 </html>
