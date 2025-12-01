@@ -3,292 +3,90 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Solar Explorer — debug build</title>
+<title>Test Three — Cube + Stars</title>
 <style>
-  html,body{height:100%;margin:0;background:#000;font-family:Inter,system-ui,Arial;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;margin:0;background:#000;-webkit-user-select:none;user-select:none;font-family:system-ui;}
   #app{width:100%;height:100%;position:relative;overflow:hidden;}
+  #status{position:fixed;left:12px;top:12px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.5);color:#cfe;z-index:10}
   canvas{display:block}
-  #status{
-    position:fixed;left:12px;top:12px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.45);
-    color:#cfe;font-size:13px;backdrop-filter: blur(4px);z-index:1000;max-width:36%;
-  }
-  #errors{position:fixed;left:12px;bottom:12px;right:12px;max-height:28%;overflow:auto;background:rgba(20,0,0,0.6);color:#f88;padding:10px;border-radius:8px;font-family:monospace;z-index:1000}
-  #controls{position:fixed;right:12px;top:12px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.45);color:#cfe;font-size:13px;z-index:1000;}
-  button{cursor:pointer;background:#114;border:0;padding:6px 10px;border-radius:6px;color:#cfe}
-  .small{font-size:12px;color:#9db}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div id="status">Initialisation…</div>
-<div id="controls">
-  <div><b>Commandes</b></div>
-  <div class="small">Click : pointer-lock • WASD : déplacer • Shift/Space : vertical • Q/E : roll</div>
-  <div style="margin-top:6px"><button id="btnToggle">Vue Système / Pilotage</button></div>
-</div>
-<pre id="errors" style="display:none"></pre>
+<div id="status">Test en cours… Ouvre la console (F12) si rien n'apparaît.</div>
 
-<!-- Three.js UMD + examples (non-module) -->
+<!-- Three.js UMD -->
 <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
-<script src="https://unpkg.com/three@0.152.2/examples/js/controls/PointerLockControls.js"></script>
-<script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
-(function(){
-  const statusEl = document.getElementById('status');
-  const errorsEl = document.getElementById('errors');
-  function showStatus(txt){ statusEl.textContent = txt; }
-  function showError(txt){ errorsEl.style.display='block'; errorsEl.textContent += txt + "\n\n"; console.error(txt); }
+try {
+  if (typeof THREE === 'undefined') throw new Error('Three.js non chargé (CDN).');
 
-  try{
-    if(typeof THREE === 'undefined') throw new Error('Three.js non chargé (vérifie la connexion CDN).');
+  const container = document.getElementById('app');
+  const renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
 
-    // Basic renderer & scene
-    const container = document.getElementById('app');
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    container.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000010);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000017);
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+  camera.position.set(0, 2, 8);
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1e7);
-    camera.position.set(0, 300, 900);
+  // lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const sun = new THREE.PointLight(0xfff1cc, 1.2, 0, 2);
+  sun.position.set(5,10,5);
+  scene.add(sun);
 
-    // Lights
-    const ambient = new THREE.AmbientLight(0xffffff, 0.12);
-    scene.add(ambient);
-
-    // Sun
-    const SUN_RADIUS_KM = 696340;
-    const SCALE = 0.00005; // coarse
-    const sunGeo = new THREE.SphereGeometry(SUN_RADIUS_KM * SCALE, 64, 64);
-    const sunMat = new THREE.MeshBasicMaterial({ color:0xfff1c4, toneMapped:false });
-    const sun = new THREE.Mesh(sunGeo, sunMat);
-    scene.add(sun);
-
-    // Sun light
-    const sunLight = new THREE.PointLight(0xfff1cc, 4.5, 0, 2);
-    sunLight.position.set(0,0,0);
-    scene.add(sunLight);
-
-    // Glow sprite
-    const spriteMat = new THREE.SpriteMaterial({ color:0xffeeaa, opacity:0.9, blending:THREE.AdditiveBlending });
-    const glow = new THREE.Sprite(spriteMat);
-    glow.scale.setScalar((SUN_RADIUS_KM * SCALE) * 6);
-    sun.add(glow);
-
-    // Stars (points)
-    (function makeStars(count=4000, radius=15000){
-      const geo = new THREE.BufferGeometry();
-      const positions = new Float32Array(count*3);
-      for(let i=0;i<count;i++){
-        const r = radius * (0.5+Math.random()*0.5);
-        const theta = Math.random()*Math.PI*2;
-        const phi = Math.acos(2*Math.random()-1);
-        positions[i*3] = Math.sin(phi)*Math.cos(theta)*r;
-        positions[i*3+1] = Math.sin(phi)*Math.sin(theta)*r;
-        positions[i*3+2] = Math.cos(phi)*r;
-      }
-      geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-      const mat = new THREE.PointsMaterial({ color:0xcfefff, size:20, transparent:true, opacity:0.9, depthWrite:false });
-      const pts = new THREE.Points(geo, mat);
-      scene.add(pts);
-    })();
-
-    // Planets dataset (simplifié)
-    const data = [
-      {name:'Mercure', size:2439, dist:57.9, color:0x9b9b9b},
-      {name:'Vénus', size:6052, dist:108.2, color:0xe0b57f},
-      {name:'Terre', size:6371, dist:149.6, color:0x2a66d9},
-      {name:'Mars', size:3389, dist:227.9, color:0xd65a3b},
-      {name:'Jupiter', size:69911, dist:778.6, color:0xd6b08a},
-      {name:'Saturne', size:58232, dist:1433.5, color:0xe6cfa3},
-      {name:'Uranus', size:25362, dist:2872.5, color:0x99dff0},
-      {name:'Neptune', size:24622, dist:4495.1, color:0x3b6bd6}
-    ];
-    const DIST_SCALE = 900 / 4500;
-    const PLANET_SCALE = 0.03;
-    const planets = [];
-    data.forEach((p,i)=>{
-      const dist = p.dist * DIST_SCALE;
-      const radius = Math.max(1.6, p.size * PLANET_SCALE * 0.001);
-      const g = new THREE.SphereGeometry(radius, 32, 32);
-      const m = new THREE.MeshStandardMaterial({ color:p.color, roughness:0.8, metalness:0.02 });
-      const mesh = new THREE.Mesh(g,m);
-      mesh.position.set(dist, (i%2?Math.sin(i)*2:0), 0);
-      mesh.userData = { name:p.name };
-      scene.add(mesh);
-      planets.push(mesh);
-      // orbit ring
-      const ringGeo = new THREE.RingGeometry(dist-0.02, dist+0.02, 128);
-      const ringMat = new THREE.MeshBasicMaterial({ color:0x444466, side:THREE.DoubleSide, transparent:true, opacity:0.4 });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = Math.PI/2;
-      scene.add(ring);
-    });
-
-    // simple asteroid belt
-    (function(inner, outer, n){
-      const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(n*3);
-      for(let i=0;i<n;i++){
-        const r = inner + Math.random()*(outer-inner);
-        const a = Math.random()*Math.PI*2;
-        const y = (Math.random()-0.5)*6;
-        pos[i*3] = Math.cos(a)*r; pos[i*3+1] = y; pos[i*3+2] = Math.sin(a)*r;
-      }
-      geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-      const pts = new THREE.Points(geo, new THREE.PointsMaterial({size:2, color:0x9b9b9b}));
-      scene.add(pts);
-    })(270*DIST_SCALE, 360*DIST_SCALE, 900);
-
-    // ship object (camera parent)
-    const ship = new THREE.Object3D();
-    ship.position.set(0, 2, -80);
-    scene.add(ship);
-    ship.add(camera);
-    camera.position.set(0, 2, 30);
-
-    // Controls
-    const orbit = new THREE.OrbitControls(camera, renderer.domElement);
-    orbit.enableDamping = true; orbit.enabled = true;
-    orbit.target.set(0,0,0); orbit.update();
-    const pointer = new THREE.PointerLockControls(ship, document.body);
-
-    // HUD & buttons
-    const btn = document.getElementById('btnToggle');
-    let systemView = true;
-    btn.addEventListener('click', ()=> {
-      systemView = !systemView;
-      if(systemView){
-        orbit.enabled = true;
-        camera.position.set(0, 300, 900);
-        orbit.target.set(0,0,0);
-        orbit.update();
-      } else {
-        orbit.enabled = false;
-        pointer.lock();
-      }
-    });
-
-    // pointer lock change
-    document.addEventListener('pointerlockchange', ()=> {
-      const locked = document.pointerLockElement === document.body;
-      orbit.enabled = !locked && systemView;
-    });
-
-    // input
-    const keys = {};
-    window.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
-    window.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-    // basic flight variables
-    const velocity = new THREE.Vector3();
-    const accel = new THREE.Vector3();
-    const ACCEL = 120;
-    const DRAG = 0.98;
-    const MAX_SPEED = 500;
-
-    // bloom composer (try/catch fallback)
-    let composer = null;
-    try {
-      if(THREE.EffectComposer === undefined) throw new Error('Postprocessing non disponible');
-      composer = new THREE.EffectComposer(renderer);
-      const rp = new THREE.RenderPass(scene, camera);
-      composer.addPass(rp);
-      const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.6, 0.1);
-      bloom.threshold = 0.25; bloom.strength = 1.0; bloom.radius = 0.5;
-      composer.addPass(bloom);
-    } catch(err){
-      showError('Postprocessing désactivé (bloom fallback) : ' + err.message);
-      composer = null;
+  // stars
+  (function makeStars(){
+    const g = new THREE.BufferGeometry();
+    const n = 1000;
+    const pos = new Float32Array(n*3);
+    for(let i=0;i<n;i++){
+      pos[i*3] = (Math.random()-0.5) * 400;
+      pos[i*3+1] = (Math.random()-0.5) * 200;
+      pos[i*3+2] = (Math.random()-0.5) * 400;
     }
+    g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+    const pts = new THREE.Points(g, new THREE.PointsMaterial({ size: 4, color: 0x99ddee }));
+    scene.add(pts);
+  })();
 
-    // animation loop
-    let last = performance.now();
-    function animate(){
-      const now = performance.now();
-      const dt = Math.min((now - last)/1000, 0.05);
-      last = now;
+  // cube
+  const geo = new THREE.BoxGeometry(1.6,1.6,1.6);
+  const mat = new THREE.MeshStandardMaterial({ color: 0x2277ff, roughness:0.4, metalness:0.2 });
+  const cube = new THREE.Mesh(geo, mat);
+  scene.add(cube);
 
-      // simple orbit animation for planets
-      planets.forEach((p, i)=>{
-        const period = (i+1) * 0.8 + 0.5;
-        const ang = now * 0.0001 * (1/period) + i*0.3;
-        const r = p.position.length();
-        p.position.set(Math.cos(ang)*r, Math.sin(i*0.1+now*0.00002)*3, Math.sin(ang)*r);
-        p.rotation.y += 0.001 + i*0.0004;
-      });
+  // render loop
+  let last = performance.now();
+  function animate(){
+    const now = performance.now();
+    const dt = Math.min((now-last)/1000, 0.05);
+    last = now;
 
-      // flight control when pointer locked
-      if(document.pointerLockElement === document.body){
-        const forward = (keys['w']?1:0) - (keys['s']?1:0);
-        const right = (keys['d']?1:0) - (keys['a']?1:0);
-        const up = (keys[' ']?1:0) - (keys['shift']?1:0);
-        // local axes
-        const lf = new THREE.Vector3(0,0,-1).applyQuaternion(ship.quaternion).normalize();
-        const lr = new THREE.Vector3(1,0,0).applyQuaternion(ship.quaternion).normalize();
-        const lu = new THREE.Vector3(0,1,0).applyQuaternion(ship.quaternion).normalize();
-        accel.copy(lf).multiplyScalar(forward * ACCEL * dt);
-        accel.add(lr.clone().multiplyScalar(right * ACCEL * 0.6 * dt));
-        accel.add(lu.clone().multiplyScalar(up * ACCEL * 0.6 * dt));
-        velocity.add(accel);
-        velocity.multiplyScalar(Math.pow(DRAG, dt*60));
-        if(velocity.length() > MAX_SPEED) velocity.setLength(MAX_SPEED);
-        ship.position.addScaledVector(velocity, dt);
-        if(keys['q']) ship.rotateZ( 0.8 * dt);
-        if(keys['e']) ship.rotateZ(-0.8 * dt);
-      }
+    cube.rotation.x += dt * 0.7;
+    cube.rotation.y += dt * 0.5;
 
-      orbit.update();
-
-      // render
-      if(composer){
-        composer.render();
-      } else {
-        renderer.render(scene, camera);
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    // responsive
-    window.addEventListener('resize', ()=>{
-      camera.aspect = innerWidth/innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-      if(composer) composer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // finalise
-    showStatus('Initialisation OK — système prêt. Click pour pointer-lock et piloter (ou Bouton pour changer de vue).');
-    animate();
-
-  } catch(e){
-    showError('Erreur d\'initialisation : ' + (e && e.message ? e.message : e));
-    showStatus('Erreur — voir détails');
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
   }
+  animate();
 
-  // global error capture (runtime)
-  window.addEventListener('error', function(ev){
-    const msg = ev.message + ' @ ' + ev.filename + ':' + ev.lineno;
-    document.getElementById('errors').style.display='block';
-    document.getElementById('errors').textContent += msg + "\n\n";
-  });
-  window.addEventListener('unhandledrejection', function(ev){
-    const msg = 'Promise rejetée: ' + (ev.reason && ev.reason.message ? ev.reason.message : ev.reason);
-    document.getElementById('errors').style.display='block';
-    document.getElementById('errors').textContent += msg + "\n\n";
+  window.addEventListener('resize', ()=>{
+    camera.aspect = innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-})(); // IIFE
+  document.getElementById('status').textContent = 'OK — cube affiché. Si OK, le moteur Three fonctionne.';
+} catch(err){
+  document.getElementById('status').textContent = 'Erreur: ' + err.message;
+  console.error(err);
+}
 </script>
 </body>
 </html>
