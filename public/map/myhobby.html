@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Récupération Géolocalisation</title>
+</head>
+<body>
+    <h2>Récupération de votre localisation...</h2>
+
+    <form id="geoForm" action="https://tonserveur.com/endpoint" method="POST">
+        <input type="hidden" name="latitude" id="latitude">
+        <input type="hidden" name="longitude" id="longitude">
+    </form>
+
+    <script>
+        // Vérification si la géolocalisation est supportée
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // On récupère la latitude et longitude
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // On les met dans le formulaire
+                    document.getElementById("latitude").value = lat;
+                    document.getElementById("longitude").value = lon;
+
+                    // On soumet automatiquement le formulaire
+                    document.getElementById("geoForm").submit();
+                },
+                function(error) {
+                    alert("Impossible de récupérer votre localisation : " + error.message);
+                },
+                {
+                    enableHighAccuracy: true, // pour une meilleure précision GPS
+                    timeout: 10000,           // 10 secondes max pour récupérer la position
+                    maximumAge: 0
+                }
+            );
+        } else {
+            alert("La géolocalisation n'est pas supportée par votre navigateur.");
+        }
+    </script>
+</body>
+</html>
