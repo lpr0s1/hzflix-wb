@@ -5,17 +5,25 @@
 <title>SpaceGame Mobile 3D</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
 <style>
-html, body { margin:0; padding:0; width:100%; height:100%; background:black; overflow:hidden; }
+html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; overflow:hidden; }
 canvas { display:block; }
-#errorBox { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:#ff5555; font-family:sans-serif; font-size:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:20px; box-sizing:border-box; }
+#loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:24px; z-index:1000; }
+#loader-ok { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s ease-in-out; }
+#errorBox { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:#ff5555; font-family:sans-serif; font-size:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:20px; box-sizing:border-box; display:none; }
 #errorBox pre { white-space: pre-wrap; text-align:left; max-width:80%; }
+.joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
+.joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
+.btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
+.btn.up { bottom:100px; right:20px; }
+.btn.down { bottom:20px; right:20px; }
 </style>
 </head>
 <body>
-<div id="errorBox" style="display:none;">
-  <h2>Une erreur est survenue</h2>
-  <pre id="errorText"></pre>
-</div>
+<div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
+<div id="errorBox"><h2>Une erreur est survenue</h2><pre id="errorText"></pre></div>
+<div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
+<div class="btn up" id="btnUp">↑</div>
+<div class="btn down" id="btnDown">↓</div>
 
 <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
@@ -29,31 +37,69 @@ function showError(err){
   text.textContent = err.stack || err.message || err;
 }
 
-window.addEventListener('error', e => {
-  e.preventDefault();
-  showError(e.error || e.message || 'Erreur inconnue');
-});
-
-window.addEventListener('unhandledrejection', e => {
-  e.preventDefault();
-  showError(e.reason || 'Promise rejetée');
-});
+window.addEventListener('error', e => { e.preventDefault(); showError(e.error || e.message || 'Erreur inconnue'); });
+window.addEventListener('unhandledrejection', e => { e.preventDefault(); showError(e.reason || 'Promise rejetée'); });
 
 (async function(){
 try {
+const loaderDiv = document.getElementById('loader');
+const okDiv = document.getElementById('loader-ok');
+
+const textureUrls = {
+  sun:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/sun.jpg',
+  earth:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg',
+  earth_clouds:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_clouds_1024.png',
+  earth_specular:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg',
+  earth_normal:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg',
+  moon:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/moon_1024.jpg',
+  mars:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/mars_1024.jpg'
+};
+const textures = {};
+const texLoader = new THREE.TextureLoader();
+const promises = [];
+for(const key in textureUrls){
+  promises.push(new Promise(res=>{
+    texLoader.load(textureUrls[key], tex=>{textures[key]=tex; res();}, undefined, ()=>res());
+  }));
+}
+await Promise.all(promises);
+
+okDiv.style.opacity='1';
+await new Promise(r=>setTimeout(r,500));
+loaderDiv.style.display='none';
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000010);
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
 camera.position.set(0,5,15);
-
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
 const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0,0); scene.add(sunLight);
+const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({map:textures.sun})); scene.add(sun);
 
-// étoiles
+const planets = [];
+function addPlanet(name,radius,distance,texture){
+  const geom = new THREE.SphereGeometry(radius,32,32);
+  const mat = new THREE.MeshPhongMaterial({map:texture});
+  const mesh = new THREE.Mesh(geom,mat);
+  mesh.userData = { distance };
+  mesh.position.set(distance,0,0);
+  scene.add(mesh);
+  planets.push(mesh);
+}
+addPlanet('Earth',2,40,textures.earth);
+addPlanet('Mars',1.5,60,textures.mars);
+
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.02,32,32), new THREE.MeshPhongMaterial({map:textures.earth_clouds,transparent:true,depthWrite:false}));
+planets[0].add(clouds);
+
+const moon = new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16), new THREE.MeshPhongMaterial({map:textures.moon}));
+moon.position.set(4,0,0);
+planets[0].add(moon);
+
 {
   const g=new THREE.BufferGeometry();
   const n=2000;
@@ -63,59 +109,45 @@ const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0
   scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8})));
 }
 
-// Planète exemple
-const texLoader = new THREE.TextureLoader();
-const earthTexture = await new Promise((res,rej)=>{
-  texLoader.load('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg',res,undefined,rej);
-});
-const earth = new THREE.Mesh(new THREE.SphereGeometry(2,32,32), new THREE.MeshPhongMaterial({map:earthTexture}));
-earth.position.set(40,0,0);
-scene.add(earth);
-
-// --- Vaisseau ---
 let ship = null;
-const gltfLoader = new THREE.GLTFLoader();
+const manager = new THREE.LoadingManager();
+manager.onError = function(url){ throw new Error('Impossible de charger: '+url); }
+const gltfLoader = new THREE.GLTFLoader(manager);
 ship = await new Promise((res,rej)=>{
-  gltfLoader.load('https://hzflix.online/spaceship.glb',gltf=>res(gltf.scene), undefined, rej);
+  gltfLoader.load(
+    'https://raw.githubusercontent.com/lpr0s1/hzflix-wb/main/public/spaceship.glb',
+    gltf=>res(gltf.scene),
+    xhr=>console.log('Vaisseau chargé : '+(xhr.loaded/xhr.total*100).toFixed(0)+'%'),
+    rej
+  );
 });
 ship.scale.set(0.5,0.5,0.5);
+ship.position.set(0,0,0);
 scene.add(ship);
 
-// --- Pilotage tactile ---
 let move={x:0,y:0,up:false,down:false};
-const joy=document.createElement('div');
-joy.className='joystick';
-const joyInner=document.createElement('div');
-joyInner.className='joystick-inner';
-joy.appendChild(joyInner);
-document.body.appendChild(joy);
-
-function createBtn(className,text,onStart,onEnd){
-  const btn=document.createElement('div');
-  btn.className='btn '+className;
-  btn.textContent=text;
-  document.body.appendChild(btn);
-  btn.addEventListener('touchstart',onStart);
-  btn.addEventListener('touchend',onEnd);
-}
-createBtn('up','↑',()=>move.up=true,()=>move.up=false);
-createBtn('down','↓',()=>move.down=true,()=>move.down=false);
-
+const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
 joy.addEventListener('touchstart',e=>e.preventDefault());
 joy.addEventListener('touchmove',e=>{
-  const t=e.touches[0];
-  const r=joy.getBoundingClientRect();
+  const t=e.touches[0]; const r=joy.getBoundingClientRect();
   move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
   move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
   joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
 });
 joy.addEventListener('touchend',()=>{move.x=0; move.y=0; joyInner.style.transform='translate(0,0)';});
 
-let velocity = new THREE.Vector3();
-const forward = new THREE.Vector3(0,0,-1);
+document.getElementById('btnUp').addEventListener('touchstart',()=> move.up=true);
+document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false);
+document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
+document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
+
+let velocity=new THREE.Vector3(); const forward=new THREE.Vector3(0,0,-1);
 
 function animate(){
   requestAnimationFrame(animate);
+  const time = Date.now()*0.0001;
+  planets.forEach((p,i)=>{ const d=p.userData.distance; p.position.x=Math.cos(time*(i+1)*5)*d; p.position.z=Math.sin(time*(i+1)*5)*d; });
+  if(clouds) clouds.rotation.y +=0.002;
   if(ship){
     const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y*0.2);
     if(move.up) dir.y+=0.1;
