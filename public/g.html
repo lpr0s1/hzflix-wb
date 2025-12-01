@@ -1,135 +1,128 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/>
-  <title>SpaceGame 3D Fonctionnel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-  <style>
-    html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; overflow:hidden; }
-    canvas { display:block; }
-    .joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
-    .joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
-    .btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
-    .btn.up { bottom:100px; right:20px; }
-    .btn.down { bottom:20px; right:20px; }
-  </style>
+<meta charset="utf-8"/>
+<title>SpaceGame Mobile 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+<style>
+html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; overflow:hidden; }
+canvas { display:block; }
+.joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
+.joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
+.btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
+.btn.up { bottom:100px; right:20px; }
+.btn.down { bottom:20px; right:20px; }
+</style>
 </head>
 <body>
-  <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
-  <div class="btn up" id="btnUp">↑</div>
-  <div class="btn down" id="btnDown">↓</div>
 
-  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+<div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
+<div class="btn up" id="btnUp">↑</div>
+<div class="btn down" id="btnDown">↓</div>
 
-  <script>
-  // --- Initialisation scène / rendu / caméra ---
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000010);
+<script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
 
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
-  camera.position.set(0, 3, 10);
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000010);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.set(0, 5, 15);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const ambient = new THREE.AmbientLight(0x666666);
+scene.add(ambient);
+
+const sunLight = new THREE.PointLight(0xffffff,2,0,2);
+sunLight.position.set(0,0,0);
+scene.add(sunLight);
+
+// étoiles
+{
+  const starCount = 2000;
+  const positions = new Float32Array(starCount*3);
+  for(let i=0;i<starCount;i++){
+    positions[3*i] = (Math.random()-0.5)*2000;
+    positions[3*i+1] = (Math.random()-0.5)*2000;
+    positions[3*i+2] = (Math.random()-0.5)*2000;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  const pts = new THREE.Points(geom,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8}));
+  scene.add(pts);
+}
+
+// planète test
+const texLoader = new THREE.TextureLoader();
+texLoader.load('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg', tex=>{
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), new THREE.MeshPhongMaterial({map:tex}));
+  earth.position.set(50,0,0);
+  scene.add(earth);
+});
+
+let ship = null;
+const loader = new THREE.GLTFLoader();
+loader.load(
+  '/spaceship.glb',
+  gltf => {
+    ship = gltf.scene;
+    ship.scale.set(0.5,0.5,0.5);
+    ship.position.set(0,0,0);
+    scene.add(ship);
+  },
+  undefined,
+  err => console.error('Erreur chargement vaisseau:',err)
+);
+
+let move={x:0,y:0,up:false,down:false};
+const joy=document.getElementById('joystick');
+const joyInner=document.getElementById('joyInner');
+
+joy.addEventListener('touchstart',e=>e.preventDefault());
+joy.addEventListener('touchmove',e=>{
+  const t=e.touches[0];
+  const r=joy.getBoundingClientRect();
+  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
+  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
+  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+});
+joy.addEventListener('touchend',()=>{move.x=0; move.y=0; joyInner.style.transform='translate(0,0)';});
+
+document.getElementById('btnUp').addEventListener('touchstart',()=> move.up=true);
+document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false);
+document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
+document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
+
+let velocity = new THREE.Vector3();
+const forward = new THREE.Vector3(0,0,-1);
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(ship){
+    const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y*0.2);
+    if(move.up) dir.y+=0.1;
+    if(move.down) dir.y-=0.1;
+    velocity.lerp(dir,0.05);
+    ship.position.add(velocity);
+    ship.rotation.y -= move.x*0.03;
+
+    const camPos = ship.position.clone().add(new THREE.Vector3(0,3,8).applyQuaternion(ship.quaternion));
+    camera.position.lerp(camPos,0.1);
+    camera.lookAt(ship.position);
+  }
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  const ambient = new THREE.AmbientLight(0x666666);
-  scene.add(ambient);
-
-  const sunLight = new THREE.PointLight(0xffffff, 1.2, 0, 2);
-  sunLight.position.set(0,0,0);
-  scene.add(sunLight);
-
-  // étoiles de fond
-  {
-    const starCount = 1500;
-    const positions = new Float32Array(starCount * 3);
-    for(let i = 0; i < starCount; i++){
-      positions[3*i] = (Math.random()-0.5)*2000;
-      positions[3*i+1] = (Math.random()-0.5)*2000;
-      positions[3*i+2] = (Math.random()-0.5)*2000;
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
-    const pts = new THREE.Points(geom, new THREE.PointsMaterial({ color:0x99ddff, size:3, transparent:true, opacity:0.8 }));
-    scene.add(pts);
-  }
-
-  // planète test (Terre-like)
-  const texLoader = new THREE.TextureLoader();
-  texLoader.load('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg', earthTex=>{
-    const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(4, 32, 32),
-      new THREE.MeshPhongMaterial({ map: earthTex })
-    );
-    planet.position.set(50, 0, 0);
-    scene.add(planet);
-  });
-
-  // --- Chargement du vaisseau GLTF public ---
-  let ship = null;
-  const loader = new THREE.GLTFLoader();
-  loader.load(
-    'https://cdn.jsdelivr.net/gh/quaternius/Quaternius-Assets/Spaceship/LOW_poly_spaceship.glb',
-    gltf=>{
-      ship = gltf.scene;
-      ship.scale.set(0.5, 0.5, 0.5);
-      ship.position.set(0,0,0);
-      scene.add(ship);
-    },
-    undefined,
-    err=>{
-      console.error('Erreur chargement vaisseau:', err);
-    }
-  );
-
-  // --- Pilotage tactile ---
-  let move = { x:0, y:0, up:false, down:false };
-  const joy = document.getElementById('joystick');
-  const joyInner = document.getElementById('joyInner');
-
-  joy.addEventListener('touchstart', e => e.preventDefault());
-  joy.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    const r = joy.getBoundingClientRect();
-    move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2)) / (r.width/2)));
-    move.y = Math.max(-1, Math.min(1, -(t.clientY - (r.top + r.height/2)) / (r.height/2)));
-    joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
-  });
-  joy.addEventListener('touchend', ()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
-
-  document.getElementById('btnUp').addEventListener('touchstart', ()=> move.up=true);
-  document.getElementById('btnUp').addEventListener('touchend', ()=> move.up=false);
-  document.getElementById('btnDown').addEventListener('touchstart', ()=> move.down=true);
-  document.getElementById('btnDown').addEventListener('touchend', ()=> move.down=false);
-
-  const velocity = new THREE.Vector3();
-  const forward = new THREE.Vector3(0,0,-1);
-
-  function animate(){
-    requestAnimationFrame(animate);
-    if(ship){
-      const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y * 0.25);
-      if(move.up) dir.y += 0.1;
-      if(move.down) dir.y -= 0.1;
-      velocity.lerp(dir, 0.1);
-      ship.position.add(velocity);
-      ship.rotation.y -= move.x * 0.03;
-
-      const camPos = ship.position.clone().add(new THREE.Vector3(0,3,8).applyQuaternion(ship.quaternion));
-      camera.position.lerp(camPos, 0.1);
-      camera.lookAt(ship.position);
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  window.addEventListener('resize', ()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-  </script>
+});
+</script>
 </body>
 </html>
