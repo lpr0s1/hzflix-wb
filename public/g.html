@@ -2,21 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame - Vaisseau Réel</title>
+<title>SpaceGame Mobile 3D Vaisseau Réel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
 <style>
-html,body{margin:0;height:100%;background:#000;color:#fff;font-family:sans-serif}
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;user-select:none}
 canvas{display:block}
-#loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:10}
-#loader-ok{margin-top:12px;color:#0f0;opacity:0;transition:opacity .3s}
-.joystick{position:absolute;left:20px;bottom:20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none}
-.joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-.btn{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.12);text-align:center;line-height:60px;right:20px}
-.btn.up{bottom:100px}.btn.down{bottom:20px}
+#loader{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;color:#fff;font-family:sans-serif;font-size:20px;z-index:1000}
+#loader-ok{margin-top:12px;font-size:28px;color:#0f0;opacity:0;transition:opacity .35s}
+.joystick{position:absolute;bottom:20px;left:20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.08);touch-action:none;-webkit-tap-highlight-color:transparent}
+.joystick-inner{position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.22);top:25px;left:25px;pointer-events:none;transform:translate(0,0);transition:transform .05s linear}
+.btn{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.12);text-align:center;line-height:60px;font-weight:bold;color:white;touch-action:none}
+.btn.up{bottom:100px;right:20px}
+.btn.down{bottom:20px;right:20px}
+#log{position:fixed;left:10px;top:10px;max-width:40%;max-height:40%;overflow:auto;background:rgba(0,0,0,0.6);padding:8px;border-radius:6px;font-size:12px;color:#ddd;z-index:1001}
 </style>
 </head>
 <body>
-<div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
+<div id="loader">Chargement des ressources...<div id="loader-status">Initialisation...</div><div id="loader-ok">✔ OK</div></div>
+<div id="log"></div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
@@ -25,94 +28,203 @@ canvas{display:block}
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
 
-(async ()=> {
-  const loaderDiv = document.getElementById('loader');
-  const okDiv = document.getElementById('loader-ok');
+const logEl = document.getElementById('log');
+function log(...a){ console.log(...a); logEl.innerHTML += '<div>'+a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' ')+'</div>'; logEl.scrollTop = logEl.scrollHeight; }
+function setStatus(s){ document.getElementById('loader-status').innerText = s; log('STATUS:', s); }
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000010);
-  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-  camera.position.set(0,3,10);
+(async function(){
+  try{
+    setStatus('Création scène et renderer');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000010);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
+    camera.position.set(0,5,15);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-  renderer.setSize(innerWidth, innerHeight);
-  document.body.appendChild(renderer.domElement);
+    const ambient = new THREE.AmbientLight(0x666666);
+    scene.add(ambient);
+    const sunLight = new THREE.PointLight(0xffffff,2,0,2);
+    sunLight.position.set(0,0,0);
+    scene.add(sunLight);
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc}));
+    scene.add(sun);
 
-  scene.add(new THREE.AmbientLight(0x666666));
-  const sun = new THREE.PointLight(0xffffff,2); sun.position.set(0,0,0); scene.add(sun);
+    const texLoader = new THREE.TextureLoader();
+    let earthTex=null, earthSpec=null, earthNorm=null, cloudsTex=null, moonTex=null;
+    try{
+      setStatus('Chargement textures');
+      earthTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+      earthSpec = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
+      earthNorm = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
+      cloudsTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
+      moonTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg');
+      log('Textures chargées');
+    }catch(e){
+      log('Erreur textures', e.message || e);
+    }
 
-  const texLoader = new THREE.TextureLoader();
-  // textures en fallback si besoin
-  let earth, clouds, moon;
-  try {
-    const earthTex = await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
-    earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), new THREE.MeshPhongMaterial({map:earthTex}));
-    earth.position.set(50,0,0); scene.add(earth);
-    clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), new THREE.MeshPhongMaterial({transparent:true,opacity:0.9}));
+    const earthMat = new THREE.MeshPhongMaterial({map:earthTex||null, specularMap:earthSpec||null, normalMap:earthNorm||null, shininess:5});
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), earthMat);
+    earth.position.set(50,0,0);
+    scene.add(earth);
+
+    const cloudsMat = new THREE.MeshPhongMaterial({map:cloudsTex||null, transparent:true, depthWrite:false, opacity:0.9});
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), cloudsMat);
     earth.add(clouds);
-    moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({color:0x888888}));
-    moon.position.set(8,0,0); earth.add(moon);
-  } catch(e){ console.warn('Textures failed, continuing without them', e); }
 
-  // VRAI modèle GLB public
-  const shipUrl = 'https://rawcdn.githack.com/zgk11/3D-model/main/ship.glb';
-  const loader = new GLTFLoader();
-  let ship = null;
-  try {
-    const gltf = await new Promise((res, rej) => loader.load(shipUrl, res, undefined, rej));
-    ship = gltf.scene;
-    ship.scale.set(0.6,0.6,0.6);
-    ship.position.set(0,0,0);
-    scene.add(ship);
-  } catch(err) {
-    console.error('GLTF load failed, using fallback geometry', err);
-    const mat = new THREE.MeshStandardMaterial({color:0x88ccff});
-    ship = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.ConeGeometry(0.8,2.5,16), mat); body.rotation.x = Math.PI/2;
-    ship.add(body, new THREE.Mesh(new THREE.BoxGeometry(0.1,1.2,0.6), mat), new THREE.Mesh(new THREE.BoxGeometry(0.1,1.2,0.6), mat));
-    scene.add(ship);
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:moonTex||null}));
+    moon.position.set(8,0,0);
+    earth.add(moon);
+
+    const starGeom = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const positions = new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){
+      positions[i*3] = (Math.random()-0.5)*2000;
+      positions[i*3+1] = (Math.random()-0.5)*2000;
+      positions[i*3+2] = (Math.random()-0.5)*2000;
+    }
+    starGeom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const stars = new THREE.Points(starGeom, new THREE.PointsMaterial({color:0x99ddff,size:1.5,sizeAttenuation:true,transparent:true,opacity:0.9}));
+    scene.add(stars);
+
+    const gltfLoader = new GLTFLoader();
+    const shipUrls = [
+      'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb',
+      'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
+      'https://rawcdn.githack.com/zgk11/3D-model/main/ship.glb'
+    ];
+
+    function withTimeout(p,ms,label){
+      return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout '+label)),ms))]);
+    }
+
+    async function testUrl(url,timeoutMs=8000){
+      try{
+        const head = await withTimeout(fetch(url,{method:'HEAD',mode:'cors'}), timeoutMs, 'HEAD '+url);
+        if(!head.ok) throw new Error('HEAD status '+head.status);
+        return true;
+      }catch(e){
+        try{
+          const get = await withTimeout(fetch(url,{method:'GET',mode:'cors'}), timeoutMs, 'GET '+url);
+          if(!get.ok) throw new Error('GET status '+get.status);
+          return true;
+        }catch(e2){
+          throw e2;
+        }
+      }
+    }
+
+    let ship = null;
+    let lastErr = null;
+    for(let i=0;i<shipUrls.length;i++){
+      const url = shipUrls[i];
+      try{
+        setStatus('Vérification modèle '+(i+1)+'/'+shipUrls.length);
+        await testUrl(url,9000);
+        setStatus('Chargement modèle '+(i+1)+'/'+shipUrls.length);
+        const gltf = await withTimeout(new Promise((res,rej)=>gltfLoader.load(url,res, xhr=>{ if(xhr && xhr.total) setStatus('Téléchargement modèle: '+Math.round(xhr.loaded/xhr.total*100)+'%'); }, rej)),20000,'GLTF '+url);
+        ship = gltf.scene;
+        ship.scale.set(0.6,0.6,0.6);
+        ship.position.set(0,0,0);
+        ship.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
+        scene.add(ship);
+        log('Modèle chargé depuis', url);
+        break;
+      }catch(err){
+        lastErr = err;
+        log('Échec chargement depuis', url, err.message || err);
+      }
+    }
+
+    if(!ship){
+      setStatus('Aucun modèle accessible, fallback activé');
+      const fallbackMat = new THREE.MeshStandardMaterial({color:0x88ccff,metalness:0.6,roughness:0.4});
+      ship = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.ConeGeometry(0.8,2.5,16), fallbackMat);
+      body.rotation.x = Math.PI/2;
+      const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.1,1.2,0.6), fallbackMat);
+      wingL.position.set(-0.9,0,0);
+      const wingR = wingL.clone();
+      wingR.position.set(0.9,0,0);
+      ship.add(body,wingL,wingR);
+      ship.position.set(0,0,0);
+      scene.add(ship);
+      log('Vaisseau fallback créé');
+    }
+
+    document.getElementById('loader-ok').style.opacity = '1';
+    setTimeout(()=>document.getElementById('loader').style.display='none',350);
+
+    let move = {x:0,y:0,up:false,down:false};
+    const joy = document.getElementById('joystick');
+    const joyInner = document.getElementById('joyInner');
+
+    function handlePointerMove(clientX,clientY){
+      const r = joy.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      move.x = Math.max(-1,Math.min(1,(clientX - cx)/(r.width/2)));
+      move.y = Math.max(-1,Math.min(1,-(clientY - cy)/(r.height/2)));
+      joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
+    }
+
+    joy.addEventListener('touchstart',e=>{ e.preventDefault(); handlePointerMove(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
+    joy.addEventListener('touchmove',e=>{ e.preventDefault(); handlePointerMove(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
+    joy.addEventListener('touchend',()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; },{passive:false});
+    joy.addEventListener('pointerdown',e=>{ joy.setPointerCapture(e.pointerId); handlePointerMove(e.clientX,e.clientY); });
+    window.addEventListener('pointermove',e=>{ if(e.buttons) handlePointerMove(e.clientX,e.clientY); });
+    window.addEventListener('pointerup',()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
+
+    const btnUp = document.getElementById('btnUp');
+    const btnDown = document.getElementById('btnDown');
+    btnUp.addEventListener('touchstart',()=>move.up=true,{passive:true});
+    btnUp.addEventListener('touchend',()=>move.up=false,{passive:true});
+    btnDown.addEventListener('touchstart',()=>move.down=true,{passive:true});
+    btnDown.addEventListener('touchend',()=>move.down=false,{passive:true});
+    btnUp.addEventListener('mousedown',()=>move.up=true);
+    btnUp.addEventListener('mouseup',()=>move.up=false);
+    btnDown.addEventListener('mousedown',()=>move.down=true);
+    btnDown.addEventListener('mouseup',()=>move.down=false);
+
+    let velocity = new THREE.Vector3();
+    let direction = new THREE.Vector3();
+    const forward = new THREE.Vector3(0,0,-1);
+
+    function animate(){
+      requestAnimationFrame(animate);
+      const t = Date.now()*0.00005;
+      earth.position.x = 50*Math.cos(t);
+      earth.position.z = 50*Math.sin(t);
+      clouds.rotation.y += 0.0006;
+      moon.rotation.y += 0.0012;
+      direction.set(0,0,0);
+      const localForward = forward.clone().applyEuler(ship.rotation);
+      direction.add(localForward.multiplyScalar(move.y*0.25));
+      if(move.up) direction.y += 0.12;
+      if(move.down) direction.y -= 0.12;
+      velocity.lerp(direction,0.08);
+      ship.position.add(velocity);
+      ship.rotation.y -= move.x*0.04;
+      const desiredCam = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
+      camera.position.lerp(desiredCam,0.12);
+      camera.lookAt(ship.position);
+      renderer.render(scene,camera);
+    }
+    animate();
+
+    window.addEventListener('resize',()=>{ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+    log('Initialisation terminée');
+    if(lastErr) log('Dernière erreur:', lastErr.message || lastErr);
+  }catch(err){
+    log('Erreur critique', err.message || err);
+    document.getElementById('loader-status').innerText = 'Erreur: ' + (err.message || err);
+    console.error(err);
   }
-
-  okDiv.style.opacity = '1';
-  setTimeout(()=> loaderDiv.style.display='none', 350);
-
-  // contrôles tactiles simples
-  let move = {x:0,y:0,up:false,down:false};
-  const joy = document.getElementById('joystick'), inner = document.getElementById('joyInner');
-  function pointerToMove(cx,cy){
-    const r = joy.getBoundingClientRect();
-    const mx = (cx - (r.left + r.width/2)) / (r.width/2);
-    const my = - (cy - (r.top + r.height/2)) / (r.height/2);
-    move.x = Math.max(-1,Math.min(1,mx)); move.y = Math.max(-1,Math.min(1,my));
-    inner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
-  }
-  joy.addEventListener('pointerdown', e=>{ joy.setPointerCapture(e.pointerId); pointerToMove(e.clientX,e.clientY); });
-  window.addEventListener('pointermove', e=>{ if(e.buttons) pointerToMove(e.clientX,e.clientY); });
-  window.addEventListener('pointerup', ()=>{ move.x=0; move.y=0; inner.style.transform='translate(0,0)'; });
-
-  document.getElementById('btnUp').addEventListener('pointerdown', ()=> move.up=true);
-  document.getElementById('btnUp').addEventListener('pointerup', ()=> move.up=false);
-  document.getElementById('btnDown').addEventListener('pointerdown', ()=> move.down=true);
-  document.getElementById('btnDown').addEventListener('pointerup', ()=> move.down=false);
-
-  const velocity = new THREE.Vector3(), direction = new THREE.Vector3(), forward = new THREE.Vector3(0,0,-1);
-  function animate(){
-    requestAnimationFrame(animate);
-    if(earth){ const t = Date.now()*0.00005; earth.position.x = 50*Math.cos(t); earth.position.z = 50*Math.sin(t); }
-    direction.set(0,0,0);
-    direction.add(forward.clone().applyEuler(ship.rotation).multiplyScalar(move.y*0.25));
-    if(move.up) direction.y += 0.12; if(move.down) direction.y -= 0.12;
-    velocity.lerp(direction, 0.08); ship.position.add(velocity);
-    ship.rotation.y -= move.x * 0.04;
-    camera.position.lerp(ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation)), 0.12);
-    camera.lookAt(ship.position);
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
-
 })();
 </script>
 </body>
