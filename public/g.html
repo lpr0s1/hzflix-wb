@@ -2,15 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame Mobile 3D</title>
+<title>SpaceGame Mobile 3D Vaisseau Réel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
 <style>
-html, body { margin:0; padding:0; width:100%; height:100%; background:black; overflow:hidden; }
+html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; }
 canvas { display:block; }
 #loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:24px; z-index:1000; }
 #loader-ok { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s ease-in-out; }
-#errorBox { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:#ff5555; font-family:sans-serif; font-size:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:20px; box-sizing:border-box; display:none; }
-#errorBox pre { white-space: pre-wrap; text-align:left; max-width:80%; }
 .joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
 .joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
 .btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
@@ -20,7 +18,6 @@ canvas { display:block; }
 </head>
 <body>
 <div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
-<div id="errorBox"><h2>Une erreur est survenue</h2><pre id="errorText"></pre></div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
@@ -29,153 +26,129 @@ canvas { display:block; }
 <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
-function showError(err){
-  console.error(err);
-  const box = document.getElementById('errorBox');
-  const text = document.getElementById('errorText');
-  box.style.display='flex';
-  text.textContent = err.stack || err.message || err;
-}
-
-window.addEventListener('error', e => { e.preventDefault(); showError(e.error || e.message || 'Erreur inconnue'); });
-window.addEventListener('unhandledrejection', e => { e.preventDefault(); showError(e.reason || 'Promise rejetée'); });
-
 (async function(){
 try {
-const loaderDiv = document.getElementById('loader');
-const okDiv = document.getElementById('loader-ok');
+    const loaderDiv = document.getElementById('loader');
+    const okDiv = document.getElementById('loader-ok');
 
-const textureUrls = {
-  sun:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/sun.jpg',
-  earth:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg',
-  earth_clouds:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_clouds_1024.png',
-  earth_specular:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg',
-  earth_normal:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg',
-  moon:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/moon_1024.jpg',
-  mars:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/mars_1024.jpg'
-};
-const textures = {};
-const texLoader = new THREE.TextureLoader();
-const promises = [];
-for(const key in textureUrls){
-  promises.push(new Promise(res=>{
-    texLoader.load(textureUrls[key], tex=>{textures[key]=tex; res();}, undefined, ()=>res());
-  }));
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000010);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
+    camera.position.set(0,5,15);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
+    const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0,0); scene.add(sunLight);
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({color:0xffffcc})); scene.add(sun);
+
+    // Planète Terre
+    const texLoader = new THREE.TextureLoader();
+    const earthTex = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg');
+    const earthSpec = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg');
+    const earthNorm = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg');
+    const cloudsTex = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_clouds_1024.png');
+    const moonTex = await texLoader.loadAsync('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/moon_1024.jpg');
+
+    const earthMat = new THREE.MeshPhongMaterial({map:earthTex, specularMap:earthSpec, normalMap:earthNorm, shininess:5});
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), earthMat);
+    earth.position.set(50,0,0); scene.add(earth);
+
+    const cloudsMat = new THREE.MeshPhongMaterial({map:cloudsTex, transparent:true, depthWrite:false});
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.05,64,64), cloudsMat); earth.add(clouds);
+
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(1.3,32,32), new THREE.MeshPhongMaterial({map:moonTex}));
+    moon.position.set(8,0,0); earth.add(moon);
+
+    // Étoiles
+    const starGeom = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const positions = new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){
+        positions[i*3] = (Math.random()-0.5)*2000;
+        positions[i*3+1] = (Math.random()-0.5)*2000;
+        positions[i*3+2] = (Math.random()-0.5)*2000;
+    }
+    starGeom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const stars = new THREE.Points(starGeom,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8}));
+    scene.add(stars);
+
+    // Chargement du vaisseau 3D public
+    const shipLoader = new THREE.GLTFLoader();
+    const shipUrl = 'https://rawcdn.githack.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb'; // Remplace par un vrai vaisseau si disponible
+    let ship;
+    await new Promise((resolve,reject)=>{
+        shipLoader.load(shipUrl, function(gltf){
+            ship = gltf.scene;
+            ship.scale.set(0.5,0.5,0.5);
+            ship.position.set(0,0,0);
+            scene.add(ship);
+            resolve();
+        }, undefined, function(err){
+            reject(err);
+        });
+    });
+
+    okDiv.style.opacity='1';
+    await new Promise(r=>setTimeout(r,500));
+    loaderDiv.style.display='none';
+
+    let move={x:0,y:0,up:false,down:false};
+    const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
+    joy.addEventListener('touchstart',e=>e.preventDefault());
+    joy.addEventListener('touchmove',e=>{
+        const t=e.touches[0];
+        const r=joy.getBoundingClientRect();
+        move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
+        move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
+        joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+    });
+    joy.addEventListener('touchend',()=>{move.x=0; move.y=0; joyInner.style.transform='translate(0,0)';});
+    document.getElementById('btnUp').addEventListener('touchstart',()=> move.up=true);
+    document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false);
+    document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
+    document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
+
+    let velocity = new THREE.Vector3();
+    let direction = new THREE.Vector3();
+    const forward = new THREE.Vector3(0,0,-1);
+
+    function animate(){
+        requestAnimationFrame(animate);
+
+        earth.position.x = 50*Math.cos(Date.now()*0.00005);
+        earth.position.z = 50*Math.sin(Date.now()*0.00005);
+
+        direction.set(0,0,0);
+        direction.add(forward.clone().applyEuler(ship.rotation).multiplyScalar(move.y*0.2));
+        if(move.up) direction.y +=0.1;
+        if(move.down) direction.y -=0.1;
+
+        velocity.lerp(direction,0.05);
+        ship.position.add(velocity);
+
+        ship.rotation.y -= move.x*0.03;
+
+        camera.position.lerp(ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation)),0.1);
+        camera.lookAt(ship.position);
+
+        renderer.render(scene,camera);
+    }
+    animate();
+
+    window.addEventListener('resize',()=>{
+        camera.aspect = window.innerWidth/window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+}catch(err){
+    alert("Erreur: "+err.message);
+    console.error(err);
 }
-await Promise.all(promises);
-
-okDiv.style.opacity='1';
-await new Promise(r=>setTimeout(r,500));
-loaderDiv.style.display='none';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000010);
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
-camera.position.set(0,5,15);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
-const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0,0); scene.add(sunLight);
-const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({map:textures.sun})); scene.add(sun);
-
-const planets = [];
-function addPlanet(name,radius,distance,texture){
-  const geom = new THREE.SphereGeometry(radius,32,32);
-  const mat = new THREE.MeshPhongMaterial({map:texture});
-  const mesh = new THREE.Mesh(geom,mat);
-  mesh.userData = { distance };
-  mesh.position.set(distance,0,0);
-  scene.add(mesh);
-  planets.push(mesh);
-}
-addPlanet('Earth',2,40,textures.earth);
-addPlanet('Mars',1.5,60,textures.mars);
-
-const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.02,32,32), new THREE.MeshPhongMaterial({map:textures.earth_clouds,transparent:true,depthWrite:false}));
-planets[0].add(clouds);
-
-const moon = new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16), new THREE.MeshPhongMaterial({map:textures.moon}));
-moon.position.set(4,0,0);
-planets[0].add(moon);
-
-{
-  const g=new THREE.BufferGeometry();
-  const n=2000;
-  const pos=new Float32Array(n*3);
-  for(let i=0;i<n;i++){ pos[i*3]=(Math.random()-0.5)*2000; pos[i*3+1]=(Math.random()-0.5)*2000; pos[i*3+2]=(Math.random()-0.5)*2000; }
-  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8})));
-}
-
-let ship = null;
-await new Promise((res,rej)=>{
-  const fileLoader = new THREE.FileLoader();
-  fileLoader.setResponseType('arraybuffer');
-  fileLoader.load(
-    'spaceship.glb',
-    function (data) {
-      const gltfLoader = new THREE.GLTFLoader();
-      gltfLoader.parse(data, '', function(gltf){
-        ship = gltf.scene;
-        ship.scale.set(0.5,0.5,0.5);
-        ship.position.set(0,0,0);
-        scene.add(ship);
-        res();
-        console.log('Vaisseau chargé avec succès !');
-      }, function(err){ rej(err); });
-    },
-    function(xhr){ console.log('Téléchargement du vaisseau : ' + (xhr.loaded/xhr.total*100).toFixed(0)+'%'); },
-    function(err){ rej(err); }
-  );
-});
-
-let move={x:0,y:0,up:false,down:false};
-const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
-joy.addEventListener('touchstart',e=>e.preventDefault());
-joy.addEventListener('touchmove',e=>{
-  const t=e.touches[0]; const r=joy.getBoundingClientRect();
-  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
-  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
-  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
-});
-joy.addEventListener('touchend',()=>{move.x=0; move.y=0; joyInner.style.transform='translate(0,0)';});
-
-document.getElementById('btnUp').addEventListener('touchstart',()=> move.up=true);
-document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false);
-document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
-document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
-
-let velocity=new THREE.Vector3(); const forward=new THREE.Vector3(0,0,-1);
-
-function animate(){
-  requestAnimationFrame(animate);
-  const time = Date.now()*0.0001;
-  planets.forEach((p,i)=>{ const d=p.userData.distance; p.position.x=Math.cos(time*(i+1)*5)*d; p.position.z=Math.sin(time*(i+1)*5)*d; });
-  if(clouds) clouds.rotation.y +=0.002;
-  if(ship){
-    const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y*0.2);
-    if(move.up) dir.y+=0.1;
-    if(move.down) dir.y-=0.1;
-    velocity.lerp(dir,0.05);
-    ship.position.add(velocity);
-    ship.rotation.y -= move.x*0.03;
-    const camPos = ship.position.clone().add(new THREE.Vector3(0,3,8).applyQuaternion(ship.quaternion));
-    camera.position.lerp(camPos,0.1);
-    camera.lookAt(ship.position);
-  }
-  renderer.render(scene,camera);
-}
-animate();
-
-window.addEventListener('resize',()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-} catch(e){ showError(e); }
 })();
 </script>
 </body>
