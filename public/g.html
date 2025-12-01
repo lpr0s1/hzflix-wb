@@ -7,6 +7,8 @@
 <style>
 html, body { margin:0; padding:0; width:100%; height:100%; background:black; -webkit-user-select:none; user-select:none; overflow:hidden; }
 canvas { display:block; }
+#loader { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#fff; font-family:sans-serif; font-size:24px; z-index:1000; }
+#loader-ok { margin-top:20px; font-size:32px; color:#0f0; opacity:0; transition:opacity 0.5s ease-in-out; }
 .joystick { position:absolute; bottom:20px; left:20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); touch-action:none; }
 .joystick-inner { position:absolute; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3); top:25px; left:25px; pointer-events:none; }
 .btn { position:absolute; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; line-height:60px; font-weight:bold; color:white; touch-action:none; }
@@ -15,73 +17,111 @@ canvas { display:block; }
 </style>
 </head>
 <body>
-
+<div id="loader">Chargement des ressources...<div id="loader-ok">✔ OK</div></div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
 
 <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
-
 <script>
+(async function(){
+const loaderDiv = document.getElementById('loader');
+const okDiv = document.getElementById('loader-ok');
+
+// --- Chargement des textures ---
+const textureUrls = {
+  sun:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/sun.jpg',
+  mercury:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/mercury.jpg',
+  venus:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/venus.jpg',
+  earth:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg',
+  earth_clouds:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_clouds_1024.png',
+  earth_specular:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_specular_2048.jpg',
+  earth_normal:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_normal_2048.jpg',
+  moon:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/moon_1024.jpg',
+  mars:'https://cdn.apewebapps.com/threejs/163/examples/textures/planets/mars_1024.jpg'
+};
+const textures = {};
+const texLoader = new THREE.TextureLoader();
+const promises = [];
+for(const key in textureUrls){
+  promises.push(new Promise(res=>{
+    texLoader.load(textureUrls[key], tex=>{textures[key]=tex; res();}, undefined, ()=>res());
+  }));
+}
+await Promise.all(promises);
+okDiv.style.opacity='1';
+await new Promise(r=>setTimeout(r,500));
+loaderDiv.style.display='none';
+
+// --- Scène / Caméra / Rendu ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000010);
-
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0, 5, 15);
-
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
+camera.position.set(0,5,15);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const ambient = new THREE.AmbientLight(0x666666);
-scene.add(ambient);
+// Lumières
+const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
+const sunLight = new THREE.PointLight(0xffffff,2,0,2); sunLight.position.set(0,0,0); scene.add(sunLight);
 
-const sunLight = new THREE.PointLight(0xffffff,2,0,2);
-sunLight.position.set(0,0,0);
-scene.add(sunLight);
+// Soleil
+const sun = new THREE.Mesh(new THREE.SphereGeometry(8,32,32), new THREE.MeshBasicMaterial({map:textures.sun})); scene.add(sun);
+
+// Planètes
+const planets = [];
+function addPlanet(name, radius, distance, texture){
+  const geom = new THREE.SphereGeometry(radius,32,32);
+  const mat = new THREE.MeshPhongMaterial({map:texture});
+  const mesh = new THREE.Mesh(geom,mat);
+  mesh.userData = { distance };
+  mesh.position.set(distance,0,0);
+  scene.add(mesh);
+  planets.push(mesh);
+}
+addPlanet('Mercury',0.5,15,textures.mercury);
+addPlanet('Venus',1.2,25,textures.venus);
+addPlanet('Earth',2,40,textures.earth);
+addPlanet('Mars',1.5,60,textures.mars);
+
+// Nuage de la Terre
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.02,32,32), new THREE.MeshPhongMaterial({map:textures.earth_clouds,transparent:true,depthWrite:false}));
+planets[2].add(clouds);
+
+// Lune
+const moon = new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16), new THREE.MeshPhongMaterial({map:textures.moon}));
+moon.position.set(4,0,0);
+planets[2].add(moon);
 
 // étoiles
 {
-  const starCount = 2000;
-  const positions = new Float32Array(starCount*3);
-  for(let i=0;i<starCount;i++){
-    positions[3*i] = (Math.random()-0.5)*2000;
-    positions[3*i+1] = (Math.random()-0.5)*2000;
-    positions[3*i+2] = (Math.random()-0.5)*2000;
+  const g=new THREE.BufferGeometry();
+  const n=2000;
+  const pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    pos[i*3]=(Math.random()-0.5)*2000;
+    pos[i*3+1]=(Math.random()-0.5)*2000;
+    pos[i*3+2]=(Math.random()-0.5)*2000;
   }
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
-  const pts = new THREE.Points(geom,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8}));
-  scene.add(pts);
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x99ddff,size:4,transparent:true,opacity:0.8})));
 }
 
-// planète test
-const texLoader = new THREE.TextureLoader();
-texLoader.load('https://cdn.apewebapps.com/threejs/163/examples/textures/planets/earth_atmos_2048.jpg', tex=>{
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(5,64,64), new THREE.MeshPhongMaterial({map:tex}));
-  earth.position.set(50,0,0);
-  scene.add(earth);
+// --- Vaisseau ---
+let ship = null;
+const gltfLoader = new THREE.GLTFLoader();
+gltfLoader.load('/spaceship.glb',gltf=>{
+  ship = gltf.scene;
+  ship.scale.set(0.5,0.5,0.5);
+  ship.position.set(0,0,0);
+  scene.add(ship);
 });
 
-let ship = null;
-const loader = new THREE.GLTFLoader();
-loader.load(
-  '/spaceship.glb',
-  gltf => {
-    ship = gltf.scene;
-    ship.scale.set(0.5,0.5,0.5);
-    ship.position.set(0,0,0);
-    scene.add(ship);
-  },
-  undefined,
-  err => console.error('Erreur chargement vaisseau:',err)
-);
-
+// --- Pilotage tactile ---
 let move={x:0,y:0,up:false,down:false};
-const joy=document.getElementById('joystick');
-const joyInner=document.getElementById('joyInner');
-
+const joy=document.getElementById('joystick'); const joyInner=document.getElementById('joyInner');
 joy.addEventListener('touchstart',e=>e.preventDefault());
 joy.addEventListener('touchmove',e=>{
   const t=e.touches[0];
@@ -97,11 +137,22 @@ document.getElementById('btnUp').addEventListener('touchend',()=> move.up=false)
 document.getElementById('btnDown').addEventListener('touchstart',()=> move.down=true);
 document.getElementById('btnDown').addEventListener('touchend',()=> move.down=false);
 
-let velocity = new THREE.Vector3();
-const forward = new THREE.Vector3(0,0,-1);
+let velocity=new THREE.Vector3();
+const forward=new THREE.Vector3(0,0,-1);
 
+// --- Animation ---
 function animate(){
   requestAnimationFrame(animate);
+
+  // rotation planètes
+  const time = Date.now()*0.0001;
+  planets.forEach((p,i)=>{
+    const d = p.userData.distance;
+    p.position.x = Math.cos(time*(i+1)*5)*d;
+    p.position.z = Math.sin(time*(i+1)*5)*d;
+    if(p.name==='Earth' && clouds) clouds.rotation.y +=0.002;
+  });
+
   if(ship){
     const dir = forward.clone().applyQuaternion(ship.quaternion).multiplyScalar(move.y*0.2);
     if(move.up) dir.y+=0.1;
@@ -114,6 +165,7 @@ function animate(){
     camera.position.lerp(camPos,0.1);
     camera.lookAt(ship.position);
   }
+
   renderer.render(scene,camera);
 }
 animate();
@@ -123,6 +175,7 @@ window.addEventListener('resize',()=>{
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+})();
 </script>
 </body>
 </html>
