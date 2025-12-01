@@ -114,7 +114,7 @@ await new Promise((res,rej)=>{
   const fileLoader = new THREE.FileLoader();
   fileLoader.setResponseType('arraybuffer');
   fileLoader.load(
-    '/spaceship.glb',
+    'spaceship.glb',
     function (data) {
       const gltfLoader = new THREE.GLTFLoader();
       gltfLoader.parse(data, '', function(gltf){
