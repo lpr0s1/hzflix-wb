@@ -2,63 +2,340 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame - Vaisseau amélioré</title>
+<title>SpaceGame Procedural Ship - Galaxies</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <style>
-html,body{margin:0;height:100%;background:#000;overflow:hidden;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#000;user-select:none}
 canvas{display:block}
 #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,Arial;z-index:10}
-.joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:20}
+.joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none}
 .joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-.btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:20}
+.btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff}
 .btn.up{bottom:96px}.btn.down{bottom:16px}
+#galaxyLabel{position:fixed;left:50%;transform:translateX(-50%);top:16px;color:#fff;padding:8px 12px;background:rgba(0,0,0,0.35);border-radius:8px;font-family:system-ui,Arial;z-index:9}
 </style>
 </head>
 <body>
 <div id="loader">Chargement...</div>
+<div id="galaxyLabel">Galaxie 1</div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-import { RoundedBoxGeometry } from 'https://unpkg.com/three@0.152.2/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { SubdivisionModifier } from 'https://unpkg.com/three@0.152.2/examples/jsm/modifiers/SubdivisionModifier.js';
-const loaderEl=document.getElementById('loader');
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x000010);
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,5000);
-camera.position.set(0,4,12);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-renderer.setSize(innerWidth,innerHeight);
-document.body.appendChild(renderer.domElement);
-const ambient=new THREE.AmbientLight(0x666666);scene.add(ambient);
-const sun=new THREE.PointLight(0xffffff,2);sun.position.set(0,0,0);scene.add(sun);
-const sunMesh=new THREE.Mesh(new THREE.SphereGeometry(6,32,32),new THREE.MeshBasicMaterial({color:0xffffcc}));scene.add(sunMesh);
-const texLoader=new THREE.TextureLoader();
-const earthTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg').catch(()=>null);
-const cloudsTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png').catch(()=>null);
-const moonTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg').catch(()=>null);
-const earth=new THREE.Mesh(new THREE.SphereGeometry(4.5,64,64),new THREE.MeshStandardMaterial({map:earthTex,metalness:0.1,roughness:0.8}));
-earth.position.set(40,0,0);scene.add(earth);
-const clouds=new THREE.Mesh(new THREE.SphereGeometry(4.55,64,64),new THREE.MeshStandardMaterial({map:cloudsTex,transparent:true,depthWrite:false,opacity:0.9}));earth.add(clouds);
-const moon=new THREE.Mesh(new THREE.SphereGeometry(1.1,32,32),new THREE.MeshStandardMaterial({map:moonTex}));moon.position.set(7,0,0);earth.add(moon);
-(function(){const g=new THREE.BufferGeometry();const n=1800;const p=new Float32Array(n*3);for(let i=0;i<n;i++){p[i*3]=(Math.random()-0.5)*2000;p[i*3+1]=(Math.random()-0.5)*2000;p[i*3+2]=(Math.random()-0.5)*2000;}g.setAttribute('position',new THREE.BufferAttribute(p,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x99ddff,size:1.2,transparent:true,opacity:0.9})));})();
-function makeFuselage(){const pts=[];pts.push(new THREE.Vector2(0.0,0.0));pts.push(new THREE.Vector2(0.6,0.0));pts.push(new THREE.Vector2(0.9,0.6));pts.push(new THREE.Vector2(1.0,1.2));pts.push(new THREE.Vector2(0.9,1.8));pts.push(new THREE.Vector2(0.6,2.2));pts.push(new THREE.Vector2(0.3,2.6));pts.push(new THREE.Vector2(0.0,3.0));const geo=new THREE.LatheGeometry(pts,64);const mat=new THREE.MeshStandardMaterial({color:0x2b6cff,metalness:0.6,roughness:0.25,clearcoat:0.2});const mesh=new THREE.Mesh(geo,mat);mesh.rotation.z=Math.PI;mesh.scale.set(1.2,1.2,1.2);return mesh}
-function makeNose(){const geo=new THREE.CapsuleGeometry(0.45,0.6,8,16);const mat=new THREE.MeshStandardMaterial({color:0x1f3bff,metalness:0.7,roughness:0.2});const m=new THREE.Mesh(geo,mat);m.rotation.x=Math.PI/2;return m}
-function makeCockpit(){const geo=new RoundedBoxGeometry(1.0,0.6,1.2,8,0.18);const mat=new THREE.MeshPhysicalMaterial({color:0x0b2bff,transmission:0.7,transparent:true,opacity:0.95,metalness:0.05,roughness:0.1,clearcoat:0.2});const mesh=new THREE.Mesh(geo,mat);mesh.position.set(0,0.6,0.2);return mesh}
-function makeWing(){const shape=new THREE.Shape();shape.moveTo(0,0);shape.lineTo(2.2,0);shape.quadraticCurveTo(2.6,0.2,2.4,0.6);shape.lineTo(0.6,0.4);shape.quadraticCurveTo(0.2,0.2,0,0);const extrudeSettings={depth:0.12,bevelEnabled:true,bevelThickness:0.02,bevelSize:0.04,bevelSegments:2};const geo=new THREE.ExtrudeGeometry(shape,extrudeSettings);geo.rotateX(Math.PI/2);const mat=new THREE.MeshStandardMaterial({color:0x2233ff,metalness:0.6,roughness:0.25});const mesh=new THREE.Mesh(geo,mat);mesh.scale.set(0.6,0.6,0.6);return mesh}
-function makeEngine(){const body=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.9,24),new THREE.MeshStandardMaterial({color:0x111111,metalness:0.9,roughness:0.15}));body.rotation.x=Math.PI/2;const ring=new THREE.Mesh(new THREE.TorusGeometry(0.32,0.05,12,32),new THREE.MeshBasicMaterial({color:0xffa500}));ring.rotation.x=Math.PI/2;ring.position.set(0,0.45,0);const group=new THREE.Group();group.add(body,ring);return group}
-function makeFin(){const geo=new THREE.BoxGeometry(0.08,0.8,0.6);const mat=new THREE.MeshStandardMaterial({color:0x2233ff,metalness:0.6,roughness:0.25});const m=new THREE.Mesh(geo,mat);m.rotation.x=0.18;return m}
-function createShip(){const g=new THREE.Group();const fus=makeFuselage();fus.position.set(0,0,0);g.add(fus);const nose=makeNose();nose.position.set(0,0.2,2.6);g.add(nose);const cockpit=makeCockpit();cockpit.position.set(0,0.6,0.6);g.add(cockpit);const wingL=makeWing();wingL.position.set(-1.1,-0.1,0.2);wingL.rotation.y=Math.PI*0.08;wingL.rotation.z=0.12;g.add(wingL);const wingR=wingL.clone();wingR.position.set(1.1,-0.1,0.2);wingR.rotation.y=-Math.PI*0.08;wingR.rotation.z=-0.12;g.add(wingR);const engineL=makeEngine();engineL.position.set(-0.6,-0.9,-0.6);g.add(engineL);const engineR=engineL.clone();engineR.position.set(0.6,-0.9,-0.6);g.add(engineR);const fin=makeFin();fin.position.set(0,-1.1,-0.2);g.add(fin);const sub=new SubdivisionModifier(2);const smoothFuselage=fus.geometry.clone();sub.modify(smoothFuselage);fus.geometry=smoothFuselage;return g}
-const ship=createShip();ship.position.set(0,0,0);scene.add(ship);
-const exhaustCount=120;const exhaustPos=new Float32Array(exhaustCount*3);for(let i=0;i<exhaustCount;i++){exhaustPos[i*3]=(Math.random()-0.5)*0.18;exhaustPos[i*3+1]=-1.6-Math.random()*0.8;exhaustPos[i*3+2]=(Math.random()-0.5)*0.18}const exhaustGeo=new THREE.BufferGeometry();exhaustGeo.setAttribute('position',new THREE.BufferAttribute(exhaustPos,3));const exhaustMat=new THREE.PointsMaterial({color:0xffb366,size:0.06,transparent:true,opacity:0.9,depthWrite:false});const exhaust=new THREE.Points(exhaustGeo,exhaustMat);ship.add(exhaust);
-let move={x:0,y:0,up:false,down:false};const joy=document.getElementById('joystick');const joyInner=document.getElementById('joyInner');joy.addEventListener('touchstart',e=>e.preventDefault());joy.addEventListener('touchmove',e=>{const t=e.touches[0];const r=joy.getBoundingClientRect();move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;});joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
-let velocity=new THREE.Vector3();let direction=new THREE.Vector3();const forward=new THREE.Vector3(0,0,-1);
-function animate(){requestAnimationFrame(animate);const t=Date.now()*0.00005;earth.position.x=40*Math.cos(t);earth.position.z=40*Math.sin(t);clouds.rotation.y+=0.0006;moon.rotation.y+=0.0012;direction.set(0,0,0);const localF=forward.clone().applyEuler(ship.rotation);direction.add(localF.multiplyScalar(move.y*0.25));if(move.up)direction.y+=0.12;if(move.down)direction.y-=0.12;velocity.lerp(direction,0.08);ship.position.add(velocity);ship.rotation.y-=move.x*0.04;const power=Math.min(1,Math.abs(move.y));exhaust.material.size=0.03+power*0.12;exhaust.material.opacity=0.25+power*0.75;const arr=exhaustGeo.attributes.position.array;for(let i=0;i<arr.length/3;i++){const idx=i*3;arr[idx]+= (Math.random()-0.5)*0.002;arr[idx+1]-=0.002-Math.random()*0.004;arr[idx+2]+=(Math.random()-0.5)*0.002;if(arr[idx+1]<-3.0)arr[idx+1]=-1.6-Math.random()*0.8}exhaustGeo.attributes.position.needsUpdate=true;const desired=ship.position.clone().add(new THREE.Vector3(0,3.2,8).applyEuler(ship.rotation));camera.position.lerp(desired,0.12);camera.lookAt(ship.position);renderer.render(scene,camera)}
-animate();
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+const loaderEl = document.getElementById('loader');
+const galaxyLabel = document.getElementById('galaxyLabel');
+
+// textures (best-effort load, fallback null)
+const texUrls = {
+  earth:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+  clouds:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
+  moon:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg'
+};
+const texLoader = new THREE.TextureLoader();
+async function loadSafe(url){ try{return await texLoader.loadAsync(url);}catch(e){return null;} }
+const [earthTex,cloudsTex,moonTex] = await Promise.all([loadSafe(texUrls.earth),loadSafe(texUrls.clouds),loadSafe(texUrls.moon)]);
 loaderEl.style.display='none';
+
+// SCENE, CAMERA, RENDERER
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000010);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 10000);
+camera.position.set(0,4,12);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// LIGHTS
+scene.add(new THREE.AmbientLight(0x666666));
+let sun = new THREE.PointLight(0xffffff,2);
+sun.position.set(0,0,0);
+scene.add(sun);
+
+// central star (visual)
+let starMesh = new THREE.Mesh(new THREE.SphereGeometry(6,32,32), new THREE.MeshBasicMaterial({color:0xffffcc}));
+scene.add(starMesh);
+
+// Earth + moon (example planet)
+const earth = new THREE.Mesh(new THREE.SphereGeometry(4.5,48,48), new THREE.MeshPhongMaterial({map:earthTex, shininess:5}));
+earth.position.set(40,0,0);
+scene.add(earth);
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(4.55,48,48), new THREE.MeshPhongMaterial({map:cloudsTex, transparent:true, depthWrite:false, opacity:0.9}));
+earth.add(clouds);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(1.1,24,24), new THREE.MeshPhongMaterial({map:moonTex}));
+moon.position.set(7,0,0);
+earth.add(moon);
+
+// STARFIELDS & DUST (multi-layer points for depth + twinkle)
+let starFields = [];
+function makeStarField(count, radiusMin, radiusMax, sizeMin, sizeMax, color) {
+  const g = new THREE.BufferGeometry();
+  const positions = new Float32Array(count*3);
+  const sizes = new Float32Array(count);
+  for(let i=0;i<count;i++){
+    const r = radiusMin + Math.random()*(radiusMax-radiusMin);
+    const theta = Math.random()*Math.PI*2;
+    const phi = (Math.random()-0.5)*Math.PI;
+    positions[i*3] = Math.cos(theta)*Math.cos(phi)*r;
+    positions[i*3+1] = Math.sin(phi)*r;
+    positions[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
+    sizes[i] = sizeMin + Math.random()*(sizeMax-sizeMin);
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  g.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+  const mat = new THREE.PointsMaterial({color: color, size: (sizeMin+sizeMax)/2, transparent:true, opacity:0.9, depthWrite:false});
+  const points = new THREE.Points(g, mat);
+  scene.add(points);
+  starFields.push({points,mat,g});
+}
+makeStarField(1200, 600, 2200, 0.4, 1.8, 0x99ddff); // distant stars
+makeStarField(600, 200, 900, 0.8, 2.6, 0xffffff);    // mid stars
+makeStarField(400, 80, 400, 1.2, 3.2, 0xfff0aa);     // near dust/sparks
+
+// PLANETARY SYSTEMS (procedural extra planets)
+let extraPlanets = [];
+function generateExtraPlanets(count){
+  // remove old
+  extraPlanets.forEach(p => { scene.remove(p.mesh); if(p.ring) scene.remove(p.ring); });
+  extraPlanets = [];
+  const planetGeo = new THREE.SphereGeometry(1, 20, 20);
+  for(let i=0;i<count;i++){
+    const size = 0.6 + Math.random()*5; // radius
+    const geom = new THREE.SphereGeometry(Math.max(0.4,size), 18, 18);
+    const color = new THREE.Color().setHSL(Math.random(), 0.4+Math.random()*0.6, 0.25+Math.random()*0.45);
+    const mat = new THREE.MeshStandardMaterial({color: color, metalness: 0.05, roughness: 0.6});
+    const mesh = new THREE.Mesh(geom, mat);
+    // distribute in a torus-ish region around galaxy center
+    const dist = 50 + Math.random()*900;
+    const angle = Math.random()*Math.PI*2;
+    const height = (Math.random()-0.5)*200;
+    mesh.position.set(Math.cos(angle)*dist, height, Math.sin(angle)*dist);
+    mesh.userData = {orbitSpeed: (0.0001 + Math.random()*0.001)* (Math.random()>0.5?1:-1), angle, dist, height};
+    // optional ring
+    let ring = null;
+    if(Math.random() < 0.25){
+      const ringGeo = new THREE.RingGeometry(size*0.9, size*1.6, 64);
+      const ringMat = new THREE.MeshBasicMaterial({color:0xaaaaaa, side:THREE.DoubleSide, opacity:0.6, transparent:true});
+      ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI/2;
+      ring.position.copy(mesh.position);
+    }
+    scene.add(mesh);
+    if(ring) scene.add(ring);
+    extraPlanets.push({mesh,ring});
+  }
+}
+
+// initial generation: ~30 planets
+generateExtraPlanets(30);
+
+// SHIP assembly (gray)
+function assembleShip(){
+  const group=new THREE.Group();
+  const bodyMat=new THREE.MeshStandardMaterial({color:0x8a8f92,metalness:0.8,roughness:0.22}); // grey
+  const body=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.2,24),bodyMat);
+  body.rotation.x=Math.PI/2;
+  group.add(body);
+  const glass=new THREE.Mesh(new THREE.SphereGeometry(0.42,18,18),new THREE.MeshPhysicalMaterial({color:0x222831,transmission:0.6,transparent:true,opacity:0.95,roughness:0.1}));
+  glass.position.set(0,0.45,0.6);
+  group.add(glass);
+  const wingMat=bodyMat.clone();
+  const wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,1.2),wingMat);
+  wingL.position.set(-0.9,0,-0.2);
+  wingL.rotation.z=0.06;
+  const wingR=wingL.clone();
+  wingR.position.set(0.9,0,-0.2);
+  group.add(wingL,wingR);
+  const fin=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.6,0.8),wingMat);
+  fin.position.set(0,-0.6,-0.2);
+  fin.rotation.x=0.18;
+  group.add(fin);
+  const engineMat=new THREE.MeshStandardMaterial({color:0x2b2b2b,metalness:0.9,roughness:0.18});
+  const thrL=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.5,12),engineMat);
+  thrL.rotation.x=Math.PI/2;
+  thrL.position.set(-0.35,-1.05,0);
+  const thrR=thrL.clone();
+  thrR.position.set(0.35,-1.05,0);
+  group.add(thrL,thrR);
+  const ringMat=new THREE.MeshBasicMaterial({color:0xffaa00,transparent:true,opacity:0.9});
+  const ringL=new THREE.Mesh(new THREE.TorusGeometry(0.16,0.03,8,32),ringMat);
+  ringL.rotation.x=Math.PI/2;
+  ringL.position.copy(thrL.position);
+  const ringR=ringL.clone();
+  ringR.position.copy(thrR.position);
+  group.add(ringL,ringR);
+  const exhaustCount=60;
+  const arr=new Float32Array(exhaustCount*3);
+  for(let i=0;i<exhaustCount;i++){arr[i*3]=(Math.random()-0.5)*0.2;arr[i*3+1]=-1.4-Math.random()*0.6;arr[i*3+2]=(Math.random()-0.5)*0.2;}
+  const exhaustGeom=new THREE.BufferGeometry();exhaustGeom.setAttribute('position',new THREE.BufferAttribute(arr,3));
+  const exhaustMat=new THREE.PointsMaterial({color:0xffaa66,size:0.08,transparent:true,opacity:0.9,depthWrite:false});
+  const exhaust=new THREE.Points(exhaustGeom,exhaustMat);
+  group.add(exhaust);
+  const l1=new THREE.PointLight(0xffaa66,0.6,6);l1.position.set(-0.35,-1.05,0);
+  const l2=l1.clone();l2.position.set(0.35,-1.05,0);group.add(l1,l2);
+  group.userData={setThrusterPower(p){const power=Math.max(0,Math.min(1,p));exhaustMat.size=0.04+power*0.18;exhaustMat.opacity=0.25+power*0.75;l1.intensity=0.2+power*1.2;l2.intensity=0.2+power*1.2;ringMat.opacity=0.2+power*0.8},updateExhaust(){const a=exhaustGeom.attributes.position.array;for(let i=0;i<a.length/3;i++){const idx=i*3;a[idx]+= (Math.random()-0.5)*0.002;a[idx+1]-=0.002-Math.random()*0.004;a[idx+2]+=(Math.random()-0.5)*0.002;if(a[idx+1]<-2.2) a[idx+1]=-1.4-Math.random()*0.6;}exhaustGeom.attributes.position.needsUpdate=true}};
+  return group;
+}
+
+let ship = assembleShip();
+ship.position.set(0,0,0);
+scene.add(ship);
+
+// Controls
+let move={x:0,y:0,up:false,down:false};
+const joy=document.getElementById('joystick');
+const joyInner=document.getElementById('joyInner');
+joy.addEventListener('touchstart',e=>e.preventDefault());
+joy.addEventListener('touchmove',e=>{
+  const t=e.touches[0];
+  const r=joy.getBoundingClientRect();
+  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
+  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
+  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+});
+joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});
+document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);
+document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);
+document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);
+document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
+
+// Movement physics
+let velocity=new THREE.Vector3();
+let direction=new THREE.Vector3();
+const forward=new THREE.Vector3(0,0,-1);
+
+// Galaxy management
+let galaxyIndex = 1;
+const GALAXY_THRESHOLD = 1200; // distance to center to trigger a galaxy change
+let inTransition = false;
+function changeGalaxy(){
+  if(inTransition) return;
+  inTransition = true;
+  galaxyIndex++;
+  galaxyLabel.textContent = `Galaxie ${galaxyIndex}`;
+  // visual effect: quick flash / background color change + re-seed
+  const oldBg = scene.background.clone();
+  const bgTarget = new THREE.Color(Math.random()*0x404040 + 0x000010);
+  let t = 0;
+  const flashDur = 800;
+  const start = performance.now();
+  // temporarily pause heavy updates by closing over flags
+  function step(){
+    t = (performance.now()-start)/flashDur;
+    if(t>1) t=1;
+    scene.background.lerpColors(oldBg, bgTarget, t);
+    if(t<1){
+      requestAnimationFrame(step);
+    } else {
+      // re-seed stars, planets, and reset ship to galaxy center
+      // reposition central star randomly
+      starMesh.material.color.setHSL(Math.random(), 0.6, 0.6);
+      sun.intensity = 1.2 + Math.random()*1.8;
+      sun.position.set((Math.random()-0.5)*50, (Math.random()-0.5)*50, (Math.random()-0.5)*50);
+      starMesh.position.copy(sun.position);
+      // re-generate starfields positions
+      starFields.forEach(sf=>{
+        const pos = sf.points.geometry.attributes.position.array;
+        for(let i=0;i<pos.length/3;i++){
+          const r = 600 + Math.random()*1600;
+          const theta = Math.random()*Math.PI*2;
+          const phi = (Math.random()-0.5)*Math.PI;
+          pos[i*3] = Math.cos(theta)*Math.cos(phi)*r;
+          pos[i*3+1] = Math.sin(phi)*r;
+          pos[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
+        }
+        sf.points.geometry.attributes.position.needsUpdate=true;
+      });
+      // re-generate extra planets (new galaxy)
+      generateExtraPlanets(30 + Math.floor(Math.random()*10));
+      // reset ship near new galaxy center (small random offset)
+      ship.position.set((Math.random()-0.5)*8, (Math.random()-0.5)*4, (Math.random()-0.5)*8);
+      velocity.set(0,0,0);
+      // small camera offset to avoid jump flash
+      camera.position.copy(ship.position.clone().add(new THREE.Vector3(0,3,8)));
+      inTransition = false;
+      // slowly lerp background back to subtle dark tint
+      const finishStart = performance.now();
+      const finishDur = 800;
+      function finishStep(){
+        const tt = Math.min(1, (performance.now()-finishStart)/finishDur);
+        scene.background.lerpColors(bgTarget, new THREE.Color(0x000010), tt);
+        if(tt<1) requestAnimationFrame(finishStep);
+      }
+      finishStep();
+    }
+  }
+  step();
+}
+
+// Check distance each frame
+function checkGalaxyTransition(){
+  const dist = ship.position.length();
+  if(dist > GALAXY_THRESHOLD){
+    changeGalaxy();
+  }
+}
+
+// animate
+function animate(){
+  requestAnimationFrame(animate);
+  const t = Date.now()*0.00005;
+  // sample existing planet orbits
+  earth.position.x = 40*Math.cos(t);
+  earth.position.z = 40*Math.sin(t);
+  clouds.rotation.y += 0.0006;
+  moon.rotation.y += 0.0012;
+  // update extra planets orbital positions
+  extraPlanets.forEach(p=>{
+    p.mesh.userData.angle += p.mesh.userData.orbitSpeed;
+    const a = p.mesh.userData.angle;
+    const d = p.mesh.userData.dist;
+    p.mesh.position.x = Math.cos(a)*d;
+    p.mesh.position.z = Math.sin(a)*d;
+    if(p.ring) p.ring.position.copy(p.mesh.position);
+    // small rotation
+    p.mesh.rotation.y += 0.001 + (p.mesh.userData.dist%3)*0.0001;
+  });
+
+  // subtle twinkle of starfields (vary point material opacity)
+  starFields.forEach((sf,i) => {
+    sf.mat.opacity = 0.8 + 0.2*Math.sin(Date.now()*0.0002*(i+1));
+  });
+
+  // ship control & physics
+  direction.set(0,0,0);
+  const localF = forward.clone().applyEuler(ship.rotation);
+  direction.add(localF.multiplyScalar(move.y*0.5));
+  if(move.up) direction.y += 0.12;
+  if(move.down) direction.y -= 0.12;
+  velocity.lerp(direction, 0.08);
+  ship.position.add(velocity);
+  ship.rotation.y -= move.x*0.04;
+  const thrusterPower = Math.min(1, Math.abs(move.y));
+  if(ship.userData && ship.userData.setThrusterPower) ship.userData.setThrusterPower(thrusterPower);
+  if(ship.userData && ship.userData.updateExhaust) ship.userData.updateExhaust();
+
+  // camera follow
+  const desired = ship.position.clone().add(new THREE.Vector3(0,3,8).applyEuler(ship.rotation));
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(ship.position);
+
+  // galaxy distance test
+  if(!inTransition) checkGalaxyTransition();
+
+  renderer.render(scene,camera);
+}
+animate();
+
+// window resize
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+// keyboard quick test: press G to force galaxy change (desktop dev)
+window.addEventListener('keydown', (e) => {
+  if(e.key.toLowerCase()==='g') changeGalaxy();
+});
 </script>
 </body>
 </html>
