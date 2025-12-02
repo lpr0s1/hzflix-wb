@@ -2,20 +2,20 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>Space — Flat Ship, Wormholes & Black Holes</title>
+<title>Space — Flat Ship + Wormholes & Black Holes</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <style>
   html,body{margin:0;height:100%;background:#000;user-select:none;overflow:hidden}
   canvas{display:block}
-  #hud{position:fixed;left:16px;top:16px;color:#fff;font-family:system-ui,Arial;z-index:99;background:rgba(0,0,0,0.35);padding:8px;border-radius:8px}
-  .joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:99}
+  #hud{position:fixed;left:12px;top:12px;color:#fff;font-family:system-ui,Arial;z-index:99;background:rgba(0,0,0,0.35);padding:8px;border-radius:8px}
+  .joystick{position:fixed;left:12px;bottom:12px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:99}
   .joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-  .btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:99}
-  .btn.up{bottom:96px}.btn.down{bottom:16px}
+  .btn{position:fixed;right:12px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:99}
+  .btn.up{bottom:92px}.btn.down{bottom:12px}
 </style>
 </head>
 <body>
-<div id="hud">Vitesse: <span id="speed">0</span> | Proche corps: <span id="near">—</span></div>
+<div id="hud">Vitesse: <span id="speed">0</span> | Proche: <span id="near">—</span></div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
@@ -23,171 +23,159 @@
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 
-// ---------- util loader ----------
+// ---------- utils ----------
+const speedEl = document.getElementById('speed');
+const nearEl = document.getElementById('near');
 const texLoader = new THREE.TextureLoader();
 const loadSafe = url => new Promise(resolve => texLoader.load(url, t=>resolve(t), undefined, ()=>resolve(null)));
 
-// ---------- scène / cam / renderer ----------
+// ---------- scene, camera, renderer ----------
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000007);
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 500000);
+const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 5e6);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// HUD nodes
-const speedEl = document.getElementById('speed');
-const nearEl = document.getElementById('near');
-
 // ---------- lights ----------
 scene.add(new THREE.AmbientLight(0x666666));
-const sunLight = new THREE.PointLight(0xffffff, 3.2, 0);
-sunLight.position.set(0,0,0); scene.add(sunLight);
+const sunLight = new THREE.PointLight(0xffffff, 3.4, 0); sunLight.position.set(0,0,0); scene.add(sunLight);
 
 // ---------- sun ----------
-const sun = new THREE.Mesh(new THREE.SphereGeometry(600, 32, 32), new THREE.MeshBasicMaterial({color:0xffee88}));
+const sun = new THREE.Mesh(new THREE.SphereGeometry(12000, 32, 32), new THREE.MeshBasicMaterial({color:0xffee88}));
 scene.add(sun);
 
-// ---------- star sprite creation (round luminous) ----------
-function createStarSprite(size=128){
-  const canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  const g = ctx.createRadialGradient(size/2,size/2,2,size/2,size/2,size/2);
+// ---------- star sprite (round) ----------
+function makeStarSprite(size=128){
+  const c = document.createElement('canvas'); c.width=c.height=size;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(size/2,size/2,1,size/2,size/2,size/2);
   g.addColorStop(0,'rgba(255,255,255,1)');
-  g.addColorStop(0.2,'rgba(170,200,255,0.95)');
-  g.addColorStop(0.5,'rgba(120,160,255,0.45)');
+  g.addColorStop(0.25,'rgba(170,200,255,0.95)');
+  g.addColorStop(0.6,'rgba(120,160,255,0.35)');
   g.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
-  const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
-  return tex;
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter; return tex;
 }
-const starSprite = createStarSprite();
+const starSprite = makeStarSprite();
 
-// ---------- starfields (two layers) ----------
-function makeStars(count, rMin, rMax, size){
-  const geom = new THREE.BufferGeometry();
+// ---------- starfields ----------
+function addStars(count, rMin, rMax, size){
+  const geo = new THREE.BufferGeometry();
   const pos = new Float32Array(count*3);
-  const sizes = new Float32Array(count);
   for(let i=0;i<count;i++){
     const r = rMin + Math.random()*(rMax-rMin);
-    const theta = Math.random()*Math.PI*2;
-    const phi = (Math.random()-0.5)*Math.PI;
-    pos[3*i]=Math.cos(theta)*Math.cos(phi)*r; pos[3*i+1]=Math.sin(phi)*r; pos[3*i+2]=Math.sin(theta)*Math.cos(phi)*r;
-    sizes[i]=size*(0.6 + Math.random()*0.9);
+    const th = Math.random()*Math.PI*2; const ph = (Math.random()-0.5)*Math.PI;
+    pos[3*i] = Math.cos(th)*Math.cos(ph)*r;
+    pos[3*i+1] = Math.sin(ph)*r;
+    pos[3*i+2] = Math.sin(th)*Math.cos(ph)*r;
   }
-  geom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  geom.setAttribute('size', new THREE.BufferAttribute(sizes,1));
-  const mat = new THREE.PointsMaterial({map:starSprite,size:size,transparent:true,opacity:0.95,depthWrite:false,blending:THREE.AdditiveBlending});
-  const pts = new THREE.Points(geom, mat);
-  scene.add(pts);
-  return pts;
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const mat = new THREE.PointsMaterial({map:starSprite, size:size, transparent:true, opacity:0.95, depthWrite:false, blending:THREE.AdditiveBlending});
+  const pts = new THREE.Points(geo, mat); scene.add(pts); return pts;
 }
-const farStars = makeStars(2000, 100000, 400000, 120);
-const midStars = makeStars(1200, 25000, 120000, 36);
+const farStars = addStars(3500, 200000, 900000, 200);
+const midStars = addStars(1800, 60000, 200000, 60);
 
-// ---------- dust ----------
+// ---------- dust (space particles) ----------
 (function(){
-  const count = 6000, geom=new THREE.BufferGeometry(), pos=new Float32Array(count*3);
-  for(let i=0;i<count;i++){
-    const r=8000 + Math.random()*250000;
-    const th=Math.random()*Math.PI*2, ph=(Math.random()-0.5)*0.15;
-    pos[3*i]=Math.cos(th)*Math.cos(ph)*r; pos[3*i+1]=Math.sin(ph)*r; pos[3*i+2]=Math.sin(th)*Math.cos(ph)*r;
+  const N = 8000;
+  const geo = new THREE.BufferGeometry();
+  const arr = new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const r = 30000 + Math.random()*900000;
+    const th = Math.random()*Math.PI*2; const ph = (Math.random()-0.5)*0.15;
+    arr[3*i] = Math.cos(th)*Math.cos(ph)*r;
+    arr[3*i+1] = Math.sin(ph)*r;
+    arr[3*i+2] = Math.sin(th)*Math.cos(ph)*r;
   }
-  geom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const mat = new THREE.PointsMaterial({size:16,transparent:true,opacity:0.06,depthWrite:false,blending:THREE.AdditiveBlending,color:0xfff7ef});
-  const pts = new THREE.Points(geom, mat); scene.add(pts); window._dust=pts;
+  geo.setAttribute('position', new THREE.BufferAttribute(arr,3));
+  const mat = new THREE.PointsMaterial({size:30, color:0xfff7ef, transparent:true, opacity:0.045, depthWrite:false, blending:THREE.AdditiveBlending});
+  const pts = new THREE.Points(geo, mat); scene.add(pts);
 })();
 
-// ---------- Système solaire réaliste (visuel; gameplay-scaled) ----------
-/* Planètes extrêmement grandes par rapport au vaisseau.
-   Distances massives pour énormément d'espace. */
-const planetData = [
-  // name, displayRadius, distanceFromSun, textureURL (examples), ring?
-  ['Mercury', 1600, 12000, 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg', false],
-  ['Venus',   3800, 22000, 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg', false],
-  ['Earth',   4200, 34000, 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg', false],
-  ['Moon',    1100, 4200,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg', false], // will be parented
-  ['Mars',    2100, 48000, 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg', false],
-  ['Jupiter', 9800, 82000, 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg', false],
-  ['Saturn',  9000, 140000,'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg', 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturnringcolor.jpg'],
-  ['Uranus',  5400, 210000,'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg', false],
-  ['Neptune', 5200, 300000,'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg', false],
-  ['Pluto',   900,  380000, null, false]
+// ---------- solar system data (very large scale & big radii) ----------
+const planetSpecs = [
+  // name, radius, distanceFromSun, texture, ringTexture?
+  ['Mercury',  3000,  60000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg', null],
+  ['Venus',    6500, 110000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg', null],
+  ['Earth',    7200, 165000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg', null],
+  ['Moon',     1800,  9000,   'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg', null], // will parent to Earth
+  ['Mars',     3600, 230000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg', null],
+  ['Jupiter', 16000, 410000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg', null],
+  ['Saturn',  15200, 760000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg', 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturnringcolor.jpg'],
+  ['Uranus',  9800, 1200000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg', null],
+  ['Neptune', 9400, 1700000,  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg', null],
+  ['Pluto',   1600, 2300000,  null, null]
 ];
 
 const planets = [];
 async function buildPlanets(){
-  for(const p of planetData){
-    const [name, rad, dist, tex, ringTex] = p;
-    const texture = tex ? await loadSafe(tex) : null;
-    const geo = new THREE.SphereGeometry(rad, 64, 64);
-    const mat = new THREE.MeshStandardMaterial(texture?{map:texture, metalness:0.02, roughness:0.7}:{color:0x777777, metalness:0.02, roughness:0.7});
+  for(const spec of planetSpecs){
+    const [name, rad, dist, texUrl, ringUrl] = spec;
+    const tex = texUrl ? await loadSafe(texUrl) : null;
+    const geo = new THREE.SphereGeometry(rad, 48, 48);
+    const mat = new THREE.MeshStandardMaterial(tex ? {map:tex, metalness:0.02, roughness:0.75} : {color:0x888888, metalness:0.03, roughness:0.8});
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(dist, 0, 0);
-    mesh.userData = { name, radius: rad, distance: dist, angle: Math.random()*Math.PI*2, orbitalSpeed: (1/(100 + Math.random()*400))*0.00002 };
+    mesh.userData = { name, radius: rad, distance: dist, angle: Math.random()*Math.PI*2, speed: (0.000005 + Math.random()*0.00001) };
     scene.add(mesh);
-    if(ringTex){
-      const ringTexture = await loadSafe(ringTex);
-      const ringGeo = new THREE.RingGeometry(rad*1.15, rad*2.0, 128,1);
-      const ringMat = new THREE.MeshBasicMaterial({map:ringTexture, side:THREE.DoubleSide, transparent:true, opacity:0.9});
-      const ring = new THREE.Mesh(ringGeo, ringMat); ring.rotation.x = Math.PI/2.6; ring.position.copy(mesh.position); scene.add(ring);
-      mesh.userData.ring = ring;
+    if(ringUrl){
+      const rtex = await loadSafe(ringUrl);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(rad*1.2, rad*2.2, 128),
+        new THREE.MeshBasicMaterial({map:rtex, side:THREE.DoubleSide, transparent:true, opacity:0.9}));
+      ring.rotation.x = Math.PI/2.2; ring.position.copy(mesh.position); scene.add(ring); mesh.userData.ring = ring;
     }
     planets.push(mesh);
   }
-  // parent Moon to Earth for correct local orbit
-  const earth = planets.find(x=>x.userData.name==='Earth');
-  const moon = planets.find(x=>x.userData.name==='Moon');
+  // parent moon to Earth
+  const earth = planets.find(p=>p.userData.name==='Earth');
+  const moon = planets.find(p=>p.userData.name==='Moon');
   if(earth && moon){
-    moon.position.set(earth.userData.radius + 4500, 0, 0); // moon relative
+    moon.position.set(earth.userData.radius + 35000, 0, 0);
+    moon.userData = { orbitSpeed: 0.0012, distance: earth.userData.radius + 35000, angle: 0 };
     earth.add(moon);
-    moon.userData = {orbitSpeed:0.0008, dist: earth.userData.radius + 4500, angle: 0};
   }
 }
 await buildPlanets();
 
-// ---------- Ship: flat model + rear turbos, much smaller than planets ----------
-function buildFlatShip(){
+// ---------- ship: flat with rear turbos (small relative to planets) ----------
+function buildShip(){
   const g = new THREE.Group();
-  // hull — flattened diamond
-  const hull = new THREE.Mesh(new THREE.BoxGeometry(240, 24, 420), new THREE.MeshStandardMaterial({color:0x8b8f91, metalness:0.9, roughness:0.2}));
-  hull.scale.set(1,0.25,1);
-  hull.position.set(0,0,10);
+  // hull (flat plate)
+  const hull = new THREE.Mesh(new THREE.BoxGeometry(1200, 80, 2200), new THREE.MeshStandardMaterial({color:0x8b8f91, metalness:0.9, roughness:0.2}));
+  hull.scale.set(1,0.18,1); hull.position.set(0,12,180);
   g.add(hull);
   // cockpit
-  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(48, 20, 20), new THREE.MeshPhysicalMaterial({color:0x0b2a3d, transmission:0.6, transparent:true, opacity:0.92}));
-  cockpit.position.set(0,24,120);
-  g.add(cockpit);
-  // wings thin
-  const wing = new THREE.Mesh(new THREE.BoxGeometry(120,8,520), new THREE.MeshStandardMaterial({color:0x7f8487, metalness:0.85, roughness:0.18}));
-  wing.position.set(0,-8,0); wing.scale.set(1,0.08,1); g.add(wing);
-  // rear turbos (left/right)
-  const turboMat = new THREE.MeshStandardMaterial({color:0x222222, metalness:0.95, roughness:0.12});
-  const turboL = new THREE.Mesh(new THREE.CylinderGeometry(40,44,160,18), turboMat); turboL.rotation.x=Math.PI/2; turboL.position.set(-100,-36,-210);
-  const turboR = turboL.clone(); turboR.position.set(100,-36,-210); g.add(turboL, turboR);
-  // exhaust particle cloud
-  const pCount = 160; const arr = new Float32Array(pCount*3);
-  for(let i=0;i<pCount;i++){ arr[3*i]=(Math.random()-0.5)*80; arr[3*i+1]=-40 - Math.random()*40; arr[3*i+2]=-220 - Math.random()*140; }
+  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(220, 18, 18), new THREE.MeshPhysicalMaterial({color:0x0b2a3d, transmission:0.6, transparent:true, opacity:0.92}));
+  cockpit.position.set(0,96,560); g.add(cockpit);
+  // rear turbos
+  const turboMat = new THREE.MeshStandardMaterial({color:0x1b1b1b, metalness:0.95, roughness:0.12});
+  const turboL = new THREE.Mesh(new THREE.CylinderGeometry(120,140,480,20), turboMat); turboL.rotation.x = Math.PI/2; turboL.position.set(-320, -40, -820);
+  const turboR = turboL.clone(); turboR.position.set(320, -40, -820); g.add(turboL, turboR);
+  // exhaust points
+  const pN = 200; const arr = new Float32Array(pN*3);
+  for(let i=0;i<pN;i++){ arr[3*i] = (Math.random()-0.5)*220; arr[3*i+1] = -60 - Math.random()*240; arr[3*i+2] = -950 - Math.random()*340; }
   const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(arr,3));
-  const pMat = new THREE.PointsMaterial({color:0xff8a33, size:18, transparent:true, opacity:0.9, depthWrite:false});
+  const pMat = new THREE.PointsMaterial({color:0xffa75f, size:40, transparent:true, opacity:0.95, depthWrite:false});
   const exhaust = new THREE.Points(pGeo, pMat); g.add(exhaust);
-  g.userData.radius = 220; // collision radius ~220
+  g.userData.radius = 800; // collision radius relative to planet sizes
   return g;
 }
-const ship = buildFlatShip();
-ship.position.set(7000, 1200, 0); // start far from sun and planets
+const ship = buildShip();
+ship.position.set(28000, 9000, 0); // start well away from sun and planets
 scene.add(ship);
 
-// ---------- ship physics state ----------
-const state = { pos: ship.position.clone(), vel: new THREE.Vector3(0,0,0), acc: new THREE.Vector3(0,0,0), mass: 1.0 };
+// ---------- physics state ----------
+const state = { pos: ship.position.clone(), vel: new THREE.Vector3(0,0,0), mass: 1.0 };
 
 // ---------- controls ----------
 let move = {x:0,y:0,up:false,down:false};
 const joy = document.getElementById('joystick'), joyInner = document.getElementById('joyInner');
 joy.addEventListener('touchstart', e=>e.preventDefault());
 joy.addEventListener('touchmove', e=>{
-  const t = e.touches[0]; const r = joy.getBoundingClientRect();
+  const t=e.touches[0], r=joy.getBoundingClientRect();
   move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2))/(r.width/2)));
   move.y = Math.max(-1, Math.min(1, -(t.clientY - (r.top + r.height/2))/(r.height/2)));
   joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
@@ -206,224 +194,208 @@ window.addEventListener('keyup', e=>{
   if(e.key==='ArrowUp') move.up=false; if(e.key==='ArrowDown') move.down=false;
 });
 
-// ---------- wormholes (7) with distortion & star stretch ----------
+// ---------- wormholes (7) with visual distortion + star stretch ----------
 const wormholes = [];
-function makeWormhole(pos, size=2000){
-  const torGeo = new THREE.TorusGeometry(size, size*0.18, 24, 120);
-  const torMat = new THREE.MeshBasicMaterial({color:0x66ccff, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending, side:THREE.DoubleSide});
-  const tor = new THREE.Mesh(torGeo, torMat); tor.position.copy(pos); scene.add(tor);
-  // funnel points
-  const pc = 2400; const pArr = new Float32Array(pc*3);
-  for(let i=0;i<pc;i++){
-    const r = Math.random()*size*0.9; const a = Math.random()*Math.PI*2; const z = (Math.random()-0.5)*size*2.4;
-    pArr[3*i]=Math.cos(a)*r; pArr[3*i+1]=Math.sin(a)*r; pArr[3*i+2]=z;
+function makeWormhole(pos, size=14000){
+  const tor = new THREE.Mesh(new THREE.TorusGeometry(size, size*0.18, 24, 180),
+    new THREE.MeshBasicMaterial({color:0x66ccff, transparent:true, opacity:0.65, blending:THREE.AdditiveBlending, side:THREE.DoubleSide}));
+  tor.position.copy(pos); scene.add(tor);
+  // funnel particles
+  const N = 4000; const arr = new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const r = Math.random()*size*0.9; const a = Math.random()*Math.PI*2; const z = (Math.random()-0.5)*size*2.2;
+    arr[3*i] = Math.cos(a)*r; arr[3*i+1] = Math.sin(a)*r; arr[3*i+2] = z;
   }
-  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pArr,3));
-  const pm = new THREE.PointsMaterial({size:40, color:0xaaffff, transparent:true, opacity:0.9, depthWrite:false, blending:THREE.AdditiveBlending});
-  const funnel = new THREE.Points(pg, pm); funnel.position.copy(pos); scene.add(funnel);
-  wormholes.push({tor, funnel, pos:pos.clone(), size});
-  return {tor, funnel};
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(arr,3));
+  const p = new THREE.Points(g, new THREE.PointsMaterial({size:60, color:0xaaffff, transparent:true, opacity:0.95, depthWrite:false, blending:THREE.AdditiveBlending}));
+  p.position.copy(pos); scene.add(p);
+  wormholes.push({tor, funnel:p, pos:pos.clone(), size});
 }
-// place them very far so space is roomy
 for(let i=0;i<7;i++){
-  const angle=Math.random()*Math.PI*2;
-  const d = 500000 + Math.random()*600000; // very far
-  const p = new THREE.Vector3(Math.cos(angle)*d, (Math.random()-0.5)*60000, Math.sin(angle)*d);
-  makeWormhole(p, 10000 + Math.random()*7000);
+  const a = Math.random()*Math.PI*2;
+  const d = 1.2e6 + Math.random()*1.4e6; // far
+  const p = new THREE.Vector3(Math.cos(a)*d, (Math.random()-0.5)*2e5, Math.sin(a)*d);
+  makeWormhole(p, 8e4 + Math.random()*8e4);
 }
 
-// ---------- black holes (2) with 1/r^2 gravity and ejection ----------
+// ---------- black holes (2) with gravity ~1/r^2 ----------
 const blackHoles = [];
 function makeBlackHole(pos, mass, radius){
   const bh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshBasicMaterial({color:0x000000}));
   bh.position.copy(pos); scene.add(bh);
-  const disc = new THREE.Mesh(new THREE.RingGeometry(radius*1.6, radius*4.2, 64), new THREE.MeshBasicMaterial({color:0x552288, transparent:true, opacity:0.55, side:THREE.DoubleSide}));
+  const disc = new THREE.Mesh(new THREE.RingGeometry(radius*1.8, radius*5.0, 64), new THREE.MeshBasicMaterial({color:0x442266, side:THREE.DoubleSide, transparent:true, opacity:0.5}));
   disc.rotation.x = Math.PI/2; disc.position.copy(pos); scene.add(disc);
   blackHoles.push({pos:pos.clone(), mass, radius, mesh:bh});
-  return {pos, mass, radius};
 }
-makeBlackHole(new THREE.Vector3(-800000, 0, -360000), 2.2e10, 28000); // massive, far
-makeBlackHole(new THREE.Vector3(920000, -120000, 720000), 1.6e10, 21000);
+makeBlackHole(new THREE.Vector3(-2.4e6, 0, -1.1e6), 3e14, 1.2e5);
+makeBlackHole(new THREE.Vector3(2.8e6, -6e5, 1.9e6), 2.1e14, 9e4);
 
-// ---------- collision: ship vs planets (prevents passing through) ----------
+// ---------- collision detection (spherical) ----------
 function resolvePlanetCollisions(){
   const sr = ship.userData.radius;
   let nearest = null, nearestDist = Infinity;
   for(const p of planets){
-    // global planet position (world)
     const worldPos = p.getWorldPosition(new THREE.Vector3());
     const pr = p.userData.radius;
     const d = state.pos.distanceTo(worldPos);
     if(d < pr + sr){
-      // push out along normal and damp velocity
+      // push outside & damp/reflect
       const n = state.pos.clone().sub(worldPos).normalize();
-      const penetration = (pr + sr) - d + 1;
-      state.pos.add(n.multiplyScalar(penetration));
-      // reflect/damp
+      const pen = (pr + sr) - d + 1;
+      state.pos.add(n.multiplyScalar(pen));
       const vn = state.vel.dot(n);
       if(vn < 0){
-        const refl = state.vel.clone().sub(n.multiplyScalar(vn*1.8));
+        const refl = state.vel.clone().sub(n.multiplyScalar(vn*1.6));
         state.vel.copy(refl.multiplyScalar(0.28));
       } else state.vel.multiplyScalar(0.2);
     }
     if(d < nearestDist){ nearestDist = d; nearest = p; }
   }
-  // HUD nearest
-  if(nearest && nearestDist < 200000) nearEl.textContent = nearest.userData.name + ' (' + Math.floor(nearestDist) + ')';
+  if(nearest && nearestDist < 1.5e6) nearEl.textContent = nearest.userData.name + ' (' + Math.floor(nearestDist).toLocaleString() + ' m)';
   else nearEl.textContent = '—';
 }
 
-// ---------- black hole gravity & ejection ----------
+// ---------- black holes gravity & ejection ----------
 function applyBlackHoles(dt){
   for(const bh of blackHoles){
     const rVec = bh.pos.clone().sub(state.pos);
     const r = Math.max(1, rVec.length());
-    // tuned gravitational factor for gameplay (not real G)
-    const forceScale = bh.mass * 0.0000000000008; // tuned small
-    const accMag = forceScale / (r*r);
+    const strength = bh.mass * 1e-24; // tuned game constant
+    const accMag = strength / (r*r);
     const acc = rVec.normalize().multiplyScalar(accMag);
-    // apply acceleration toward BH
-    state.vel.add(acc.multiplyScalar(dt*1.0));
-    // if inside horizon -> strong ejection but controlled
-    if(r < bh.radius * 0.9){
+    state.vel.add(acc.multiplyScalar(dt));
+    // event horizon: if too close, eject outward violently and move to safe distance
+    if(r < bh.radius * 0.88){
       const ejectDir = state.pos.clone().sub(bh.pos).normalize();
-      // apply big outward velocity
-      state.vel.copy(ejectDir.multiplyScalar(1500 + Math.random()*2200));
-      // move to safe spot outside horizon
-      state.pos.copy(bh.pos.clone().add(ejectDir.multiplyScalar(bh.radius*3 + 10000)));
-      // visual flash
-      flashScreen(300, 0xffddaa);
+      state.vel.copy(ejectDir.multiplyScalar(5e3 + Math.random()*6e3));
+      state.pos.copy(bh.pos.clone().add(ejectDir.multiplyScalar(bh.radius*3 + 6e4)));
+      flashScreen(350, 0xffddaa);
     }
   }
 }
 
-// small screen flash function (HUD overlay)
-let tmpFlash = null;
+// small flash overlay
+let overlay=null;
 function flashScreen(ms=200, color=0xffffff){
-  if(tmpFlash){ camera.remove(tmpFlash); tmpFlash=null; }
+  if(overlay){ camera.remove(overlay); overlay=null; }
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.8}));
-  camera.add(quad);
-  tmpFlash = quad;
-  setTimeout(()=>{ camera.remove(quad); tmpFlash=null; }, ms);
+  camera.add(quad); overlay = quad;
+  setTimeout(()=>{ if(overlay){ camera.remove(overlay); overlay=null; } }, ms);
 }
 
 // ---------- wormhole interactions: distortion & star stretch ----------
 function handleWormholes(dt){
   for(const w of wormholes){
-    w.tor.rotation.x += 0.0006; w.tor.rotation.y += 0.0005;
-    w.funnel.rotation.y += 0.0008;
+    w.tor.rotation.x += 0.0012;
+    w.tor.rotation.y += 0.0010;
+    w.funnel.rotation.y += 0.0009;
     const d = state.pos.distanceTo(w.pos);
-    if(d < w.size * 3.0){
-      // pull toward center gently
-      const pull = w.pos.clone().sub(state.pos).normalize().multiplyScalar((w.size*3.0 - d) * 0.00004);
+    if(d < w.size * 2.4){
+      // gentle inward pull
+      const pull = w.pos.clone().sub(state.pos).normalize().multiplyScalar((w.size*2.4 - d) * 0.00006);
       state.vel.add(pull.multiplyScalar(dt*60));
-      // star stretch: scale up midStars material size and opacity locally
-      midStars.material.size = 36 + (w.size*3.0 - Math.min(d, w.size*3.0)) * 0.0006;
-      midStars.material.opacity = 0.95;
-      if(d < w.size*0.8){
-        // near center: teleport to another wormhole (soft)
+      // star stretch: temporarily increase midStars size and opacity
+      midStars.material.size = 60 + (w.size*2.4 - Math.min(d, w.size*2.4)) * 0.0008;
+      midStars.material.opacity = 1.0;
+      // camera FOV wobble to simulate distortion
+      camera.fov = 58 + Math.sin(performance.now()*0.003 + d*0.00001) * Math.min(12, (w.size*1.8 - d) * 0.00012);
+      camera.updateProjectionMatrix();
+      if(d < w.size*0.45){
+        // teleport to a random other wormhole softly
         const others = wormholes.filter(x=>x!==w);
         if(others.length>0){
           const dest = others[Math.floor(Math.random()*others.length)];
-          state.pos.copy(dest.pos.clone().add(new THREE.Vector3((Math.random()-0.5)*dest.size*0.8, (Math.random()-0.5)*dest.size*0.6, (Math.random()-0.5)*dest.size*0.8)));
+          state.pos.copy(dest.pos.clone().add(new THREE.Vector3((Math.random()-0.5)*dest.size*0.6, (Math.random()-0.5)*dest.size*0.4, (Math.random()-0.5)*dest.size*0.6)));
           state.vel.multiplyScalar(0.12);
-          flashScreen(240, 0x66ccff);
+          flashScreen(220, 0x66ccff);
         }
       }
     } else {
-      // relax midStars
-      midStars.material.size = 36;
-      midStars.material.opacity = 0.86;
+      // relax starfield and FOV
+      midStars.material.size = 60;
+      midStars.material.opacity = 0.9;
+      camera.fov = 58;
+      camera.updateProjectionMatrix();
     }
   }
 }
 
-// ---------- camera: locked behind ship ----------
-const camOffset = new THREE.Vector3(0, 1600, 5200); // fixed transform behind (very distant to encompass huge scale)
+// ---------- camera locked behind ship ----------
+const camOffset = new THREE.Vector3(0, 9000, 26000); // fixed behind for huge scale
 function updateCamera(){
   const worldOff = camOffset.clone().applyQuaternion(ship.quaternion);
   camera.position.copy(state.pos.clone().add(worldOff));
-  const lookAt = state.pos.clone().add(new THREE.Vector3(0, 600, 0));
-  camera.lookAt(lookAt);
+  camera.lookAt(state.pos.clone().add(new THREE.Vector3(0, 2400, 0)));
   camera.up.set(0,1,0);
 }
 
-// ---------- main physics loop (stable, tuned) ----------
-let last = performance.now();
-const THRUST = 1400;        // tuned for large scale (feel free to reduce)
-const DAMP = 0.02;
-const MAX_SPEED = 8000;
+// ---------- main physics constants (tuned) ----------
+const THRUST = 1.5e5;   // tuned to world scale
+const DAMPING = 0.006;
+const MAX_SPEED = 6e4;
 
-function loop(){
+// ---------- main loop ----------
+let last = performance.now();
+function tick(){
   const now = performance.now();
-  const dt = Math.min(0.06, (now - last)/1000); last = now;
+  const dt = Math.min(0.05, (now - last)/1000); last = now;
 
   // controls -> thrust vector
   const forward = new THREE.Vector3(0,0,-1).applyQuaternion(ship.quaternion).normalize();
   const up = new THREE.Vector3(0,1,0);
   let thrust = new THREE.Vector3();
-  thrust.add(forward.multiplyScalar(move.y * THRUST));
+  thrust.add(forward.clone().multiplyScalar(move.y * THRUST));
   if(move.up) thrust.add(up.clone().multiplyScalar(THRUST*0.6));
   if(move.down) thrust.add(up.clone().multiplyScalar(-THRUST*0.6));
-  // integrate: v += (F/m)*dt ; pos += v*dt (scaling adapted to world scale)
-  state.vel.add(thrust.clone().multiplyScalar(dt / state.mass));
+  state.vel.add(thrust.multiplyScalar(dt / state.mass));
   // damping
-  state.vel.multiplyScalar(1 - Math.min(DAMP, dt*2));
+  state.vel.multiplyScalar(1 - Math.min(DAMPING, dt*2));
   // clamp speed
   if(state.vel.length() > MAX_SPEED) state.vel.setLength(MAX_SPEED);
 
-  // apply black hole gravity
+  // black hole gravity
   applyBlackHoles(dt);
 
-  // position integrate
-  state.pos.add(state.vel.clone().multiplyScalar(dt*1.0));
+  // integrate position
+  state.pos.add(state.vel.clone().multiplyScalar(dt));
 
   // planet orbits (very slow)
   for(const p of planets){
-    p.userData.angle += p.userData.orbitalSpeed * dt * 60;
+    p.userData.angle += p.userData.speed * dt * 60;
     p.position.x = Math.cos(p.userData.angle) * p.userData.distance;
     p.position.z = Math.sin(p.userData.angle) * p.userData.distance;
-    p.rotation.y += 0.0001;
     if(p.userData.ring) p.userData.ring.position.copy(p.position);
   }
-
-  // moon orbit (if parented)
-  const earth = planets.find(x=>x.userData.name==='Earth');
+  // moon local orbit (if present)
+  const earth = planets.find(p=>p.userData.name==='Earth');
   if(earth){
-    const moon = earth.children.find(c => c.geometry && c.geometry.parameters && c.geometry.parameters.radius);
-    if(moon){
-      moon.userData.angle = (moon.userData.angle || 0) + 0.002 * dt * 60;
-      moon.position.x = Math.cos(moon.userData.angle) * moon.userData.dist;
-      moon.position.z = Math.sin(moon.userData.angle) * moon.userData.dist;
-    }
+    const moon = earth.children.find(c=>c.userData && c.userData.orbitSpeed);
+    if(moon){ moon.userData.angle = (moon.userData.angle || 0) + moon.userData.orbitSpeed * dt * 60; moon.position.x = Math.cos(moon.userData.angle) * moon.userData.distance; moon.position.z = Math.sin(moon.userData.angle) * moon.userData.distance; }
   }
 
-  // handle wormhole pull & star stretch
+  // wormhole interactions
   handleWormholes(dt);
 
-  // apply planet collisions (prevents passing through)
+  // collisions with planets
   resolvePlanetCollisions();
 
-  // update ship visuals
+  // apply ship transform & banking visual
   ship.position.copy(state.pos);
-  // slight banking visual
-  ship.rotation.y -= move.x * 0.01;
-  ship.rotation.z = -move.x * 0.08;
+  ship.rotation.y -= move.x * 0.006; // slow yaw for big ship
+  ship.rotation.z = -move.x * 0.04;
 
-  // camera locked behind
+  // camera behind ship
   updateCamera();
 
   // HUD
-  speedEl.textContent = Math.floor(state.vel.length());
-  // nearest handled inside resolvePlanetCollisions -> nearEl
+  speedEl.textContent = Math.floor(state.vel.length()).toLocaleString();
 
-  // render
   renderer.render(scene, camera);
-  requestAnimationFrame(loop);
+  requestAnimationFrame(tick);
 }
-loop();
+tick();
 
-// ---------- helper: initial orientation ----------
+// ---------- add ship model to scene & initial orientation ----------
 ship.lookAt(new THREE.Vector3(0,0,-1));
 
 // ---------- resize ----------
@@ -431,9 +403,9 @@ window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; 
 
 // ---------- debug keys ----------
 window.addEventListener('keydown', e=>{
-  if(e.key.toLowerCase()==='r'){ state.pos.set(7000,1200,0); state.vel.set(0,0,0); }
-  if(e.key.toLowerCase()==='1'){ /* teleport to wormhole 1 for testing */ if(wormholes[0]) state.pos.copy(wormholes[0].pos.clone().add(new THREE.Vector3(0, wormholes[0].size*1.1, 0))); state.vel.set(0,0,0); }
-  if(e.key.toLowerCase()==='b'){ if(blackHoles[0]) state.pos.copy(blackHoles[0].pos.clone().add(new THREE.Vector3(blackHoles[0].radius*3, 0, blackHoles[0].radius*3))); state.vel.set(0,0,0); }
+  if(e.key.toLowerCase()==='r'){ state.pos.set(28000,9000,0); state.vel.set(0,0,0); }
+  if(e.key.toLowerCase()==='g'){ if(wormholes[0]) state.pos.copy(wormholes[0].pos.clone().add(new THREE.Vector3(0, wormholes[0].size*0.3, 0))); state.vel.set(0,0,0); }
+  if(e.key.toLowerCase()==='b'){ if(blackHoles[0]) state.pos.copy(blackHoles[0].pos.clone().add(new THREE.Vector3(blackHoles[0].radius*3,0,blackHoles[0].radius*3))); state.vel.set(0,0,0); }
 });
 
 // ---------- end ----------
