@@ -337,7 +337,7 @@ const welcomePopup = document.getElementById('welcomePopup');
 const welcomeText = document.getElementById('welcomeText');
 const closeWelcome = document.getElementById('closeWelcome');
 closeWelcome.addEventListener('click',()=>{welcomePopup.style.display='none';});
-const welcomeMessage = "Bienvenu commandant. La terre est désormé inhabitable, collecter des gemmes a travers les galaxy pour pouvoir voyager dans la 4eme ou se trouve une planète ou l'humanité pourrait s'installer !";
+const welcomeMessage = "Collectez des gemmes (des étoiles a très faible lumière) pour débloquer de nouveaux vaisseaux.";
 function animateText(textEl,msg,duration){
   let i=0; const interval = duration/msg.length;
   const timer = setInterval(()=>{textEl.textContent+=msg[i]; i++; if(i>=msg.length) clearInterval(timer);},interval);
