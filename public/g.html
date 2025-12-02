@@ -45,7 +45,7 @@ canvas{display:block}
 <body>
 
 <div id="loader">Chargement...</div>
-<div id="galaxyLabel">Système solaire</div>
+<div id="galaxyLabel">Infected galactic</div>
 <div id="gemCounter"><span class="material-icons">diamond</span><span id="gemCount">0</span></div>
 
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
@@ -59,17 +59,19 @@ canvas{display:block}
 <!-- Popups -->
 <div id="challengePopup" class="popup">
   <h3>Défis</h3>
-  <div id="challengeList"></div>
+  <div id="challengeList"><br></div>
   <button id="closeChallenge">Fermer</button>
 </div>
 <div id="infoPopup" class="popup">
   <h3>Infos</h3>
+  <hr>
   <p><b>Développeur:</b> Hz</p>
   <p><b>Version:</b> 1.0.3</p>
   <button id="closeInfo">Fermer</button>
 </div>
 <div id="shipPopup" class="popup">
   <h3>Vaisseaux</h3>
+  <hr>
   <div id="shipList"></div>
   <button id="closeShip">Fermer</button>
 </div>
@@ -301,13 +303,11 @@ btnShipPopup.addEventListener('click',()=>{
 // Défis
 const challenges=[
   {name:"Parcourir 1000 km",target:1000,progress:0,done:false},
-  {name:"Visiter 3 planètes",target:3,progress:0,done:false},
   {name:"Entrer dans 2 galaxies",target:2,progress:0,done:false},
   {name:"Débloquer vaisseau Sleek",target:1,progress:0,done:false},
   {name:"Débloquer vaisseau Bulky",target:2,progress:0,done:false},
   {name:"Collecter 50 gemmes",target:50,progress:0,done:false},
-  {name:"Explorer 5 planètes supplémentaires",target:5,progress:0,done:false},
-  {name:"Atteindre une altitude de 100",target:100,progress:0,done:false}
+  {name:"Collecter 200 gemmes", target:200,progress:0,done:false}
 ];
 const challengeListEl=document.getElementById('challengeList'),challengePopup=document.getElementById('challengePopup'),notifEl=document.getElementById('challengeNotif');
 function updateChallengesUI(){
