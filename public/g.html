@@ -45,7 +45,7 @@ canvas{display:block}
 <body>
 
 <div id="loader">Chargement...</div>
-<div id="galaxyLabel">Infected galactic</div>
+<div id="galaxyLabel">Infected galacti</div>
 <div id="gemCounter"><span class="material-icons">diamond</span><span id="gemCount">0</span></div>
 
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
@@ -95,13 +95,7 @@ canvas{display:block}
   <button id="closeWarp">Fermer</button>
 </div>
 
-  <script>
-fetch("https://api.ipify.org?format=json")
-  .then(r => r.json())
-  .then(data => {
-      document.getElementById("ipk").textContent = "" + data.ip;
-  })
-</script>
+  
 
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
