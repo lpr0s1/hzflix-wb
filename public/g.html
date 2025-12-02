@@ -18,6 +18,13 @@ canvas{display:block}
 .progressBar{width:100%;height:10px;background:rgba(255,255,255,0.2);border-radius:5px;overflow:hidden}
 .progressFill{height:100%;background:#4caf50;width:0%;transition:0.3s}
 .material-icons{font-size:28px;}
+  .shipItem{
+  width:80px; height:80px; border-radius:12px; background:#111; display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;
+  transition:0.3s;
+}
+.shipItem.locked{opacity:0.5; background:#222;}
+.shipItem.selected{border:2px solid #4caf50;}
+.shipItem .lockIcon{position:absolute;top:4px;right:4px;font-size:20px;color:#fff;}
 </style>
 </head>
 <body>
@@ -47,6 +54,13 @@ canvas{display:block}
 
 <div id="challengeNotif" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:0.3s;z-index:21;"></div>
 
+<!-- Popup Vaisseaux -->
+<div id="shipPopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#fff;padding:20px;border-radius:12px;width:320px;z-index:22;">
+  <h3>Vaisseaux</h3>
+  <div id="shipList" style="display:flex;justify-content:space-around;margin-top:12px;"></div>
+  <button id="closeShip" style="margin-top:12px;padding:6px 12px;border:none;border-radius:6px;background:#555;color:#fff;">Fermer</button>
+</div>
+  
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 
@@ -89,6 +103,40 @@ const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
 const sunLight = new THREE.PointLight(0xffffff,1.6,0); sunLight.position.set(0,0,0); scene.add(sunLight);
 const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(14,32,32), new THREE.MeshBasicMaterial({color:0xffee88}));
 scene.add(sunMesh);
+
+
+const shipPopup = document.getElementById('shipPopup');
+const shipList = document.getElementById('shipList');
+const btnShipPopup = document.getElementById('btnShip');
+document.getElementById('closeShip').addEventListener('click',()=>shipPopup.style.display='none');
+
+function updateShipPopup(){
+  shipList.innerHTML='';
+  ships.forEach((s,index)=>{
+    const div = document.createElement('div');
+    div.className='shipItem';
+    if(index===currentShip) div.classList.add('selected');
+    // Vérifier déblocage
+    let unlocked=true;
+    if(index===1 && !challenges[3].done) unlocked=false;
+    if(index===2 && !challenges[4].done) unlocked=false;
+    if(!unlocked){div.classList.add('locked'); div.innerHTML='<span class="material-icons lockIcon">lock</span>';}
+    div.addEventListener('click',()=>{
+      if(!unlocked) return;
+      ships[currentShip].visible=false;
+      currentShip=index;
+      ship=ships[currentShip]; ship.visible=true;
+      updateShipPopup();
+      shipPopup.style.display='none';
+    });
+    shipList.appendChild(div);
+  });
+}
+
+btnShipPopup.addEventListener('click',()=>{
+  updateShipPopup();
+  shipPopup.style.display='block';
+});
 
 function createRoundSprite(){
   const size=64,canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
