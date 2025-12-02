@@ -293,6 +293,9 @@ function createFallbackShips(){ // garde un fallback procédural si le GLB ne ch
   ships.forEach(s=>scene.add(s));
 }
 
+// --- AJOUT 1 : créer immédiatement le fallback pour éviter que animate() ne tourne sans ship
+createFallbackShips();
+
 // fonction utilitaire pour initialiser l'UI après chargement
 function initShipUI(){
   // si UI existante s'attend à éléments, on garde l'autre code inchangé — juste s'assurer que `ship` et `ships` sont définis
@@ -461,6 +464,8 @@ const forwardVec=new THREE.Vector3(0,0,-1);
 planets.forEach(p=>{p.userData.angle=Math.random()*Math.PI*2;}); moon.userData.angle=0;
 let totalDistance=0;
 const lastPos = new THREE.Vector3();  // <-- corrigé : ne copie pas ship avant qu'il existe
+// --- AJOUT 2 : si le fallback a déjà créé le ship, initialiser lastPos ici
+if (ship && ship.position) lastPos.copy(ship.position);
 
 function updateChallengeProgress(){
   const dist=lastPos.distanceTo(ship.position); totalDistance+=dist; lastPos.copy(ship.position);
