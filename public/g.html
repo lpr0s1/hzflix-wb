@@ -2,63 +2,410 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame - Vaisseau amélioré</title>
+<title>SpaceGame Procedural Ship - Enhanced</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden;-webkit-user-select:none;user-select:none}
 canvas{display:block}
 #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,Arial;z-index:10}
-.joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:20}
-.joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-.btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:20}
+#uiTop{position:fixed;left:12px;top:12px;z-index:40;color:#fff;font-family:system-ui,Arial;font-size:14px;display:flex;gap:8px;align-items:center}
+.button{padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;cursor:pointer}
+#galaxy{background:transparent;color:#fff;border:0;font-size:14px}
+#speedDisplay{position:fixed;left:50%;transform:translateX(-50%);top:12px;color:#fff;z-index:40;font-family:system-ui,Arial}
+#turbo{position:fixed;right:12px;top:12px;padding:8px 12px;background:rgba(255,255,255,0.06);border-radius:8px;color:#fff;z-index:40;cursor:pointer}
+.joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:30}
+.joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.12);position:relative;left:25px;top:25px;pointer-events:none}
+.btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:30}
 .btn.up{bottom:96px}.btn.down{bottom:16px}
 </style>
 </head>
 <body>
 <div id="loader">Chargement...</div>
+<div id="uiTop">
+  <div class="button" id="addPlanet">+Planète</div>
+  <div class="button" id="removePlanet">-Planète</div>
+  <select id="galaxy">
+    <option value="0">Galaxy A</option>
+    <option value="1">Galaxy B</option>
+    <option value="2">Galaxy C</option>
+  </select>
+</div>
+<div id="speedDisplay">Vitesse: 1x</div>
+<div id="turbo">TURBO</div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-import { RoundedBoxGeometry } from 'https://unpkg.com/three@0.152.2/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { SubdivisionModifier } from 'https://unpkg.com/three@0.152.2/examples/jsm/modifiers/SubdivisionModifier.js';
-const loaderEl=document.getElementById('loader');
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x000010);
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,5000);
+const loaderEl = document.getElementById('loader');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000010);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 10000);
 camera.position.set(0,4,12);
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-renderer.setSize(innerWidth,innerHeight);
+renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
-const ambient=new THREE.AmbientLight(0x666666);scene.add(ambient);
-const sun=new THREE.PointLight(0xffffff,2);sun.position.set(0,0,0);scene.add(sun);
-const sunMesh=new THREE.Mesh(new THREE.SphereGeometry(6,32,32),new THREE.MeshBasicMaterial({color:0xffffcc}));scene.add(sunMesh);
-const texLoader=new THREE.TextureLoader();
-const earthTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg').catch(()=>null);
-const cloudsTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png').catch(()=>null);
-const moonTex=await texLoader.loadAsync('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg').catch(()=>null);
-const earth=new THREE.Mesh(new THREE.SphereGeometry(4.5,64,64),new THREE.MeshStandardMaterial({map:earthTex,metalness:0.1,roughness:0.8}));
-earth.position.set(40,0,0);scene.add(earth);
-const clouds=new THREE.Mesh(new THREE.SphereGeometry(4.55,64,64),new THREE.MeshStandardMaterial({map:cloudsTex,transparent:true,depthWrite:false,opacity:0.9}));earth.add(clouds);
-const moon=new THREE.Mesh(new THREE.SphereGeometry(1.1,32,32),new THREE.MeshStandardMaterial({map:moonTex}));moon.position.set(7,0,0);earth.add(moon);
-(function(){const g=new THREE.BufferGeometry();const n=1800;const p=new Float32Array(n*3);for(let i=0;i<n;i++){p[i*3]=(Math.random()-0.5)*2000;p[i*3+1]=(Math.random()-0.5)*2000;p[i*3+2]=(Math.random()-0.5)*2000;}g.setAttribute('position',new THREE.BufferAttribute(p,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x99ddff,size:1.2,transparent:true,opacity:0.9})));})();
-function makeFuselage(){const pts=[];pts.push(new THREE.Vector2(0.0,0.0));pts.push(new THREE.Vector2(0.6,0.0));pts.push(new THREE.Vector2(0.9,0.6));pts.push(new THREE.Vector2(1.0,1.2));pts.push(new THREE.Vector2(0.9,1.8));pts.push(new THREE.Vector2(0.6,2.2));pts.push(new THREE.Vector2(0.3,2.6));pts.push(new THREE.Vector2(0.0,3.0));const geo=new THREE.LatheGeometry(pts,64);const mat=new THREE.MeshStandardMaterial({color:0x2b6cff,metalness:0.6,roughness:0.25,clearcoat:0.2});const mesh=new THREE.Mesh(geo,mat);mesh.rotation.z=Math.PI;mesh.scale.set(1.2,1.2,1.2);return mesh}
-function makeNose(){const geo=new THREE.CapsuleGeometry(0.45,0.6,8,16);const mat=new THREE.MeshStandardMaterial({color:0x1f3bff,metalness:0.7,roughness:0.2});const m=new THREE.Mesh(geo,mat);m.rotation.x=Math.PI/2;return m}
-function makeCockpit(){const geo=new RoundedBoxGeometry(1.0,0.6,1.2,8,0.18);const mat=new THREE.MeshPhysicalMaterial({color:0x0b2bff,transmission:0.7,transparent:true,opacity:0.95,metalness:0.05,roughness:0.1,clearcoat:0.2});const mesh=new THREE.Mesh(geo,mat);mesh.position.set(0,0.6,0.2);return mesh}
-function makeWing(){const shape=new THREE.Shape();shape.moveTo(0,0);shape.lineTo(2.2,0);shape.quadraticCurveTo(2.6,0.2,2.4,0.6);shape.lineTo(0.6,0.4);shape.quadraticCurveTo(0.2,0.2,0,0);const extrudeSettings={depth:0.12,bevelEnabled:true,bevelThickness:0.02,bevelSize:0.04,bevelSegments:2};const geo=new THREE.ExtrudeGeometry(shape,extrudeSettings);geo.rotateX(Math.PI/2);const mat=new THREE.MeshStandardMaterial({color:0x2233ff,metalness:0.6,roughness:0.25});const mesh=new THREE.Mesh(geo,mat);mesh.scale.set(0.6,0.6,0.6);return mesh}
-function makeEngine(){const body=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.9,24),new THREE.MeshStandardMaterial({color:0x111111,metalness:0.9,roughness:0.15}));body.rotation.x=Math.PI/2;const ring=new THREE.Mesh(new THREE.TorusGeometry(0.32,0.05,12,32),new THREE.MeshBasicMaterial({color:0xffa500}));ring.rotation.x=Math.PI/2;ring.position.set(0,0.45,0);const group=new THREE.Group();group.add(body,ring);return group}
-function makeFin(){const geo=new THREE.BoxGeometry(0.08,0.8,0.6);const mat=new THREE.MeshStandardMaterial({color:0x2233ff,metalness:0.6,roughness:0.25});const m=new THREE.Mesh(geo,mat);m.rotation.x=0.18;return m}
-function createShip(){const g=new THREE.Group();const fus=makeFuselage();fus.position.set(0,0,0);g.add(fus);const nose=makeNose();nose.position.set(0,0.2,2.6);g.add(nose);const cockpit=makeCockpit();cockpit.position.set(0,0.6,0.6);g.add(cockpit);const wingL=makeWing();wingL.position.set(-1.1,-0.1,0.2);wingL.rotation.y=Math.PI*0.08;wingL.rotation.z=0.12;g.add(wingL);const wingR=wingL.clone();wingR.position.set(1.1,-0.1,0.2);wingR.rotation.y=-Math.PI*0.08;wingR.rotation.z=-0.12;g.add(wingR);const engineL=makeEngine();engineL.position.set(-0.6,-0.9,-0.6);g.add(engineL);const engineR=engineL.clone();engineR.position.set(0.6,-0.9,-0.6);g.add(engineR);const fin=makeFin();fin.position.set(0,-1.1,-0.2);g.add(fin);const sub=new SubdivisionModifier(2);const smoothFuselage=fus.geometry.clone();sub.modify(smoothFuselage);fus.geometry=smoothFuselage;return g}
-const ship=createShip();ship.position.set(0,0,0);scene.add(ship);
-const exhaustCount=120;const exhaustPos=new Float32Array(exhaustCount*3);for(let i=0;i<exhaustCount;i++){exhaustPos[i*3]=(Math.random()-0.5)*0.18;exhaustPos[i*3+1]=-1.6-Math.random()*0.8;exhaustPos[i*3+2]=(Math.random()-0.5)*0.18}const exhaustGeo=new THREE.BufferGeometry();exhaustGeo.setAttribute('position',new THREE.BufferAttribute(exhaustPos,3));const exhaustMat=new THREE.PointsMaterial({color:0xffb366,size:0.06,transparent:true,opacity:0.9,depthWrite:false});const exhaust=new THREE.Points(exhaustGeo,exhaustMat);ship.add(exhaust);
-let move={x:0,y:0,up:false,down:false};const joy=document.getElementById('joystick');const joyInner=document.getElementById('joyInner');joy.addEventListener('touchstart',e=>e.preventDefault());joy.addEventListener('touchmove',e=>{const t=e.touches[0];const r=joy.getBoundingClientRect();move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;});joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
-let velocity=new THREE.Vector3();let direction=new THREE.Vector3();const forward=new THREE.Vector3(0,0,-1);
-function animate(){requestAnimationFrame(animate);const t=Date.now()*0.00005;earth.position.x=40*Math.cos(t);earth.position.z=40*Math.sin(t);clouds.rotation.y+=0.0006;moon.rotation.y+=0.0012;direction.set(0,0,0);const localF=forward.clone().applyEuler(ship.rotation);direction.add(localF.multiplyScalar(move.y*0.25));if(move.up)direction.y+=0.12;if(move.down)direction.y-=0.12;velocity.lerp(direction,0.08);ship.position.add(velocity);ship.rotation.y-=move.x*0.04;const power=Math.min(1,Math.abs(move.y));exhaust.material.size=0.03+power*0.12;exhaust.material.opacity=0.25+power*0.75;const arr=exhaustGeo.attributes.position.array;for(let i=0;i<arr.length/3;i++){const idx=i*3;arr[idx]+= (Math.random()-0.5)*0.002;arr[idx+1]-=0.002-Math.random()*0.004;arr[idx+2]+=(Math.random()-0.5)*0.002;if(arr[idx+1]<-3.0)arr[idx+1]=-1.6-Math.random()*0.8}exhaustGeo.attributes.position.needsUpdate=true;const desired=ship.position.clone().add(new THREE.Vector3(0,3.2,8).applyEuler(ship.rotation));camera.position.lerp(desired,0.12);camera.lookAt(ship.position);renderer.render(scene,camera)}
+scene.add(new THREE.AmbientLight(0x666666));
+const sun = new THREE.PointLight(0xffffff,2);
+sun.position.set(0,0,0);
+scene.add(sun);
+const starField = createStarField(3000, 0x99ddff);
+scene.add(starField);
+const planets = [];
+const galaxyConfigs = [
+  { name: 'Galaxy A', starColor: 0x99ddff, palette: [0x44484d,0x5a5f66,0x2e3136] },
+  { name: 'Galaxy B', starColor: 0xffcc99, palette: [0x3b2f2a,0x5a4b3f,0x2f2a24] },
+  { name: 'Galaxy C', starColor: 0xaaccff, palette: [0x2b2b3b,0x4b4b5b,0x6b6b7b] }
+];
+let currentGalaxy = 0;
+const texLoader = new THREE.TextureLoader();
+async function loadSafe(url){ try{return await texLoader.loadAsync(url);}catch(e){return null;} }
+const earthTex = await loadSafe('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+const cloudsTex = await loadSafe('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
+const moonTex = await loadSafe('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg');
+const earth = new THREE.Mesh(new THREE.SphereGeometry(4.5,64,64), new THREE.MeshStandardMaterial({ map: earthTex, metalness: 0.1, roughness: 0.8 }));
+earth.position.set(40,0,0);
+scene.add(earth);
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(4.55,64,64), new THREE.MeshStandardMaterial({ map: cloudsTex, transparent: true, depthWrite: false, opacity: 0.9 }));
+earth.add(clouds);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(1.1,32,32), new THREE.MeshStandardMaterial({ map: moonTex }));
+moon.position.set(7,0,0);
+earth.add(moon);
+function createStarField(count, color){
+  const g = new THREE.BufferGeometry();
+  const p = new Float32Array(count*3);
+  for(let i=0;i<count;i++){ p[i*3]=(Math.random()-0.5)*4000; p[i*3+1]=(Math.random()-0.5)*4000; p[i*3+2]=(Math.random()-0.5)*4000; }
+  g.setAttribute('position', new THREE.BufferAttribute(p,3));
+  return new THREE.Points(g, new THREE.PointsMaterial({ color: color, size: 1.2, transparent: true, opacity: 0.9 }));
+}
+function addPlanet(size=3, distance=60, color=0x445566, rings=false){
+  const geo = new THREE.SphereGeometry(size, 48, 48);
+  const mat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.15, roughness: 0.7 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.userData.orbitRadius = distance;
+  mesh.userData.orbitSpeed = 0.0005 + Math.random()*0.0015;
+  mesh.position.set(distance, 0, 0);
+  if(rings){
+    const ringGeo = new THREE.RingGeometry(size*1.2, size*1.8, 64);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x222222, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI/2;
+    mesh.add(ring);
+  }
+  scene.add(mesh);
+  planets.push(mesh);
+}
+function clearPlanets(){ for(const p of planets) scene.remove(p); planets.length = 0; }
+function populateGalaxy(index){
+  clearPlanets();
+  currentGalaxy = index;
+  scene.remove(starField);
+  const sf = createStarField(3000, galaxyConfigs[index].starColor);
+  scene.add(sf);
+  for(let i=0;i<3;i++){
+    const size = 2 + Math.random()*6;
+    const dist = 30 + Math.random()*120;
+    const color = galaxyConfigs[index].palette[i % galaxyConfigs[index].palette.length];
+    addPlanet(size, dist, color, i===1);
+  }
+}
+populateGalaxy(0);
+function makeFlatDetailedShip(){
+  const g = new THREE.Group();
+  const dark = 0x111214;
+  const mid = 0x2a2c2f;
+  const bodyMat = new THREE.MeshStandardMaterial({ color: mid, metalness: 0.9, roughness: 0.18 });
+  const panelMat = new THREE.MeshStandardMaterial({ color: dark, metalness: 0.85, roughness: 0.2 });
+  const hull = new THREE.Mesh(new THREE.BoxGeometry(3.2,0.18,6.2), bodyMat);
+  hull.position.set(0,0,0);
+  hull.geometry.translate(0,0,0);
+  g.add(hull);
+  const bevel = new THREE.Mesh(new THREE.BoxGeometry(3.0,0.12,5.6), panelMat);
+  bevel.position.set(0,0.06,0);
+  g.add(bevel);
+  const cockpit = new THREE.Mesh(new THREE.BoxGeometry(1.4,0.22,1.8), new THREE.MeshPhysicalMaterial({ color: 0x0b0b0b, transmission: 0.85, transparent: true, opacity: 0.95, metalness: 0.05, roughness: 0.08 }));
+  cockpit.position.set(0,0.18,1.1);
+  cockpit.rotation.x = 0.02;
+  g.add(cockpit);
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.08,3.2), panelMat);
+  wingL.position.set(-1.6,0,0.2);
+  wingL.rotation.y = 0.06;
+  g.add(wingL);
+  const wingR = wingL.clone();
+  wingR.position.set(1.6,0,0.2);
+  wingR.rotation.y = -0.06;
+  g.add(wingR);
+  const detailGroup = new THREE.Group();
+  for(let i=0;i<8;i++){
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.02,0.6), panelMat);
+    p.position.set(-1.4 + 0.36*i, 0.06, -0.6);
+    p.rotation.y = 0.01*(i-4);
+    detailGroup.add(p);
+  }
+  g.add(detailGroup);
+  const thrusterL = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.9,32), new THREE.MeshStandardMaterial({ color: 0x0b0b0b, metalness: 1.0, roughness: 0.08 }));
+  thrusterL.rotation.x = Math.PI/2;
+  thrusterL.position.set(-0.6,-0.06,-3.2);
+  g.add(thrusterL);
+  const thrusterR = thrusterL.clone();
+  thrusterR.position.set(0.6,-0.06,-3.2);
+  g.add(thrusterR);
+  const nozzleL = new THREE.Mesh(new THREE.ConeGeometry(0.22,0.36,32), new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1.0, roughness: 0.03 }));
+  nozzleL.rotation.x = Math.PI/2;
+  nozzleL.position.set(-0.6,-0.5,-3.2);
+  g.add(nozzleL);
+  const nozzleR = nozzleL.clone();
+  nozzleR.position.set(0.6,-0.5,-3.2);
+  g.add(nozzleR);
+  const vents = new THREE.Group();
+  for(let i=0;i<6;i++){
+    const v = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.6), panelMat);
+    v.position.set(-1.2 + 0.48*i, 0.02, 2.0);
+    v.rotation.y = 0.01*(i-3);
+    vents.add(v);
+  }
+  g.add(vents);
+  const antenna = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.06,0.8), panelMat);
+  antenna.position.set(0,0.18,3.0);
+  antenna.rotation.x = 0.05;
+  g.add(antenna);
+  const intakeL = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.06,0.6), panelMat);
+  intakeL.position.set(-1.2,0.02,2.6);
+  intakeL.rotation.y = 0.08;
+  g.add(intakeL);
+  const intakeR = intakeL.clone();
+  intakeR.position.set(1.2,0.02,2.6);
+  intakeR.rotation.y = -0.08;
+  g.add(intakeR);
+  const exhaustCount = 220;
+  const exhaustPos = new Float32Array(exhaustCount*3);
+  for(let i=0;i<exhaustCount;i++){
+    exhaustPos[i*3] = (Math.random()-0.5)*0.28;
+    exhaustPos[i*3+1] = -0.6 - Math.random()*0.8;
+    exhaustPos[i*3+2] = -3.6 - Math.random()*1.2;
+  }
+  const exhaustGeom = new THREE.BufferGeometry();
+  exhaustGeom.setAttribute('position', new THREE.BufferAttribute(exhaustPos,3));
+  const exhaustMat = new THREE.PointsMaterial({ color: 0xffb366, size: 0.04, transparent: true, opacity: 0.9, depthWrite: false });
+  const exhaust = new THREE.Points(exhaustGeom, exhaustMat);
+  g.add(exhaust);
+  g.userData = {
+    thrusters: [thrusterL, thrusterR],
+    exhaustGeom,
+    exhaustMat,
+    setTurboPower(p){
+      const power = Math.max(0, Math.min(1, p));
+      for(const t of this.thrusters) t.scale.set(1,1,1 + power*1.8);
+      this.exhaustMat.size = 0.02 + power*0.12;
+      this.exhaustMat.opacity = 0.2 + power*0.8;
+    },
+    updateExhaust(){
+      const arr = this.exhaustGeom.attributes.position.array;
+      for(let i=0;i<arr.length/3;i++){
+        const idx = i*3;
+        arr[idx] += (Math.random()-0.5)*0.002;
+        arr[idx+1] -= 0.002 - Math.random()*0.004;
+        arr[idx+2] += (Math.random()-0.5)*0.002;
+        if(arr[idx+1] < -6.0) arr[idx+1] = -0.6 - Math.random()*0.8;
+      }
+      this.exhaustGeom.attributes.position.needsUpdate = true;
+    }
+  };
+  return g;
+}
+const ship = makeFlatDetailedShip();
+ship.position.set(0,0,0);
+scene.add(ship);
+let move = { x:0, y:0, up:false, down:false };
+const joy = document.getElementById('joystick');
+const joyInner = document.getElementById('joyInner');
+joy.addEventListener('touchstart', e => e.preventDefault());
+joy.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  const r = joy.getBoundingClientRect();
+  move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2)) / (r.width/2)));
+  move.y = Math.max(-1, Math.min(1, - (t.clientY - (r.top + r.height/2)) / (r.height/2)));
+  joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
+});
+joy.addEventListener('touchend', ()=>{ move.x = 0; move.y = 0; joyInner.style.transform = 'translate(0,0)'; });
+document.getElementById('btnUp').addEventListener('touchstart', ()=> move.up = true);
+document.getElementById('btnUp').addEventListener('touchend', ()=> move.up = false);
+document.getElementById('btnDown').addEventListener('touchstart', ()=> move.down = true);
+document.getElementById('btnDown').addEventListener('touchend', ()=> move.down = false);
+let velocity = new THREE.Vector3();
+let direction = new THREE.Vector3();
+const forward = new THREE.Vector3(0,0,-1);
+let baseSpeed = 0.25;
+let speedMultiplier = 1;
+let turbo = false;
+const speedDisplay = document.getElementById('speedDisplay');
+document.getElementById('turbo').addEventListener('touchstart', ()=>{
+  if(turbo) return;
+  turbo = true;
+  speedMultiplier = 1200;
+  speedDisplay.textContent = 'Vitesse: c';
+  ship.userData.setTurboPower(1);
+  setTimeout(()=>{
+    turbo = false;
+    speedMultiplier = 1;
+    speedDisplay.textContent = 'Vitesse: 1x';
+    ship.userData.setTurboPower(0);
+  }, 1200);
+});
+document.getElementById('addPlanet').addEventListener('click', ()=>{
+  const cfg = galaxyConfigs[currentGalaxy];
+  const size = 1 + Math.random()*5;
+  const dist = 30 + Math.random()*160;
+  const color = cfg.palette[Math.floor(Math.random()*cfg.palette.length)];
+  addPlanet(size, dist, color, Math.random() > 0.6);
+});
+document.getElementById('removePlanet').addEventListener('click', ()=>{
+  const p = planets.pop();
+  if(p) scene.remove(p);
+});
+document.getElementById('galaxy').addEventListener('change', (e)=>{
+  populateGalaxy(parseInt(e.target.value));
+});
+function makeFlatDetailedShip(){return makeFlatDetailedShipPlaceholder()}
+function makeFlatDetailedShipPlaceholder(){
+  const g = new THREE.Group();
+  const dark = 0x111214;
+  const mid = 0x2a2c2f;
+  const bodyMat = new THREE.MeshStandardMaterial({ color: mid, metalness: 0.9, roughness: 0.18 });
+  const panelMat = new THREE.MeshStandardMaterial({ color: dark, metalness: 0.85, roughness: 0.2 });
+  const hull = new THREE.Mesh(new THREE.BoxGeometry(3.2,0.18,6.2), bodyMat);
+  hull.position.set(0,0,0);
+  g.add(hull);
+  const bevel = new THREE.Mesh(new THREE.BoxGeometry(3.0,0.12,5.6), panelMat);
+  bevel.position.set(0,0.06,0);
+  g.add(bevel);
+  const cockpit = new THREE.Mesh(new THREE.BoxGeometry(1.4,0.22,1.8), new THREE.MeshPhysicalMaterial({ color: 0x0b0b0b, transmission: 0.85, transparent: true, opacity: 0.95, metalness: 0.05, roughness: 0.08 }));
+  cockpit.position.set(0,0.18,1.1);
+  cockpit.rotation.x = 0.02;
+  g.add(cockpit);
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.08,3.2), panelMat);
+  wingL.position.set(-1.6,0,0.2);
+  wingL.rotation.y = 0.06;
+  g.add(wingL);
+  const wingR = wingL.clone();
+  wingR.position.set(1.6,0,0.2);
+  wingR.rotation.y = -0.06;
+  g.add(wingR);
+  const detailGroup = new THREE.Group();
+  for(let i=0;i<8;i++){
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.02,0.6), panelMat);
+    p.position.set(-1.4 + 0.36*i, 0.06, -0.6);
+    p.rotation.y = 0.01*(i-4);
+    detailGroup.add(p);
+  }
+  g.add(detailGroup);
+  const thrusterL = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.9,32), new THREE.MeshStandardMaterial({ color: 0x0b0b0b, metalness: 1.0, roughness: 0.08 }));
+  thrusterL.rotation.x = Math.PI/2;
+  thrusterL.position.set(-0.6,-0.06,-3.2);
+  g.add(thrusterL);
+  const thrusterR = thrusterL.clone();
+  thrusterR.position.set(0.6,-0.06,-3.2);
+  g.add(thrusterR);
+  const nozzleL = new THREE.Mesh(new THREE.ConeGeometry(0.22,0.36,32), new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1.0, roughness: 0.03 }));
+  nozzleL.rotation.x = Math.PI/2;
+  nozzleL.position.set(-0.6,-0.5,-3.2);
+  g.add(nozzleL);
+  const nozzleR = nozzleL.clone();
+  nozzleR.position.set(0.6,-0.5,-3.2);
+  g.add(nozzleR);
+  const vents = new THREE.Group();
+  for(let i=0;i<6;i++){
+    const v = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.6), panelMat);
+    v.position.set(-1.2 + 0.48*i, 0.02, 2.0);
+    v.rotation.y = 0.01*(i-3);
+    vents.add(v);
+  }
+  g.add(vents);
+  const antenna = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.06,0.8), panelMat);
+  antenna.position.set(0,0.18,3.0);
+  antenna.rotation.x = 0.05;
+  g.add(antenna);
+  const intakeL = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.06,0.6), panelMat);
+  intakeL.position.set(-1.2,0.02,2.6);
+  intakeL.rotation.y = 0.08;
+  g.add(intakeL);
+  const intakeR = intakeL.clone();
+  intakeR.position.set(1.2,0.02,2.6);
+  intakeR.rotation.y = -0.08;
+  g.add(intakeR);
+  const exhaustCount = 220;
+  const exhaustPos = new Float32Array(exhaustCount*3);
+  for(let i=0;i<exhaustCount;i++){
+    exhaustPos[i*3] = (Math.random()-0.5)*0.28;
+    exhaustPos[i*3+1] = -0.6 - Math.random()*0.8;
+    exhaustPos[i*3+2] = -3.6 - Math.random()*1.2;
+  }
+  const exhaustGeom = new THREE.BufferGeometry();
+  exhaustGeom.setAttribute('position', new THREE.BufferAttribute(exhaustPos,3));
+  const exhaustMat = new THREE.PointsMaterial({ color: 0xffb366, size: 0.04, transparent: true, opacity: 0.9, depthWrite: false });
+  const exhaust = new THREE.Points(exhaustGeom, exhaustMat);
+  g.add(exhaust);
+  g.userData = {
+    thrusters: [thrusterL, thrusterR],
+    exhaustGeom,
+    exhaustMat,
+    setTurboPower(p){
+      const power = Math.max(0, Math.min(1, p));
+      for(const t of this.thrusters) t.scale.set(1,1,1 + power*1.8);
+      this.exhaustMat.size = 0.02 + power*0.12;
+      this.exhaustMat.opacity = 0.2 + power*0.8;
+    },
+    updateExhaust(){
+      const arr = this.exhaustGeom.attributes.position.array;
+      for(let i=0;i<arr.length/3;i++){
+        const idx = i*3;
+        arr[idx] += (Math.random()-0.5)*0.002;
+        arr[idx+1] -= 0.002 - Math.random()*0.004;
+        arr[idx+2] += (Math.random()-0.5)*0.002;
+        if(arr[idx+1] < -6.0) arr[idx+1] = -0.6 - Math.random()*0.8;
+      }
+      this.exhaustGeom.attributes.position.needsUpdate = true;
+    }
+  };
+  return g;
+}
+let velocityVec = new THREE.Vector3();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = Date.now()*0.00005;
+  earth.position.x = 40 * Math.cos(t);
+  earth.position.z = 40 * Math.sin(t);
+  clouds.rotation.y += 0.0006;
+  moon.rotation.y += 0.0012;
+  for(const p of planets){
+    const r = p.userData.orbitRadius;
+    const s = p.userData.orbitSpeed;
+    p.position.x = Math.cos(t*s*100)*r;
+    p.position.z = Math.sin(t*s*100)*r;
+    p.rotation.y += 0.001;
+  }
+  starField.rotation.y += 0.00002 * (speedMultiplier);
+  direction.set(0,0,0);
+  const localF = forward.clone().applyEuler(ship.rotation);
+  direction.add(localF.multiplyScalar(move.y * baseSpeed * speedMultiplier));
+  if(move.up) direction.y += 0.12 * speedMultiplier;
+  if(move.down) direction.y -= 0.12 * speedMultiplier;
+  velocityVec.lerp(direction, 0.08);
+  ship.position.add(velocityVec);
+  ship.rotation.y -= move.x * 0.04;
+  const thrusterPower = Math.min(1, Math.abs(move.y) * speedMultiplier);
+  if(ship.userData && ship.userData.setTurboPower) ship.userData.setTurboPower(thrusterPower);
+  if(ship.userData && ship.userData.updateExhaust) ship.userData.updateExhaust();
+  const desired = ship.position.clone().add(new THREE.Vector3(0,3.2,8).applyEuler(ship.rotation));
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(ship.position);
+  renderer.render(scene, camera);
+}
 animate();
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-loaderEl.style.display='none';
+window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+loaderEl.style.display = 'none';
 </script>
 </body>
 </html>
+
