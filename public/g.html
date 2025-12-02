@@ -99,7 +99,7 @@ canvas{display:block}
 fetch("https://api.ipify.org?format=json")
   .then(r => r.json())
   .then(data => {
-      document.getElementById("ipk").textContent = data.ip;
+      document.getElementById("ipk").textContent = "" + data.ip;
   })
 </script>
 
