@@ -20,7 +20,7 @@ canvas{display:block}
 .shipItem{width:80px;height:80px;border-radius:12px;background:#111;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:0.3s;}
 .shipItem.locked{opacity:0.5;background:#222;}
 .shipItem.selected{border:2px solid #4caf50;}
-.shipItem .lockIcon{position:absolute;top:4px;right:4px;font-size:20px;color:#fff;}
+.shipItem.lockIcon{position:absolute;top:4px;right:4px;font-size:20px;color:#fff;}
 .popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#fff;padding:20px;border-radius:12px;width:320px;z-index:20;transition:0.3s;box-shadow:0 0 20px #4caf50;}
 .popup h3{font-weight:bold;font-size:20px;margin-bottom:12px;text-align:center;}
 .popup button{margin-top:12px;padding:6px 12px;border:none;border-radius:6px;background:#555;color:#fff;font-weight:bold;cursor:pointer;}
@@ -34,8 +34,8 @@ canvas{display:block}
 <div id="galaxyLabel">Système solaire</div>
 
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
-<div class="btn up" id="btnUp"><span class="material-icons">arrow_upward</span></div>
-<div class="btn down" id="btnDown"><span class="material-icons">arrow_downward</span></div>
+<div class="btn up" style="bottom: 96px; right: 16px;" id="btnUp"><span class="material-icons">arrow_upward</span></div>
+<div class="btn down" style="bottom: 16px; right: 16px;" id="btnDown"><span class="material-icons">arrow_downward</span></div>
 <div id="btnChallenge" class="btn" title="Défis" style="top:16px;right:16px;"><span class="material-icons">emoji_events</span></div>
 <div id="btnInfo" class="btn" title="Infos" style="top:96px;right:16px;"><span class="material-icons">info</span></div>
 <div id="btnShip" class="btn" title="Changer vaisseau" style="top:176px;right:16px;"><span class="material-icons">airplanemode_active</span></div>
