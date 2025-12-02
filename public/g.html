@@ -132,14 +132,14 @@ galaxy1.planets.push(makePlanet(3*30,50,mercuryTex,{orbitalSpeed:0.0001}));
 galaxy1.planets.push(makePlanet(5*30,80,venusTex,{orbitalSpeed:0.00005}));
 const earth1 = makePlanet(6*30,120,earthTex,{orbitalSpeed:0.00008});
 galaxy1.planets.push(earth1);
-const moon1 = new THREE.Mesh(new THREE.SphereGeometry(1.2*30,24,24), new THREE.MeshStandardMaterial({map:moonTex}));
-moon1.position.set(12*30,0,0);
+const moon1 = new THREE.Mesh(new THREE.SphereGeometry(1.2*17,24,24), new THREE.MeshStandardMaterial({map:moonTex}));
+moon1.position.set(12*20,0,0);
 earth1.add(moon1);
-galaxy1.planets.push(makePlanet(4*30,170,marsTex,{orbitalSpeed:0.00006}));
-galaxy1.planets.push(makePlanet(16*30,260,jupiterTex,{orbitalSpeed:0.00002}));
-galaxy1.planets.push(makePlanet(14*30,350,saturnTex,{orbitalSpeed:0.000015}));
-galaxy1.planets.push(makePlanet(9*30,450,uranusTex,{orbitalSpeed:0.000008}));
-galaxy1.planets.push(makePlanet(9*30,550,neptuneTex,{orbitalSpeed:0.000009}));
+galaxy1.planets.push(makePlanet(4*14,170,marsTex,{orbitalSpeed:0.00006}));
+galaxy1.planets.push(makePlanet(16*14,260,jupiterTex,{orbitalSpeed:0.00002}));
+galaxy1.planets.push(makePlanet(14*14,350,saturnTex,{orbitalSpeed:0.000015}));
+galaxy1.planets.push(makePlanet(9*14,450,uranusTex,{orbitalSpeed:0.000008}));
+galaxy1.planets.push(makePlanet(9*14,550,neptuneTex,{orbitalSpeed:0.000009}));
 
 // --- GALAXIE 2 (différentes planètes) ---
 const galaxy2 = {planets:[], wormholes:[], blackholes:[], stars:makeStars(1500,800,3000,6,0.9)};
@@ -147,14 +147,14 @@ scene.add(galaxy2.stars);
 galaxy2.stars.visible=false;
 
 // Galaxie 2 Planètes différentes
-galaxy2.planets.push(makePlanet(20*30,60,null,{orbitalSpeed:0.00007}));
-galaxy2.planets.push(makePlanet(18*30,130,null,{orbitalSpeed:0.00004}));
-galaxy2.planets.push(makePlanet(22*30,210,null,{orbitalSpeed:0.00002}));
-galaxy2.planets.push(makePlanet(15*30,300,null,{orbitalSpeed:0.00003}));
+galaxy2.planets.push(makePlanet(20*14,60,null,{orbitalSpeed:0.00007}));
+galaxy2.planets.push(makePlanet(18*16,130,null,{orbitalSpeed:0.00004}));
+galaxy2.planets.push(makePlanet(22*15,210,null,{orbitalSpeed:0.00002}));
+galaxy2.planets.push(makePlanet(15*15,300,null,{orbitalSpeed:0.00003}));
 
 // --- TROUS DE VER ET TROUS NOIRS ---
 function makeWormhole(pos){ // sphère avec effet shader/mesh simple
-  const geo = new THREE.TorusGeometry(20,5,32,64);
+  const geo = new THREE.TorusGeometry(20,5,27,64);
   const mat = new THREE.MeshBasicMaterial({color:0x66ccff, transparent:true, opacity:0.7});
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.copy(pos);
@@ -162,7 +162,7 @@ function makeWormhole(pos){ // sphère avec effet shader/mesh simple
   return mesh;
 }
 function makeBlackHole(pos){
-  const geo = new THREE.SphereGeometry(30,32,32);
+  const geo = new THREE.SphereGeometry(20,22,22);
   const mat = new THREE.MeshBasicMaterial({color:0x000000});
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.copy(pos);
