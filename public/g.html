@@ -26,12 +26,21 @@ canvas{display:block}
 .popup button{margin-top:12px;padding:6px 12px;border:none;border-radius:6px;background:#555;color:#fff;font-weight:bold;cursor:pointer;}
 .popup button:hover{background:#777;}
 #shipList{display:flex;justify-content:space-around;margin-top:12px;}
+#challengeNotif{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:0.3s;z-index:21;}
+#gemCounter{position:fixed;top:16px;left:16px;display:flex;align-items:center;background:rgba(0,0,0,0.7);border:2px solid #4caf50;border-radius:12px;padding:6px 12px;font-weight:bold;font-size:16px;color:#fff;z-index:22;box-shadow:0 0 12px #4caf50,0 0 24px #4caf50 inset;transition:0.3s;}
+#gemCounter .material-icons{margin-right:6px;color:#4caf50;animation:gemPulse 1s infinite alternate;}
+@keyframes gemPulse{0%{color:#4caf50;}50%{color:#a8ff8f;}100%{color:#4caf50;}}
+#warpMenu{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:2px solid #4caf50;padding:20px;border-radius:12px;z-index:23;}
+#warpMenu button{display:block;width:100%;margin:6px 0;padding:10px;border:none;border-radius:6px;background:#111;color:#4caf50;font-weight:bold;cursor:pointer;transition:0.2s;}
+#warpMenu button:hover{background:#222;}
 </style>
 </head>
 <body>
 
 <div id="loader">Chargement...</div>
 <div id="galaxyLabel">Système solaire</div>
+<div id="gemCounter"><span class="material-icons">diamond</span><span id="gemCount">0</span></div>
+<div id="warpMenu"></div>
 
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" style="bottom: 96px; right: 16px;" id="btnUp"><span class="material-icons">arrow_upward</span></div>
@@ -59,18 +68,17 @@ canvas{display:block}
   <button id="closeShip">Fermer</button>
 </div>
 
-<div id="challengeNotif" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:0.3s;z-index:21;"></div>
-
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 
 const loaderEl = document.getElementById('loader');
 const galaxyLabel = document.getElementById('galaxyLabel');
+const gemCountEl = document.getElementById('gemCount');
+const warpMenu = document.getElementById('warpMenu');
 const texLoader = new THREE.TextureLoader();
 
 async function loadSafe(url){return new Promise(resolve=>{texLoader.load(url,tex=>resolve(tex),undefined,()=>resolve(null));})}
 
-// --- Textures ---
 const texMap = {
   mercury:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg',
   venus:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg',
@@ -85,13 +93,10 @@ const texMap = {
   neptune:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg',
   gem:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/sprites/spark1.png'
 };
-
 const textures = await Promise.all(Object.values(texMap).map(u=>loadSafe(u)));
 const [mercuryTex,venusTex,earthTex,earthCloudsTex,moonTex,marsTex,jupiterTex,saturnTex,saturnRingTex,uranusTex,neptuneTex,gemTex] = textures;
-
 loaderEl.style.display='none';
 
-// --- Scene ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000010);
 const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 20000);
@@ -106,54 +111,7 @@ const sunLight = new THREE.PointLight(0xffffff,1.6,0);
 sunLight.position.set(0,0,0); scene.add(sunLight);
 scene.add(new THREE.Mesh(new THREE.SphereGeometry(14,32,32), new THREE.MeshBasicMaterial({color:0xffee88})));
 
-// --- Étoiles et poussière ---
-function createRoundSprite(){
-  const size=64,canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
-  canvas.width=canvas.height=size;
-  const grd=ctx.createRadialGradient(size/2,size/2,2,size/2,size/2,size/2);
-  grd.addColorStop(0,'rgba(255,255,255,1)');grd.addColorStop(0.2,'rgba(160,200,255,1)');
-  grd.addColorStop(0.4,'rgba(120,182,255,1)');grd.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=grd;ctx.fillRect(0,0,size,size);
-  return new THREE.CanvasTexture(canvas);
-}
-const starSprite=createRoundSprite();
-
-(function makeStars(){
-  const layers=[{count:800,radiusMin:800,radiusMax:3000,size:14,twinkle:0.0002},{count:400,radiusMin:300,radiusMax:1400,size:10,twinkle:0.0004}];
-  window._starFields=[];
-  for(const L of layers){
-    const geom=new THREE.BufferGeometry();
-    const positions=new Float32Array(L.count*3);
-    const sizes=new Float32Array(L.count);
-    for(let i=0;i<L.count;i++){
-      const r=L.radiusMin+Math.random()*(L.radiusMax-L.radiusMin);
-      const theta=Math.random()*Math.PI*2;
-      const phi=(Math.random()-0.5)*Math.PI;
-      positions[i*3]=Math.cos(theta)*Math.cos(phi)*r;
-      positions[i*3+1]=Math.sin(phi)*r;
-      positions[i*3+2]=Math.sin(theta)*Math.cos(phi)*r;
-      sizes[i]=L.size*(0.7+Math.random()*0.6);
-    }
-    geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
-    geom.setAttribute('size', new THREE.BufferAttribute(sizes,1));
-    const mat=new THREE.PointsMaterial({map:starSprite,size:L.size,transparent:true,opacity:0.85,depthWrite:false,blending:THREE.AdditiveBlending});
-    const points=new THREE.Points(geom,mat); scene.add(points);
-    window._starFields.push({points,mat,twinkle:L.twinkle});
-  }
-})();
-(function makeDust(){
-  const count=1500,geom=new THREE.BufferGeometry(),pos=new Float32Array(count*3);
-  for(let i=0;i<count;i++){
-    const r=50+Math.random()*2500,theta=Math.random()*Math.PI*2,phi=(Math.random()-0.5)*Math.PI;
-    pos[i*3]=Math.cos(theta)*Math.cos(phi)*r;
-    pos[i*3+1]=Math.sin(phi)*r*0.2;
-    pos[i*3+2]=Math.sin(theta)*Math.cos(phi)*r;
-  }
-  geom.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(geom,new THREE.PointsMaterial({size:1.2,transparent:true,opacity:0.12,depthWrite:false,blending:THREE.AdditiveBlending,color:0xfff7ef})));
-})();
-
-// --- Planètes ---
+// --- Planètes & gemmes ---
 function makePlanet(name,radius,distance,texture,opts={}){
   const geom=new THREE.SphereGeometry(radius,opts.segments||32,opts.segments||32);
   const matOptions={metalness:0.02,roughness:0.7};
@@ -168,6 +126,7 @@ function makePlanet(name,radius,distance,texture,opts={}){
   }
   scene.add(mesh); return mesh;
 }
+
 const planets=[];
 planets.push(makePlanet('Mercure',4,70,mercuryTex,{orbitalPeriod:88,rotationSpeed:0.0008}));
 planets.push(makePlanet('Vénus',6.8,90,venusTex,{orbitalPeriod:225,rotationSpeed:0.0002}));
@@ -180,70 +139,71 @@ planets.push(makePlanet('Jupiter',5.5,185,jupiterTex,{orbitalPeriod:4333,rotatio
 planets.push(makePlanet('Saturne',9.8,212,saturnTex,{orbitalPeriod:10759,rotationSpeed:0.0015,ring:{inner:6,outer:9,map:saturnRingTex}}));
 planets.push(makePlanet('Uranus',4,327,uranusTex,{orbitalPeriod:30687,rotationSpeed:0.0008}));
 planets.push(makePlanet('Neptune',2.9,352,neptuneTex,{orbitalPeriod:60190,rotationSpeed:0.0009}));
-const pluto=makePlanet('Pluton',9.6,300,null,{orbitalPeriod:90560,rotationSpeed:0.0004}); pluto.material.color.set(0x9b7b6a); planets.push(pluto);
 
-const ORBIT_SPEED_FACTOR=0.2;
+// --- Gemmes ---
+const galaxies=[
+  {name:'Milky Way',offset:new THREE.Vector3(0,0,0),gems:[]},
+  {name:'Andromeda',offset:new THREE.Vector3(5000,0,0),gems:[]},
+  {name:'Triangulum',offset:new THREE.Vector3(-5000,0,0),gems:[]}
+];
+let currentGalaxy=0;
+let gemTotal=0;
+function spawnGems(galaxy){
+  for(let i=0;i<2;i++){
+    const g=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),new THREE.MeshBasicMaterial({map:gemTex,transparent:true}));
+    g.position.set(galaxy.offset.x+Math.random()*500-250, Math.random()*100, galaxy.offset.z+Math.random()*500-250);
+    g.userData.collected=false;
+    scene.add(g); galaxy.gems.push(g);
+  }
+}
+galaxies.forEach(g=>spawnGems(g));
 
-// --- Vaisseaux ---
+// --- Joystick & mouvement ---
+let move={x:0,y:0,up:false,down:false};
+const joy=document.getElementById('joystick'),joyInner=document.getElementById('joyInner');
+joy.addEventListener('touchstart',e=>e.preventDefault());
+joy.addEventListener('touchmove',e=>{
+  const t=e.touches[0],r=joy.getBoundingClientRect();
+  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
+  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
+  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+});
+joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});
+document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);
+document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);
+document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);
+document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
+
+let velocity=new THREE.Vector3(),direction=new THREE.Vector3();
+const forwardVec=new THREE.Vector3(0,0,-1);
+
+// --- Vaisseau ---
 let ships=[],currentShip=0,ship;
 function createShip(type){
-    const g=new THREE.Group();
-    if(type==='classic'){
-        const bodyMat=new THREE.MeshStandardMaterial({color:0x8a8f92,metalness:0.85,roughness:0.2});
-        const body=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.2,24),bodyMat); body.rotation.x=Math.PI/2; g.add(body);
-        const glass=new THREE.Mesh(new THREE.SphereGeometry(0.42,18,18),new THREE.MeshPhysicalMaterial({color:0x222831,transmission:0.6,transparent:true,opacity:0.95,roughness:0.1}));
-        glass.position.set(0,0.45,0.6); g.add(glass);
-        const wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,1.2),bodyMat); wingL.position.set(-0.9,0,-0.2); wingL.rotation.z=0.06;
-        const wingR=wingL.clone(); wingR.position.set(0.9,0,-0.2); g.add(wingL,wingR);
-    } else if(type==='sleek'){
-        const mat=new THREE.MeshStandardMaterial({color:0x2222ff,metalness:0.9,roughness:0.1});
-        const body=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,3,20),mat); body.rotation.x=Math.PI/2; g.add(body);
-        const fin=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.5,1.5),mat); fin.position.set(0,-0.6,0); fin.rotation.x=0.2; g.add(fin);
-    } else if(type==='bulky'){
-        const mat=new THREE.MeshStandardMaterial({color:0xff2222,metalness:0.7,roughness:0.3});
-        const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.6,2.5),mat); g.add(body);
-        const thruster=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.6,12),mat); thruster.position.set(0,-0.4,-1.5); g.add(thruster);
-    }
-    g.userData={type};
-    g.visible=false;
-    return g;
+  const g=new THREE.Group();
+  if(type==='classic'){
+    const bodyMat=new THREE.MeshStandardMaterial({color:0x8a8f92,metalness:0.85,roughness:0.2});
+    const body=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.2,24),bodyMat); body.rotation.x=Math.PI/2; g.add(body);
+    const glass=new THREE.Mesh(new THREE.SphereGeometry(0.42,18,18),new THREE.MeshPhysicalMaterial({color:0x222831,transmission:0.6,transparent:true,opacity:0.95,roughness:0.1}));
+    glass.position.set(0,0.45,0.6); g.add(glass);
+    const wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,1.2),bodyMat); wingL.position.set(-0.9,0,-0.2); wingL.rotation.z=0.06;
+    const wingR=wingL.clone(); wingR.position.set(0.9,0,-0.2); g.add(wingL,wingR);
+  } else if(type==='sleek'){
+    const mat=new THREE.MeshStandardMaterial({color:0x2222ff,metalness:0.9,roughness:0.1});
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,3,20),mat); body.rotation.x=Math.PI/2; g.add(body);
+    const fin=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.5,1.5),mat); fin.position.set(0,-0.6,0); fin.rotation.x=0.2; g.add(fin);
+  } else if(type==='bulky'){
+    const mat=new THREE.MeshStandardMaterial({color:0xff2222,metalness:0.7,roughness:0.3});
+    const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.6,2.5),mat); g.add(body);
+    const thruster=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.6,12),mat); thruster.position.set(0,-0.4,-1.5); g.add(thruster);
+  }
+  g.userData={type}; g.visible=false;
+  return g;
 }
 ships.push(createShip('classic')); ships.push(createShip('sleek')); ships.push(createShip('bulky'));
 ships[0].visible=true; ship=ships[0]; ship.position.set(28,6,12); scene.add(ship);
 
-// --- Popups vaisseaux ---
-const shipPopup = document.getElementById('shipPopup');
-const shipList = document.getElementById('shipList');
-const btnShipPopup = document.getElementById('btnShip');
-document.getElementById('closeShip').addEventListener('click',()=>shipPopup.style.display='none');
-
-function updateShipPopup(){
-  shipList.innerHTML='';
-  ships.forEach((s,index)=>{
-    const div = document.createElement('div');
-    div.className='shipItem';
-    if(index===currentShip) div.classList.add('selected');
-    let unlocked=true;
-    if(index===1 && !challenges[3].done) unlocked=false;
-    if(index===2 && !challenges[4].done) unlocked=false;
-    if(!unlocked){div.classList.add('locked'); div.innerHTML='<span class="material-icons lockIcon">lock</span>';}
-    div.addEventListener('click',()=>{
-      if(!unlocked) return;
-      ships[currentShip].visible=false;
-      currentShip=index;
-      ship=ships[currentShip]; ship.visible=true;
-      updateShipPopup();
-      shipPopup.style.display='none';
-    });
-    shipList.appendChild(div);
-  });
-}
-btnShipPopup.addEventListener('click',()=>{
-  updateShipPopup();
-  shipPopup.style.display='block';
-});
-
-// --- Défis ---
+// --- Défis simplifiés ---
 const challenges=[
   {name:"Parcourir 1000 km",target:1000,progress:0,done:false},
   {name:"Visiter 3 planètes",target:3,progress:0,done:false},
@@ -264,46 +224,40 @@ function updateChallengesUI(){
 function showNotif(text){notifEl.textContent=text;notifEl.style.opacity='1'; setTimeout(()=>{notifEl.style.opacity='0';},2500);}
 document.getElementById('btnChallenge').addEventListener('click',()=>{updateChallengesUI(); challengePopup.style.display='block';});
 document.getElementById('closeChallenge').addEventListener('click',()=>challengePopup.style.display='none');
-document.getElementById('btnInfo').addEventListener('click',()=>document.getElementById('infoPopup').style.display='block');
-document.getElementById('closeInfo').addEventListener('click',()=>document.getElementById('infoPopup').style.display='none');
 
-// --- Galaxies & gemmes ---
-const galaxies=[
-  {name:'Milky Way',offset:new THREE.Vector3(0,0,0),gems:[]},
-  {name:'Andromeda',offset:new THREE.Vector3(5000,0,0),gems:[]},
-  {name:'Triangulum',offset:new THREE.Vector3(-5000,0,0),gems:[]}
-];
-let currentGalaxy=0;
-function spawnGems(galaxy){
-  for(let i=0;i<2;i++){
-    const g=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),new THREE.MeshBasicMaterial({map:gemTex,transparent:true}));
-    g.position.set(galaxy.offset.x+Math.random()*500-250, Math.random()*100, galaxy.offset.z+Math.random()*500-250);
-    g.userData.collected=false;
-    scene.add(g); galaxy.gems.push(g);
-  }
-}
-galaxies.forEach(g=>spawnGems(g));
-
-// --- Joystick & contrôle ---
-let move={x:0,y:0,up:false,down:false};
-const joy=document.getElementById('joystick'),joyInner=document.getElementById('joyInner');
-joy.addEventListener('touchstart',e=>e.preventDefault());
-joy.addEventListener('touchmove',e=>{
-  const t=e.touches[0],r=joy.getBoundingClientRect();
-  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
-  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
-  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+// --- Ultra Propulsion avec menu ---
+const btnWarp = document.getElementById('btnWarp');
+let isWarping = false;
+btnWarp.addEventListener('click',()=>{
+  if(isWarping) return;
+  warpMenu.innerHTML='';
+  galaxies.forEach((g,i)=>{
+    const b = document.createElement('button');
+    b.textContent = g.name;
+    b.addEventListener('click',()=>startWarp(i));
+    warpMenu.appendChild(b);
+  });
+  warpMenu.style.display='block';
 });
-joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});
-document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);
-document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);
-document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);
-document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
 
-let velocity=new THREE.Vector3(),direction=new THREE.Vector3();
-const forwardVec=new THREE.Vector3(0,0,-1);
-planets.forEach(p=>{p.userData.angle=Math.random()*Math.PI*2;}); moon.userData.angle=0;
+function startWarp(choice){
+  warpMenu.style.display='none';
+  if(choice===currentGalaxy) return;
+  isWarping=true;
+  move.x=0; move.y=0; move.up=false; move.down=false;
+  const warpStart = Date.now();
+  const warpDuration = 1500;
+  const startPos = ship.position.clone();
+  const endPos = galaxies[choice].offset.clone().add(new THREE.Vector3(28,6,12));
+  function warpAnim(){
+    const t = (Date.now()-warpStart)/warpDuration;
+    if(t>=1){ship.position.copy(endPos); currentGalaxy=choice; isWarping=false;}
+    else{ship.position.lerpVectors(startPos,endPos,t); requestAnimationFrame(warpAnim);}
+  }
+  warpAnim();
+}
 
+// --- Animation ---
 let totalDistance=0;
 const lastPos=new THREE.Vector3().copy(ship.position);
 function updateChallengeProgress(){
@@ -311,61 +265,25 @@ function updateChallengeProgress(){
   const d1=challenges[0]; if(!d1.done){d1.progress=totalDistance; if(d1.progress>=d1.target){d1.done=true; showNotif(`Défi terminé: ${d1.name}`);}}
   // Collecter gemmes
   galaxies.forEach(g=>g.gems.forEach(gem=>{
-    if(!gem.userData.collected && ship.position.distanceTo(gem.position)<3){gem.userData.collected=true; scene.remove(gem);
-      if(challenges[3].progress<1) challenges[3].progress=1; else if(challenges[4].progress<2) challenges[4].progress=2;
+    if(!gem.userData.collected && ship.position.distanceTo(gem.position)<3){
+      gem.userData.collected=true; scene.remove(gem);
+      gemTotal++; gemCountEl.textContent=gemTotal;
       showNotif("Gemme collectée!");
     }
   }));
   updateChallengesUI();
 }
 
-// --- Ultra Propulsion ---
-const btnWarp = document.getElementById('btnWarp');
-let isWarping = false;
-
-btnWarp.addEventListener('click', async () => {
-  if(isWarping) return;
-  const galaxyNames = galaxies.map((g,i)=>`${i+1}: ${g.name}`).join('\n');
-  let choice = parseInt(prompt(`Sélectionne la galaxie:\n${galaxyNames}`))-1;
-  if(isNaN(choice) || choice < 0 || choice >= galaxies.length || choice === currentGalaxy) return;
-
-  isWarping = true;
-  joy.style.pointerEvents = 'none';
-  move.x = 0; move.y = 0; move.up = false; move.down = false;
-
-  const warpStart = Date.now();
-  const warpDuration = 1500;
-  const startPos = ship.position.clone();
-  const endPos = galaxies[choice].offset.clone().add(new THREE.Vector3(28,6,12));
-
-  function warpAnim(){
-    const t = (Date.now() - warpStart) / warpDuration;
-    if(t>=1){
-      ship.position.copy(endPos);
-      currentGalaxy = choice;
-      isWarping = false;
-      joy.style.pointerEvents = 'auto';
-    } else {
-      ship.position.lerpVectors(startPos,endPos,t);
-      requestAnimationFrame(warpAnim);
-    }
-  }
-  warpAnim();
-});
-
-// --- Animation ---
 function animate(){
   requestAnimationFrame(animate);
-  const now=Date.now();
   planets.forEach(p=>{
-    p.userData.angle+=p.userData.orbitalSpeed*ORBIT_SPEED_FACTOR;
+    p.userData.angle+=p.userData.orbitalSpeed*0.2;
     const a=p.userData.angle,d=p.userData.distance;
     p.position.x=Math.cos(a)*d; p.position.z=Math.sin(a)*d;
     if(p.userData.ring)p.userData.ring.position.copy(p.position);
-    p.rotation.y+=(p.userData.rotationSpeed||0.0005);
+    p.rotation.y+=p.userData.rotationSpeed||0.0005;
   });
   moon.userData.angle+=0.002; moon.position.x=Math.cos(moon.userData.angle)*moon.userData.distance; moon.position.z=Math.sin(moon.userData.angle)*moon.userData.distance;
-  if(window._starFields)window._starFields.forEach((sf,i)=>{sf.mat.opacity=0.75+0.15*Math.sin(now*sf.twinkle*(i+1));});
 
   direction.set(0,0,0); 
   const localF=forwardVec.clone().applyEuler(ship.rotation); direction.add(localF.multiplyScalar(move.y*0.45));
