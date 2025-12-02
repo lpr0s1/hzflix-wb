@@ -190,11 +190,11 @@ function makePlanet(name, radius, distance, texture, opts = {}){
 // Real solar system (scaled for gameplay, not real units). Distances and radii are scaled down.
 const planets = [];
 // Mercury
-planets.push(makePlanet('Mercury', 1.2, 28, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
+planets.push(makePlanet('Mercury', 1.2, 78, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
 // Venus
-planets.push(makePlanet('Venus', 1.8, 40, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
+planets.push(makePlanet('Venus', 1.8, 80, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
 // Earth with clouds and moon
-const earth = makePlanet('Earth', 2.0, 60, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
+const earth = makePlanet('Earth', 2.0, 120, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
 planets.push(earth);
 if(earthCloudsTex){
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.06,32,32),
@@ -330,9 +330,7 @@ function animate(){
   velocity.lerp(direction, 0.06);
   ship.position.add(velocity);
   ship.rotation.y -= move.x*0.04;
-  const thrusterPower = Math.min(1, Math.abs(move.y));
-  if(ship.userData) { ship.userData.setThrusterPower && ship.userData.setThrusterPower(thrusterPower); ship.userData.updateExhaust && ship.userData.updateExhaust(); }
-
+};
   // camera follow
   const desired = ship.position.clone().add(new THREE.Vector3(0,4,14).applyEuler(ship.rotation));
   camera.position.lerp(desired, 0.08);
