@@ -187,9 +187,9 @@ function makePlanet(name, radius, distance, texture, opts = {}){
 
 // Planets
 const planets = [];
-planets.push(makePlanet('Mercury', 3.9, 108, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
-planets.push(makePlanet('Venus', 2.8, 150, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
-const earth = makePlanet('Earth', 5.9, 180, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
+planets.push(makePlanet('Mercury', 3.0, 350, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
+planets.push(makePlanet('Venus', 2.8, 290, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
+const earth = makePlanet('Earth', 5.9, 520, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
 planets.push(earth);
 if(earthCloudsTex){
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.06,32,32),
@@ -200,11 +200,11 @@ const moon = new THREE.Mesh(new THREE.SphereGeometry(0.54,24,24), new THREE.Mesh
 moon.position.set(4.5,0,0); earth.add(moon);
 moon.userData = {orbitSpeed: 0.01, distance:4.5, angle: 0};
 
-planets.push(makePlanet('Mars', 1.1, 75, marsTex, {orbitalPeriod:687, rotationSpeed:0.001}));
-planets.push(makePlanet('Jupiter', 5.5, 120, jupiterTex, {orbitalPeriod:4333, rotationSpeed:0.002}));
-planets.push(makePlanet('Saturn', 4.8, 170, saturnTex, {orbitalPeriod:10759, rotationSpeed:0.0015, ring:{inner:6, outer:9, map: saturnRingTex}}));
-planets.push(makePlanet('Uranus', 3.0, 210, uranusTex, {orbitalPeriod:30687, rotationSpeed:0.0008}));
-planets.push(makePlanet('Neptune', 2.9, 260, neptuneTex, {orbitalPeriod:60190, rotationSpeed:0.0009}));
+planets.push(makePlanet('Mars', 1.1, 261, marsTex, {orbitalPeriod:687, rotationSpeed:0.001}));
+planets.push(makePlanet('Jupiter', 5.5, 325, jupiterTex, {orbitalPeriod:4333, rotationSpeed:0.002}));
+planets.push(makePlanet('Saturn', 4.8, 512, saturnTex, {orbitalPeriod:10759, rotationSpeed:0.0015, ring:{inner:6, outer:9, map: saturnRingTex}}));
+planets.push(makePlanet('Uranus', 3.0, 327, uranusTex, {orbitalPeriod:30687, rotationSpeed:0.0008}));
+planets.push(makePlanet('Neptune', 2.9, 452, neptuneTex, {orbitalPeriod:60190, rotationSpeed:0.0009}));
 
 const pluto = makePlanet('Pluto', 0.6, 300, null, {orbitalPeriod:90560, rotationSpeed:0.0004});
 pluto.material && (pluto.material.color = new THREE.Color(0x9b7b6a));
