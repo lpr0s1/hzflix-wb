@@ -2,22 +2,22 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame — Système Solaire Réaliste</title>
+<title>SpaceGame — Physique, Wormholes & Black Holes</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <style>
-html,body{margin:0;height:100%;background:#000;user-select:none}
-canvas{display:block}
-#loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,Arial;z-index:10}
-.joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none}
-.joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
-.btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff}
-.btn.up{bottom:96px}.btn.down{bottom:16px}
-#galaxyLabel{position:fixed;left:50%;transform:translateX(-50%);top:16px;color:#fff;padding:8px 12px;background:rgba(0,0,0,0.35);border-radius:8px;font-family:system-ui,Arial;z-index:9}
+  html,body{margin:0;height:100%;background:#000;user-select:none;overflow:hidden}
+  canvas{display:block}
+  #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,Arial;z-index:10}
+  .joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none;z-index:9}
+  .joystick-inner{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.18);position:relative;left:25px;top:25px;pointer-events:none}
+  .btn{position:fixed;right:16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);text-align:center;line-height:60px;color:#fff;z-index:9}
+  .btn.up{bottom:96px}.btn.down{bottom:16px}
+  #hud{position:fixed;left:16px;top:16px;color:#fff;font-family:system-ui,Arial;z-index:9;background:rgba(0,0,0,0.35);padding:6px 10px;border-radius:6px}
 </style>
 </head>
 <body>
 <div id="loader">Chargement...</div>
-<div id="galaxyLabel">Système solaire</div>
+<div id="hud">Système — Physique active</div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
@@ -25,331 +25,514 @@ canvas{display:block}
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 
+// -------------------- ressources & loader --------------------
 const loaderEl = document.getElementById('loader');
-const galaxyLabel = document.getElementById('galaxyLabel');
-
-// helper safe loader
 const texLoader = new THREE.TextureLoader();
-async function loadSafe(url){
-  return new Promise(resolve=>{
-    texLoader.load(url, tex=>resolve(tex), undefined, ()=>resolve(null));
-  });
-}
+async function loadSafe(url){ return new Promise(resolve=>{ texLoader.load(url, t=>resolve(t), undefined, ()=>resolve(null)); }); }
 
-// Textures — sources publiques (fallback si non trouvées)
-const texMap = {
+// Basic planet textures (public three.js examples)
+const maps = {
   mercury: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg',
-  venus:   'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg',
-  earth:   'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+  venus: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg',
+  earth: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
   earthClouds: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-  moon:    'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg',
-  mars:    'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg',
+  moon: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg',
+  mars: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg',
   jupiter: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg',
-  saturn:  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg',
+  saturn: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg',
   saturnRing: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/saturnringcolor.jpg',
-  uranus:  'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg',
-  neptune:'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg'
+  uranus: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg',
+  neptune: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg'
 };
 
 const [
   mercuryTex, venusTex, earthTex, earthCloudsTex, moonTex,
   marsTex, jupiterTex, saturnTex, saturnRingTex, uranusTex, neptuneTex
 ] = await Promise.all([
-  loadSafe(texMap.mercury), loadSafe(texMap.venus), loadSafe(texMap.earth),
-  loadSafe(texMap.earthClouds), loadSafe(texMap.moon), loadSafe(texMap.mars),
-  loadSafe(texMap.jupiter), loadSafe(texMap.saturn), loadSafe(texMap.saturnRing),
-  loadSafe(texMap.uranus), loadSafe(texMap.neptune)
+  loadSafe(maps.mercury), loadSafe(maps.venus), loadSafe(maps.earth),
+  loadSafe(maps.earthClouds), loadSafe(maps.moon), loadSafe(maps.mars),
+  loadSafe(maps.jupiter), loadSafe(maps.saturn), loadSafe(maps.saturnRing),
+  loadSafe(maps.uranus), loadSafe(maps.neptune)
 ]);
 
-loaderEl.style.display='none';
+loaderEl.style.display = 'none';
 
-// SCENE / CAMERA / RENDERER
+// -------------------- scene / camera / renderer --------------------
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000010);
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 20000);
-camera.position.set(0,20,80);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 40000);
+camera.position.set(0, 400, 1200);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// LIGHTS
-const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
-let sunLight = new THREE.PointLight(0xffffff,1.6,0); sunLight.position.set(0,0,0); scene.add(sunLight);
+// -------------------- lights --------------------
+scene.add(new THREE.AmbientLight(0x666666));
+const sunLight = new THREE.PointLight(0xffffff, 3, 0); sunLight.position.set(0,0,0); scene.add(sunLight);
 
-// Central star (sun)
-const sunMat = new THREE.MeshBasicMaterial({color:0xffee88});
-const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(14, 32, 32), sunMat);
+// sun visual
+const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(100, 32, 32), new THREE.MeshBasicMaterial({color:0xffee88}));
 scene.add(sunMesh);
 
-// Create round star sprite texture (canvas) for soft round stars and point sprites
-function createRoundSprite(){
-  const size = 64;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = size;
+// -------------------- starfield rounded sprites --------------------
+function createStarSprite(){
+  const size = 128;
+  const canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d');
-  const grd = ctx.createRadialGradient(size/2,size/2,2,size/2,size/2,size/2);
-  grd.addColorStop(0,'rgba(255,255,255,1)');
-  grd.addColorStop(0.2,'rgba(160,200,255,0.9)');
-  grd.addColorStop(0.4,'rgba(120,160,255,0.6)');
-  grd.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0,0,size,size);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
+  const g = ctx.createRadialGradient(size/2, size/2, 2, size/2, size/2, size/2);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.2, 'rgba(180,210,255,0.9)');
+  g.addColorStop(0.5, 'rgba(120,160,255,0.35)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
+  const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
   return tex;
 }
-const starSprite = createRoundSprite();
+const starSprite = createStarSprite();
 
-// STARFIELDS (round luminous stars)
-(function makeStars(){
-  const layers = [
-    {count: 800, radiusMin: 800, radiusMax: 3000, size: 4, color: 0xffffff, opacity:0.9, twinkle:0.0002},
-    {count: 400, radiusMin: 300, radiusMax: 1400, size: 8, color: 0xfff0aa, opacity:0.85, twinkle:0.0004}
-  ];
-  window._starFields = [];
-  for(const L of layers){
-    const geom = new THREE.BufferGeometry();
-    const positions = new Float32Array(L.count*3);
-    const sizes = new Float32Array(L.count);
-    for(let i=0;i<L.count;i++){
-      const r = L.radiusMin + Math.random()*(L.radiusMax-L.radiusMin);
-      const theta = Math.random()*Math.PI*2;
-      const phi = (Math.random()-0.5)*Math.PI;
-      positions[i*3] = Math.cos(theta)*Math.cos(phi)*r;
-      positions[i*3+1] = Math.sin(phi)*r;
-      positions[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
-      sizes[i] = L.size * (0.7 + Math.random()*0.6);
-    }
-    geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
-    geom.setAttribute('size', new THREE.BufferAttribute(sizes,1));
-    const mat = new THREE.PointsMaterial({
-      map: starSprite,
-      size: L.size,
-      transparent: true,
-      opacity: L.opacity,
-      depthWrite:false,
-      blending: THREE.AdditiveBlending
-    });
-    const points = new THREE.Points(geom, mat);
-    scene.add(points);
-    window._starFields.push({points,mat,twinkle:L.twinkle});
-  }
-})();
-
-// SPACIAL DUST PARTICLES (small, subtle)
-(function makeDust(){
-  const count = 1500;
+function addStars(count, rMin, rMax, size){
   const geom = new THREE.BufferGeometry();
   const pos = new Float32Array(count*3);
+  const sizes = new Float32Array(count);
   for(let i=0;i<count;i++){
-    const r = 50 + Math.random()*2500;
+    const r = rMin + Math.random()*(rMax-rMin);
     const theta = Math.random()*Math.PI*2;
     const phi = (Math.random()-0.5)*Math.PI;
     pos[i*3] = Math.cos(theta)*Math.cos(phi)*r;
-    pos[i*3+1] = Math.sin(phi)*r*0.2; // flatter distribution
+    pos[i*3+1] = Math.sin(phi)*r;
+    pos[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
+    sizes[i] = size*(0.6 + Math.random()*0.9);
+  }
+  geom.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geom.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+  const mat = new THREE.PointsMaterial({map:starSprite,size:size,transparent:true,opacity:0.95,depthWrite:false,blending:THREE.AdditiveBlending});
+  const pts = new THREE.Points(geom, mat); scene.add(pts);
+  return pts;
+}
+const distantStars = addStars(1600, 5000, 22000, 18);
+const midStars = addStars(800, 1200, 5000, 10);
+
+// -------------------- dust particles --------------------
+(function dust(){
+  const count = 3000;
+  const geom = new THREE.BufferGeometry();
+  const pos = new Float32Array(count*3);
+  for(let i=0;i<count;i++){
+    const r = 800 + Math.random()*9000;
+    const theta = Math.random()*Math.PI*2;
+    const phi = (Math.random()-0.5)*0.3; // flatter disk
+    pos[i*3] = Math.cos(theta)*Math.cos(phi)*r;
+    pos[i*3+1] = Math.sin(phi)*r;
     pos[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
   }
   geom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const mat = new THREE.PointsMaterial({size:1.2, transparent:true, opacity:0.12, depthWrite:false, blending:THREE.AdditiveBlending, color:0xfff7ef});
+  const mat = new THREE.PointsMaterial({size:6, transparent:true, opacity:0.08, depthWrite:false, blending:THREE.AdditiveBlending, color:0xfff7ef});
   const pts = new THREE.Points(geom, mat);
   scene.add(pts);
-  window._dust = {pts,mat};
+  window._dust = pts;
 })();
 
-// Planet factory: creates realistic textured planets with orbit params
-function makePlanet(name, radius, distance, texture, opts = {}){
-  const geom = new THREE.SphereGeometry(radius, opts.segments||32, opts.segments||32);
-  const matOptions = {metalness:0.02, roughness:0.7};
-  if(texture) matOptions.map = texture;
-  else matOptions.color = opts.color || 0x999999;
-  const mat = new THREE.MeshStandardMaterial(matOptions);
-  const mesh = new THREE.Mesh(geom, mat);
+// -------------------- Planet system: REALISTIC SCALE (gameplay-scaled) --------------------
+const planets = [];
+
+/*
+  We'll scale sizes and distances up so planets appear HUGE relative to ship.
+  Radii and distances are game-scaled values (not astronomical units).
+*/
+function makePlanet(name, radius, distance, texture, opts={}){
+  const seg = opts.segments || 64;
+  const geo = new THREE.SphereGeometry(radius, seg, seg);
+  const matOpt = {metalness: 0.02, roughness: 0.7};
+  if(texture) matOpt.map = texture; else matOpt.color = opts.color || 0x888888;
+  const mat = new THREE.MeshStandardMaterial(matOpt);
+  const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(distance, 0, 0);
-  // custom userData for orbital motion
   mesh.userData = {
-    name,
-    distance,
-    orbitalSpeed: (opts.orbitalPeriod? (1/opts.orbitalPeriod) : (0.00005 + Math.random()*0.0001)) * 0.4, // slowed by factor
+    name, radius, distance,
+    orbitAngle: Math.random()*Math.PI*2,
+    orbitalSpeed: (opts.orbitalPeriod ? (1/opts.orbitalPeriod) : 0.00002 + Math.random()*0.00006) * 0.25, // slow
     rotationSpeed: opts.rotationSpeed || 0.0005
   };
-  // rings (optional)
   if(opts.ring){
-    const ringGeo = new THREE.RingGeometry(opts.ring.inner || radius*1.2, opts.ring.outer || radius*2.0, 128);
-    const ringMat = new THREE.MeshBasicMaterial({map: opts.ring.map || null, side: THREE.DoubleSide, transparent:true, opacity:0.9});
+    const ringGeo = new THREE.RingGeometry(radius*1.15, radius*1.6, 128);
+    const ringMat = new THREE.MeshBasicMaterial({map: opts.ring.map || null, side:THREE.DoubleSide, transparent:true, opacity:0.9});
     const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI/2.2;
+    ring.rotation.x = Math.PI/2.6;
     ring.position.copy(mesh.position);
-    scene.add(ring);
     mesh.userData.ring = ring;
+    scene.add(ring);
   }
   scene.add(mesh);
+  planets.push(mesh);
   return mesh;
 }
 
-// Real solar system (scaled for gameplay, not real units). Distances and radii are scaled down.
-const planets = [];
-// Mercury
-planets.push(makePlanet('Mercury', 1.2, 28, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
-// Venus
-planets.push(makePlanet('Venus', 1.8, 40, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
-// Earth with clouds and moon
-const earth = makePlanet('Earth', 2.0, 60, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
-planets.push(earth);
+// Create solar system with large sizes/distance (scaled for visual)
+const scale = { // exemplar numbers chosen to be visually pleasing
+  sunRadius: 100,
+  mercury: {r: 6, d: 380},
+  venus:   {r: 14, d: 620},
+  earth:   {r: 16, d: 900},
+  moon:    {r: 4,  d: 28},
+  mars:    {r: 9,  d: 1200},
+  jupiter: {r: 60, d: 2600},
+  saturn:  {r: 50, d: 4200},
+  uranus:  {r: 32, d: 6400},
+  neptune: {r: 30, d: 8800},
+  pluto:   {r: 4,  d: 10000}
+};
+
+// Build planets (textures used where available)
+const mercury = makePlanet('Mercury', scale.mercury.r, scale.mercury.d, mercuryTex);
+const venus = makePlanet('Venus', scale.venus.r, scale.venus.d, venusTex);
+const earth = makePlanet('Earth', scale.earth.r, scale.earth.d, earthTex);
 if(earthCloudsTex){
-  const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.06,32,32),
-    new THREE.MeshPhongMaterial({map:earthCloudsTex, transparent:true, opacity:0.9, depthWrite:false}));
+  const clouds = new THREE.Mesh(new THREE.SphereGeometry(scale.earth.r*1.02, 48,48),
+    new THREE.MeshPhongMaterial({map: earthCloudsTex, transparent:true, depthWrite:false, opacity:0.9}));
   earth.add(clouds);
 }
-// Moon as satellite of Earth
-const moon = new THREE.Mesh(new THREE.SphereGeometry(0.54,24,24), new THREE.MeshStandardMaterial({map:moonTex}));
-moon.position.set(4.5,0,0); earth.add(moon);
-moon.userData = {orbitSpeed: 0.01, distance:4.5, angle: 0};
-
-// Mars
-planets.push(makePlanet('Mars', 1.1, 75, marsTex, {orbitalPeriod:687, rotationSpeed:0.001}));
-// Jupiter
-planets.push(makePlanet('Jupiter', 5.5, 120, jupiterTex, {orbitalPeriod:4333, rotationSpeed:0.002}));
-// Saturn (with ring)
-planets.push(makePlanet('Saturn', 4.8, 170, saturnTex, {orbitalPeriod:10759, rotationSpeed:0.0015, ring:{inner:6, outer:9, map: saturnRingTex}}));
-// Uranus
-planets.push(makePlanet('Uranus', 3.0, 210, uranusTex, {orbitalPeriod:30687, rotationSpeed:0.0008}));
-// Neptune
-planets.push(makePlanet('Neptune', 2.9, 260, neptuneTex, {orbitalPeriod:60190, rotationSpeed:0.0009}));
-
-// optional: dwarf Pluto (small)
-const pluto = makePlanet('Pluto', 0.6, 300, null, {orbitalPeriod:90560, rotationSpeed:0.0004});
+const moon = new THREE.Mesh(new THREE.SphereGeometry(scale.moon.r, 24,24), new THREE.MeshStandardMaterial({map: moonTex}));
+moon.position.set(scale.moon.d, 0, 0); earth.add(moon);
+const mars = makePlanet('Mars', scale.mars.r, scale.mars.d, marsTex);
+const jupiter = makePlanet('Jupiter', scale.jupiter.r, scale.jupiter.d, jupiterTex);
+const saturn = makePlanet('Saturn', scale.saturn.r, scale.saturn.d, saturnTex, {ring:{map:saturnRingTex}});
+const uranus = makePlanet('Uranus', scale.uranus.r, scale.uranus.d, uranusTex);
+const neptune = makePlanet('Neptune', scale.neptune.r, scale.neptune.d, neptuneTex);
+const pluto = makePlanet('Pluto', scale.pluto.r, scale.pluto.d, null);
 pluto.material && (pluto.material.color = new THREE.Color(0x9b7b6a));
-planets.push(pluto);
 
-// slow down global orbital speeds factor (gameplay)
-const ORBIT_SPEED_FACTOR = 0.7; // lower => slower
-
-// Ship (grey)
-function assembleShip(){
-  const group=new THREE.Group();
-  const bodyMat=new THREE.MeshStandardMaterial({color:0x8a8f92,metalness:0.85,roughness:0.2});
-  const body=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.2,24),bodyMat);
-  body.rotation.x=Math.PI/2;
-  group.add(body);
-  const glass=new THREE.Mesh(new THREE.SphereGeometry(0.42,18,18),new THREE.MeshPhysicalMaterial({color:0x222831,transmission:0.6,transparent:true,opacity:0.95,roughness:0.1}));
-  glass.position.set(0,0.45,0.6);
-  group.add(glass);
-  const wingMat=bodyMat.clone();
-  const wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,1.2),wingMat);
-  wingL.position.set(-0.9,0,-0.2); wingL.rotation.z=0.06;
-  const wingR=wingL.clone(); wingR.position.set(0.9,0,-0.2);
-  group.add(wingL,wingR);
-  const fin=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.6,0.8),wingMat);
-  fin.position.set(0,-0.6,-0.2); fin.rotation.x=0.18; group.add(fin);
-  const engineMat=new THREE.MeshStandardMaterial({color:0x2b2b2b,metalness:0.9,roughness:0.18});
-  const thrL=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.5,12),engineMat); thrL.rotation.x=Math.PI/2; thrL.position.set(-0.35,-1.05,0);
-  const thrR=thrL.clone(); thrR.position.set(0.35,-1.05,0); group.add(thrL,thrR);
-  const ringMat=new THREE.MeshBasicMaterial({color:0xffaa00,transparent:true,opacity:0.9});
-  const ringL=new THREE.Mesh(new THREE.TorusGeometry(0.16,0.03,8,32),ringMat); ringL.rotation.x=Math.PI/2; ringL.position.copy(thrL.position);
-  const ringR=ringL.clone(); ringR.position.copy(thrR.position); group.add(ringL,ringR);
-  const exhaustCount=80; const arr=new Float32Array(exhaustCount*3);
-  for(let i=0;i<exhaustCount;i++){arr[i*3]=(Math.random()-0.5)*0.25;arr[i*3+1]=-1.4-Math.random()*0.8;arr[i*3+2]=(Math.random()-0.5)*0.25;}
-  const exhaustGeom=new THREE.BufferGeometry(); exhaustGeom.setAttribute('position',new THREE.BufferAttribute(arr,3));
-  const exhaustMat=new THREE.PointsMaterial({color:0xffaa66,size:0.12,transparent:true,opacity:0.9,depthWrite:false});
-  const exhaust=new THREE.Points(exhaustGeom,exhaustMat); group.add(exhaust);
-  const l1=new THREE.PointLight(0xffaa66,0.6,6); l1.position.set(-0.35,-1.05,0); const l2=l1.clone(); l2.position.set(0.35,-1.05,0); group.add(l1,l2);
-  group.userData={setThrusterPower(p){const power=Math.max(0,Math.min(1,p));exhaustMat.size=0.05+power*0.24;exhaustMat.opacity=0.12+power*0.88;l1.intensity=0.2+power*1.2;l2.intensity=0.2+power*1.2}, updateExhaust(){const a=exhaustGeom.attributes.position.array;for(let i=0;i<a.length/3;i++){const idx=i*3;a[idx]+= (Math.random()-0.5)*0.004;a[idx+1]-=0.002-Math.random()*0.006;a[idx+2]+=(Math.random()-0.5)*0.004;if(a[idx+1]<-3.2) a[idx+1]=-1.4-Math.random()*0.8;}exhaustGeom.attributes.position.needsUpdate=true}};
-  return group;
+// -------------------- Ship: flat design, rear turbos, physics-enabled --------------------
+function buildFlatShip(){
+  const g = new THREE.Group();
+  // base body: thin wedge
+  const bodyGeo = new THREE.ConeGeometry(28, 70, 4); // flattened cone
+  bodyGeo.rotateX(Math.PI/2);
+  bodyGeo.scale(1, 0.25, 1); // flatten
+  const bodyMat = new THREE.MeshStandardMaterial({color:0x8b8f91, metalness:0.85, roughness:0.18});
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.rotation.z = Math.PI; // nose forward
+  g.add(body);
+  // cockpit impression (glass)
+  const glass = new THREE.Mesh(new THREE.SphereGeometry(8, 18,18), new THREE.MeshPhysicalMaterial({color:0x0b2a3d, transmission:0.6, transparent:true, opacity:0.95, roughness:0.05}));
+  glass.position.set(0,8,12);
+  g.add(glass);
+  // wings (thin)
+  const wingMat = bodyMat;
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(14, 1.6, 120), wingMat);
+  wingL.position.set(-42, -2, -10); wingL.rotation.y = -0.05; g.add(wingL);
+  const wingR = wingL.clone(); wingR.position.set(42, -2, -10); g.add(wingR);
+  // rear turbos (visible at the back bottom)
+  const turboMat = new THREE.MeshStandardMaterial({color:0x202020, metalness:0.95, roughness:0.12});
+  const turboL = new THREE.Mesh(new THREE.CylinderGeometry(8, 10, 30, 16), turboMat); turboL.rotation.x = Math.PI/2; turboL.position.set(-24, -12, -36);
+  const turboR = turboL.clone(); turboR.position.set(24, -12, -36);
+  g.add(turboL, turboR);
+  // engine glow (points)
+  const glowGeom = new THREE.BufferGeometry(); const glowCount=120; const glowArr=new Float32Array(glowCount*3);
+  for(let i=0;i<glowCount;i++){ glowArr[i*3] = (Math.random()-0.5)*12; glowArr[i*3+1] = -12 -Math.random()*6; glowArr[i*3+2] = -30 - Math.random()*12; }
+  glowGeom.setAttribute('position', new THREE.BufferAttribute(glowArr,3));
+  const glowMat = new THREE.PointsMaterial({color:0xff8a33, size:6, transparent:true, opacity:0.9, depthWrite:false});
+  const glowPts = new THREE.Points(glowGeom, glowMat);
+  g.add(glowPts);
+  // userData for physics
+  g.userData = { radius: 30 }; // collision radius
+  return g;
 }
 
-let ship = assembleShip();
-// start position moved OUT of the sun — user requested starting outside sun
-ship.position.set(28, 6, 12); // near Mercury orbit but not in star
+let ship = buildFlatShip();
+ship.position.set(scale.sunRadius + 220, 40, 0); // start outside the sun, far enough
 scene.add(ship);
 
-// Controls (touch)
-let move={x:0,y:0,up:false,down:false};
-const joy=document.getElementById('joystick'), joyInner=document.getElementById('joyInner');
-joy.addEventListener('touchstart',e=>e.preventDefault());
-joy.addEventListener('touchmove',e=>{
-  const t=e.touches[0]; const r=joy.getBoundingClientRect();
-  move.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)));
-  move.y=Math.max(-1,Math.min(1,-(t.clientY-(r.top+r.height/2))/(r.height/2)));
-  joyInner.style.transform=`translate(${move.x*25}px, ${-move.y*25}px)`;
+// ship physics state
+let shipState = {
+  pos: ship.position.clone(),
+  vel: new THREE.Vector3(0,0,0),
+  acc: new THREE.Vector3(0,0,0),
+  mass: 1.0
+};
+
+// controls
+let move = {x:0,y:0,up:false,down:false};
+const joy = document.getElementById('joystick'), joyInner = document.getElementById('joyInner');
+joy.addEventListener('touchstart', e=>e.preventDefault());
+joy.addEventListener('touchmove', e=>{
+  const t = e.touches[0], r = joy.getBoundingClientRect();
+  move.x = Math.max(-1, Math.min(1, (t.clientX - (r.left + r.width/2)) / (r.width/2)));
+  move.y = Math.max(-1, Math.min(1, -(t.clientY - (r.top + r.height/2)) / (r.height/2)));
+  joyInner.style.transform = `translate(${move.x*25}px, ${-move.y*25}px)`;
 });
-joy.addEventListener('touchend',()=>{move.x=0;move.y=0;joyInner.style.transform='translate(0,0)';});
-document.getElementById('btnUp').addEventListener('touchstart',()=>move.up=true);
-document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);
-document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);
-document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
+joy.addEventListener('touchend', ()=>{ move.x=0; move.y=0; joyInner.style.transform='translate(0,0)'; });
+document.getElementById('btnUp').addEventListener('touchstart', ()=>move.up=true);
+document.getElementById('btnUp').addEventListener('touchend', ()=>move.up=false);
+document.getElementById('btnDown').addEventListener('touchstart', ()=>move.down=true);
+document.getElementById('btnDown').addEventListener('touchend', ()=>move.down=false);
 
-// Physics
-let velocity=new THREE.Vector3(), direction=new THREE.Vector3();
-const forwardVec = new THREE.Vector3(0,0,-1);
+// keyboard (desktop)
+window.addEventListener('keydown', e=>{
+  if(e.key==='w') move.y = 1;
+  if(e.key==='s') move.y = -1;
+  if(e.key==='a') move.x = -1;
+  if(e.key==='d') move.x = 1;
+  if(e.key==='ArrowUp') move.up = true;
+  if(e.key==='ArrowDown') move.down = true;
+});
+window.addEventListener('keyup', e=>{
+  if(['w','s'].includes(e.key)) move.y = 0;
+  if(['a','d'].includes(e.key)) move.x = 0;
+  if(e.key==='ArrowUp') move.up = false;
+  if(e.key==='ArrowDown') move.down = false;
+});
 
-// Orbit helpers for moons and planets (store angles)
-planets.forEach(p => { p.userData.angle = Math.random()*Math.PI*2; });
-moon.userData.angle = 0;
-
-// animation loop
-function animate(){
-  requestAnimationFrame(animate);
-  const now = Date.now();
-
-  // update orbits (slower, realistic feel)
-  planets.forEach(p=>{
-    // use stored userData
-    p.userData.angle += p.userData.orbitalSpeed * ORBIT_SPEED_FACTOR;
-    const a = p.userData.angle;
-    const d = p.userData.distance;
-    p.position.x = Math.cos(a) * d;
-    p.position.z = Math.sin(a) * d;
-    if(p.userData.ring) p.userData.ring.position.copy(p.position);
-    p.rotation.y += (p.userData.rotationSpeed || 0.0005);
-  });
-
-  // moon orbit around earth
-  moon.userData.angle += 0.002;
-  moon.position.x = Math.cos(moon.userData.angle) * moon.userData.distance;
-  moon.position.z = Math.sin(moon.userData.angle) * moon.userData.distance;
-
-  // slow twinkle for starfields
-  if(window._starFields){
-    window._starFields.forEach((sf, i) => {
-      sf.mat.opacity = 0.75 + 0.15*Math.sin(now*sf.twinkle* (i+1) );
-    });
+// -------------------- Wormholes (7) --------------------
+const wormholes = [];
+function makeWormhole(pos, size=150){
+  // central torus (animated shader-like with scaling & rotation)
+  const geom = new THREE.TorusGeometry(size, size*0.22, 32, 64);
+  const mat = new THREE.MeshBasicMaterial({color:0x66ccff, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending, side:THREE.DoubleSide});
+  const tor = new THREE.Mesh(geom, mat);
+  tor.position.copy(pos);
+  tor.userData = { size, baseSize: size, pulse: Math.random()*Math.PI*2 };
+  scene.add(tor);
+  // internal particle funnel
+  const pfGeom = new THREE.BufferGeometry(); const pCount=800;
+  const pPos = new Float32Array(pCount*3);
+  for(let i=0;i<pCount;i++){
+    const r = (Math.random()) * size * 0.8;
+    const a = Math.random()*Math.PI*2;
+    const z = (Math.random()-0.5) * size * 1.6;
+    pPos[i*3] = Math.cos(a)*r; pPos[i*3+1] = Math.sin(a)*r; pPos[i*3+2] = z;
   }
+  pfGeom.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+  const pfMat = new THREE.PointsMaterial({size:8, color:0xaaeeff, transparent:true, opacity:0.85, blending:THREE.AdditiveBlending, depthWrite:false});
+  const funnel = new THREE.Points(pfGeom, pfMat);
+  funnel.position.copy(pos);
+  funnel.lookAt(new THREE.Vector3(0,0,0)); // just orientation
+  scene.add(funnel);
+  wormholes.push({tor, funnel, pos: pos.clone(), size});
+  return {tor, funnel};
+}
 
-  // dust subtle drift (rotate entire dust particle system a bit)
-  if(window._dust && window._dust.pts){
-    window._dust.pts.rotation.y += 0.00001;
+// distribute 7 wormholes in outer system
+for(let i=0;i<7;i++){
+  const angle = Math.random()*Math.PI*2;
+  const dist = 12000 + Math.random()*9000;
+  const p = new THREE.Vector3(Math.cos(angle)*dist, (Math.random()-0.5)*800, Math.sin(angle)*dist);
+  makeWormhole(p, 220 + Math.random()*120);
+}
+
+// -------------------- Black holes (2) --------------------
+const blackHoles = [];
+function makeBlackHole(pos, mass, radius){
+  const geom = new THREE.SphereGeometry(radius, 32, 32);
+  const mat = new THREE.MeshBasicMaterial({color:0x000000});
+  const bh = new THREE.Mesh(geom, mat);
+  bh.position.copy(pos);
+  scene.add(bh);
+  // subtle accretion disc
+  const ringGeom = new THREE.RingGeometry(radius*1.2, radius*3.0, 64);
+  const ringMat = new THREE.MeshBasicMaterial({color:0x553399, side:THREE.DoubleSide, transparent:true, opacity:0.55});
+  const ring = new THREE.Mesh(ringGeom, ringMat); ring.position.copy(pos); ring.rotation.x = Math.PI/2;
+  scene.add(ring);
+  blackHoles.push({bh, pos:pos.clone(), mass, radius});
+  return {bh, ring};
+}
+makeBlackHole(new THREE.Vector3(-3000, 0, -7000), 8e6, 260); // big
+makeBlackHole(new THREE.Vector3(6000, -200, 4200), 5e6, 200);
+
+// -------------------- Collision detection with planets --------------------
+function handlePlanetCollisions(){
+  const shipRadius = ship.userData.radius || 30;
+  for(const p of planets){
+    const pr = p.userData.radius;
+    const dist = shipState.pos.distanceTo(p.position);
+    if(dist < pr + shipRadius){
+      // simple response: push ship outside and damp velocity
+      const normal = shipState.pos.clone().sub(p.position).normalize();
+      const penetration = (pr + shipRadius) - dist;
+      shipState.pos.add(normal.multiplyScalar(penetration + 1.0)); // move out
+      // reflect a part of velocity (inelastic)
+      const vn = shipState.vel.dot(normal);
+      if(vn < 0){
+        // remove inward component and apply small bounce
+        const reflected = shipState.vel.clone().sub(normal.multiplyScalar(vn * 1.6));
+        shipState.vel.copy(reflected.multiplyScalar(0.35)); // lose energy
+      } else {
+        shipState.vel.multiplyScalar(0.2);
+      }
+    }
   }
+}
 
-  // ship controls
-  direction.set(0,0,0);
-  const localF = forwardVec.clone().applyEuler(ship.rotation);
-  direction.add(localF.multiplyScalar(move.y*0.45));
-  if(move.up) direction.y += 0.12;
-  if(move.down) direction.y -= 0.12;
-  velocity.lerp(direction, 0.06);
-  ship.position.add(velocity);
-  ship.rotation.y -= move.x*0.04;
-  const thrusterPower = Math.min(1, Math.abs(move.y));
-  if(ship.userData) { ship.userData.setThrusterPower && ship.userData.setThrusterPower(thrusterPower); ship.userData.updateExhaust && ship.userData.updateExhaust(); }
+// -------------------- Black hole gravitational effect --------------------
+function applyBlackHoleGravity(dt){
+  for(const bh of blackHoles){
+    const rVec = bh.pos.clone().sub(shipState.pos);
+    const r = Math.max(1, rVec.length());
+    const G = 6.674e-11; // placeholder constant - we'll scale mass to make effect feel right
+    // tuned gravitational strength (gameplay)
+    const strength = bh.mass * 0.00000012; // tuned
+    const accMag = strength / (r*r);
+    const acc = rVec.normalize().multiplyScalar(accMag);
+    // apply toward BH
+    shipState.vel.add(acc.clone().multiplyScalar(dt));
+    // if inside event horizon (radius), dramatic accelerate and eject
+    if(r < bh.radius * 0.95){
+      // accelerate rapidly inward and then fling outwards
+      // compute random ejection vector
+      const ejectDir = new THREE.Vector3(Math.random()-0.5, Math.random()-0.3, Math.random()-0.5).normalize();
+      shipState.vel.copy(ejectDir.multiplyScalar(120 + Math.random()*240));
+      // set position outside at safe distance
+      shipState.pos.copy(bh.pos.clone().add(ejectDir.multiplyScalar(bh.radius*3 + 800 + Math.random()*600)));
+      // small visual flash
+      flashScreen(200, 0xffddaa);
+    }
+  }
+}
 
-  // camera follow
-  const desired = ship.position.clone().add(new THREE.Vector3(0,4,14).applyEuler(ship.rotation));
-  camera.position.lerp(desired, 0.08);
+// small screen flash effect by overlay geometry that fades
+let screenFlash = null;
+function flashScreen(ms=250, color=0xffffff){
+  if(screenFlash) scene.remove(screenFlash);
+  const geo = new THREE.PlaneGeometry(2,2);
+  const mat = new THREE.MeshBasicMaterial({color:color, transparent:true, opacity:0.8});
+  const quad = new THREE.Mesh(geo, mat);
+  quad.position.set(0,0,-1);
+  // render as HUD overlay: attach to camera
+  camera.add(quad);
+  screenFlash = quad;
+  setTimeout(()=>{ camera.remove(quad); screenFlash=null; }, ms);
+}
+
+// -------------------- Wormhole entry handling --------------------
+function handleWormholes(dt){
+  for(const wh of wormholes){
+    // animated pulse
+    wh.tor.rotation.x += 0.0015;
+    wh.tor.rotation.y += 0.0012;
+    wh.tor.scale.setScalar(1 + 0.12*Math.sin(performance.now()*0.002 + wh.tor.userData.pulse));
+    wh.funnel.rotation.y += 0.002;
+    // local star stretching: scale local dust near wormhole (visual only)
+    const localDist = shipState.pos.distanceTo(wh.pos);
+    if(localDist < wh.size*1.6){
+      // apply inward pull + small rotation
+      const pull = wh.pos.clone().sub(shipState.pos).normalize().multiplyScalar( (wh.size*1.6 - localDist) * 0.0012 );
+      shipState.vel.add(pull.multiplyScalar(dt*60));
+      // if very close, teleport (mild) to random far location to mimic transit
+      if(localDist < wh.size*0.6){
+        // create distortion visual: burst of particles & camera fov tweak
+        flashScreen(220, 0x66ccff);
+        // teleport to a random wormhole other than this one if exists
+        const others = wormholes.filter(x=>x!==wh);
+        if(others.length>0){
+          const dest = others[Math.floor(Math.random()*others.length)];
+          shipState.pos.copy(dest.pos.clone().add(new THREE.Vector3( (Math.random()-0.5)*200, (Math.random()-0.5)*120, (Math.random()-0.5)*200 )));
+          shipState.vel.multiplyScalar(0.2);
+        } else {
+          // otherwise, fling forward
+          shipState.vel.add(new THREE.Vector3(0,0,-1).applyQuaternion(ship.quaternion).multiplyScalar(60));
+        }
+      }
+    }
+  }
+}
+
+// -------------------- Physics & Controls update loop --------------------
+let lastTime = performance.now();
+function update(){
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - lastTime)/1000); // clamp dt
+  lastTime = now;
+
+  // Controls -> thrust/turn
+  const thrustPower = 280; // tuned
+  const turnSpeed = 0.8;
+  // rotation yaw from move.x
+  ship.rotation.y -= move.x * 0.02; // turning
+  // thrust vector in ship forward direction
+  const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(ship.quaternion).normalize();
+  const upVec = new THREE.Vector3(0,1,0);
+  let thrust = new THREE.Vector3();
+  thrust.add(forwardVec.multiplyScalar(move.y * thrustPower));
+  if(move.up) thrust.add(upVec.clone().multiplyScalar(thrustPower*0.35));
+  if(move.down) thrust.add(upVec.clone().multiplyScalar(-thrustPower*0.35));
+  // apply thrust as acceleration (F = ma)
+  shipState.vel.add(thrust.clone().multiplyScalar(dt / shipState.mass));
+
+  // Apply friction / damping so it doesn't run forever
+  shipState.vel.multiplyScalar(1 - Math.min(0.08, dt*0.6));
+
+  // Black hole gravity
+  applyBlackHoleGravity(dt);
+
+  // Update position
+  shipState.pos.add(shipState.vel.clone().multiplyScalar(dt*60)); // scale velocity for feel
+
+  // Planet collisions (prevent passing through planets)
+  handlePlanetCollisions();
+
+  // Wormhole interactions
+  handleWormholes(dt);
+
+  // update ship position & camera
+  ship.position.copy(shipState.pos);
+  // keep ship roughly upright (small tilt when accelerating)
+  const bank = -move.x * 0.25;
+  ship.rotation.z = bank;
+
+  // camera follow with slight lag and FOV change when near BH / WH
+  const desiredCamPos = ship.position.clone().add(new THREE.Vector3(0, 280, 900).applyQuaternion(new THREE.Quaternion()));
+  camera.position.lerp(desiredCamPos, 0.08);
   camera.lookAt(ship.position);
 
+  // planets orbit rotation
+  for(const p of planets){
+    p.userData.orbitAngle += p.userData.orbitalSpeed * dt * 60;
+    p.position.x = Math.cos(p.userData.orbitAngle) * p.userData.distance;
+    p.position.z = Math.sin(p.userData.orbitAngle) * p.userData.distance;
+    p.rotation.y += p.userData.rotationSpeed * dt * 60;
+    if(p.userData.ring) p.userData.ring.position.copy(p.position);
+  }
+
+  // moon orbit around earth
+  moon.userData.angle = (moon.userData.angle || 0) + 0.002 * dt * 60;
+  moon.position.x = Math.cos(moon.userData.angle) * (scale.moon.d);
+  moon.position.z = Math.sin(moon.userData.angle) * (scale.moon.d);
+
+  // minor star twinkle
+  distantStars.material.opacity = 0.85 + 0.05*Math.sin(now*0.00012);
+  midStars.material.opacity = 0.8 + 0.08*Math.sin(now*0.0002);
+
+  // render
   renderer.render(scene, camera);
+  requestAnimationFrame(update);
 }
-animate();
+requestAnimationFrame(update);
 
-// resize handling
-window.addEventListener('resize', ()=>{camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);});
-
-// desktop debug: G = reposition near sun, H = reset to starting safe position
-window.addEventListener('keydown', (e)=>{
-  if(e.key.toLowerCase()==='g'){ ship.position.set(0,0,0); velocity.set(0,0,0); }
-  if(e.key.toLowerCase()==='h'){ ship.position.set(28,6,12); velocity.set(0,0,0); }
+// -------------------- debug keys --------------------
+// G: teleport to nearest wormhole; B: teleport near black hole; R: reset position
+window.addEventListener('keydown', e=>{
+  if(e.key.toLowerCase()==='g'){
+    if(wormholes.length>0){
+      const w = wormholes[Math.floor(Math.random()*wormholes.length)];
+      shipState.pos.copy(w.pos.clone().add(new THREE.Vector3(0, 180, 0)));
+      shipState.vel.set(0,0,0);
+    }
+  }
+  if(e.key.toLowerCase()==='b'){
+    if(blackHoles.length>0){
+      const b = blackHoles[ Math.floor(Math.random()*blackHoles.length) ];
+      shipState.pos.copy(b.pos.clone().add(new THREE.Vector3(b.radius*3, 0, b.radius*3)));
+      shipState.vel.set(0,0,0);
+    }
+  }
+  if(e.key.toLowerCase()==='r'){
+    shipState.pos.set(scale.sunRadius + 220, 40, 0);
+    shipState.vel.set(0,0,0);
+  }
 });
+
+// window resize
+window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
 </script>
 </body>
