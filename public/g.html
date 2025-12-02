@@ -81,9 +81,9 @@ canvas{display:block}
 <div id="welcomePopup" class="popup">
   <h3>//1nc0nnu></h3>
   <small>telnet smtp.****.*** 25</small>
-<small>HELO hzflix.online</small>
-<small>MAIL FROM:< err0r@hz.err ></small>
-<small style="display: flex;>RCPT TO: < ****@ you.com ></small>
+  <small>HELO hzflix.online</small>
+  <small>MAIL FROM:&lt;err0r@hz.err&gt;</small>
+  <small style="display: flex;">RCPT TO: &lt;****@you.com&gt;</small>
   <p id="welcomeText"></p>
   <button id="closeWelcome">Fermer</button>
 </div>
@@ -265,7 +265,9 @@ function spawnGems(galaxy){
     galaxy.gems.push(g);
   }
 }
-galaxies.forEach(g => spawnGems(// -------------------
+galaxies.forEach(g => spawnGems(g));
+
+// -------------------
 // Vaisseaux (chargement .glb)
 // -------------------
 let ships = [], currentShip = 0, ship;
@@ -297,6 +299,8 @@ function initShipUI(){
   if(!ship){
     createFallbackShips();
   }
+  // initialise lastPos si le ship est présent
+  if (typeof lastPos !== 'undefined' && ship && ship.position) lastPos.copy(ship.position);
 }
 
 // Charge le vrai vaisseau glb (remplace le nom par /spaceship.glb)
@@ -456,7 +460,7 @@ let velocity=new THREE.Vector3(), direction=new THREE.Vector3();
 const forwardVec=new THREE.Vector3(0,0,-1);
 planets.forEach(p=>{p.userData.angle=Math.random()*Math.PI*2;}); moon.userData.angle=0;
 let totalDistance=0;
-const lastPos=new THREE.Vector3().copy(ship.position);
+const lastPos = new THREE.Vector3();  // <-- corrigé : ne copie pas ship avant qu'il existe
 
 function updateChallengeProgress(){
   const dist=lastPos.distanceTo(ship.position); totalDistance+=dist; lastPos.copy(ship.position);
