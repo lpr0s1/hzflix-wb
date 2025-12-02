@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>SpaceGame — Galaxies et Trous de Ver</title>
+<title>SpaceGame — Système Solaire Réaliste</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <style>
-html,body{margin:0;height:100%;background:#000;user-select:none}
+html,body{font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; margin:0;height:100%;background:#000;-webkit-user-select: none; user-select:none}
 canvas{display:block}
 #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,Arial;z-index:10}
 .joystick{position:fixed;left:16px;bottom:16px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);touch-action:none}
@@ -17,7 +17,7 @@ canvas{display:block}
 </head>
 <body>
 <div id="loader">Chargement...</div>
-<div id="galaxyLabel">Galaxie 1</div>
+<div id="galaxyLabel">Système solaire</div>
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
 <div class="btn up" id="btnUp">↑</div>
 <div class="btn down" id="btnDown">↓</div>
@@ -28,6 +28,7 @@ import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 const loaderEl = document.getElementById('loader');
 const galaxyLabel = document.getElementById('galaxyLabel');
 
+// helper safe loader
 const texLoader = new THREE.TextureLoader();
 async function loadSafe(url){
   return new Promise(resolve=>{
@@ -35,6 +36,7 @@ async function loadSafe(url){
   });
 }
 
+// Textures — sources publiques (fallback si non trouvées)
 const texMap = {
   mercury: 'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg',
   venus:   'https://rawcdn.githack.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg',
@@ -61,21 +63,26 @@ const [
 
 loaderEl.style.display='none';
 
-// --- SCENE, CAMERA, RENDERER ---
+// SCENE / CAMERA / RENDERER
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000010);
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100000);
-camera.position.set(0,40,120);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 20000);
+camera.position.set(0,20,80);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // LIGHTS
-scene.add(new THREE.AmbientLight(0x666666));
-const sunLight = new THREE.PointLight(0xffffff,1.6,0); sunLight.position.set(0,0,0); scene.add(sunLight);
+const ambient = new THREE.AmbientLight(0x666666); scene.add(ambient);
+let sunLight = new THREE.PointLight(0xffffff,1.6,0); sunLight.position.set(0,0,0); scene.add(sunLight);
 
-// TEXTURE STAR SPRITE
+// Central star (sun)
+const sunMat = new THREE.MeshBasicMaterial({color:0xffee88});
+const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(14, 32, 32), sunMat);
+scene.add(sunMesh);
+
+// Create round star sprite texture (canvas) for soft round stars and point sprites
 function createRoundSprite(){
   const size = 64;
   const canvas = document.createElement('canvas');
@@ -94,126 +101,169 @@ function createRoundSprite(){
 }
 const starSprite = createRoundSprite();
 
-// STARFIELDS
-function makeStars(count, radiusMin, radiusMax, size, opacity){
+// STARFIELDS (round luminous stars)
+(function makeStars(){
+  const layers = [
+    {count: 800, radiusMin: 800, radiusMax: 3000, size: 4, color: 0xffffff, opacity:0.9, twinkle:0.0002},
+    {count: 400, radiusMin: 300, radiusMax: 1400, size: 8, color: 0xfff0aa, opacity:0.85, twinkle:0.0004}
+  ];
+  window._starFields = [];
+  for(const L of layers){
+    const geom = new THREE.BufferGeometry();
+    const positions = new Float32Array(L.count*3);
+    const sizes = new Float32Array(L.count);
+    for(let i=0;i<L.count;i++){
+      const r = L.radiusMin + Math.random()*(L.radiusMax-L.radiusMin);
+      const theta = Math.random()*Math.PI*2;
+      const phi = (Math.random()-0.5)*Math.PI;
+      positions[i*3] = Math.cos(theta)*Math.cos(phi)*r;
+      positions[i*3+1] = Math.sin(phi)*r;
+      positions[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
+      sizes[i] = L.size * (0.7 + Math.random()*0.6);
+    }
+    geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    geom.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+    const mat = new THREE.PointsMaterial({
+      map: starSprite,
+      size: L.size,
+      transparent: true,
+      opacity: L.opacity,
+      depthWrite:false,
+      blending: THREE.AdditiveBlending
+    });
+    const points = new THREE.Points(geom, mat);
+    scene.add(points);
+    window._starFields.push({points,mat,twinkle:L.twinkle});
+  }
+})();
+
+// SPACIAL DUST PARTICLES (small, subtle)
+(function makeDust(){
+  const count = 1500;
   const geom = new THREE.BufferGeometry();
   const pos = new Float32Array(count*3);
   for(let i=0;i<count;i++){
-    const r = radiusMin + Math.random()*(radiusMax-radiusMin);
+    const r = 50 + Math.random()*2500;
     const theta = Math.random()*Math.PI*2;
     const phi = (Math.random()-0.5)*Math.PI;
     pos[i*3] = Math.cos(theta)*Math.cos(phi)*r;
-    pos[i*3+1] = Math.sin(phi)*r;
+    pos[i*3+1] = Math.sin(phi)*r*0.2; // flatter distribution
     pos[i*3+2] = Math.sin(theta)*Math.cos(phi)*r;
   }
   geom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const mat = new THREE.PointsMaterial({map:starSprite, size:size, transparent:true, opacity:opacity, depthWrite:false, blending:THREE.AdditiveBlending});
-  return new THREE.Points(geom, mat);
-}
+  const mat = new THREE.PointsMaterial({size:1.2, transparent:true, opacity:0.12, depthWrite:false, blending:THREE.AdditiveBlending, color:0xfff7ef});
+  const pts = new THREE.Points(geom, mat);
+  scene.add(pts);
+  window._dust = {pts,mat};
+})();
 
-// --- GALAXIE 1 ---
-const galaxy1 = {planets:[], wormholes:[], blackholes:[], stars:makeStars(1500,800,3000,6,0.9)};
-scene.add(galaxy1.stars);
-
-// Planet factory
-function makePlanet(radius, distance, texture, options={}){
-  const geom = new THREE.SphereGeometry(radius,32,32);
-  const matOpts = {metalness:0.02, roughness:0.7};
-  if(texture) matOpts.map=texture; else matOpts.color=options.color||0x999999;
-  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial(matOpts));
-  mesh.position.set(distance,0,0);
-  mesh.userData = {orbitalSpeed:options.orbitalSpeed||0.00005, rotationSpeed:options.rotationSpeed||0.0005};
+// Planet factory: creates realistic textured planets with orbit params
+function makePlanet(name, radius, distance, texture, opts = {}){
+  const geom = new THREE.SphereGeometry(radius, opts.segments||32, opts.segments||32);
+  const matOptions = {metalness:0.02, roughness:0.7};
+  if(texture) matOptions.map = texture;
+  else matOptions.color = opts.color || 0x999999;
+  const mat = new THREE.MeshStandardMaterial(matOptions);
+  const mesh = new THREE.Mesh(geom, mat);
+  mesh.position.set(distance, 0, 0);
+  // custom userData for orbital motion
+  mesh.userData = {
+    name,
+    distance,
+    orbitalSpeed: (opts.orbitalPeriod? (1/opts.orbitalPeriod) : (0.00005 + Math.random()*0.0001)) * 0.4, // slowed by factor
+    rotationSpeed: opts.rotationSpeed || 0.0005
+  };
+  // rings (optional)
+  if(opts.ring){
+    const ringGeo = new THREE.RingGeometry(opts.ring.inner || radius*1.2, opts.ring.outer || radius*2.0, 128);
+    const ringMat = new THREE.MeshBasicMaterial({map: opts.ring.map || null, side: THREE.DoubleSide, transparent:true, opacity:0.9});
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI/2.2;
+    ring.position.copy(mesh.position);
+    scene.add(ring);
+    mesh.userData.ring = ring;
+  }
   scene.add(mesh);
   return mesh;
 }
 
-// Galaxie 1 Planètes x30
-galaxy1.planets.push(makePlanet(3*2,50,mercuryTex,{orbitalSpeed:0.0001}));
-galaxy1.planets.push(makePlanet(5*2,80,venusTex,{orbitalSpeed:0.00005}));
-const earth1 = makePlanet(6*2,120,earthTex,{orbitalSpeed:0.00008});
-galaxy1.planets.push(earth1);
-const moon1 = new THREE.Mesh(new THREE.SphereGeometry(1.2*17,24,24), new THREE.MeshStandardMaterial({map:moonTex}));
-moon1.position.set(12*20,0,0);
-earth1.add(moon1);
-galaxy1.planets.push(makePlanet(4*3,170,marsTex,{orbitalSpeed:0.00006}));
-galaxy1.planets.push(makePlanet(16*2,260,jupiterTex,{orbitalSpeed:0.00002}));
-galaxy1.planets.push(makePlanet(14*3,350,saturnTex,{orbitalSpeed:0.000015}));
-galaxy1.planets.push(makePlanet(9*3,450,uranusTex,{orbitalSpeed:0.000008}));
-galaxy1.planets.push(makePlanet(9*3,550,neptuneTex,{orbitalSpeed:0.000009}));
-
-// --- GALAXIE 2 (différentes planètes) ---
-const galaxy2 = {planets:[], wormholes:[], blackholes:[], stars:makeStars(1500,800,3000,6,0.9)};
-scene.add(galaxy2.stars);
-galaxy2.stars.visible=false;
-
-// Galaxie 2 Planètes différentes
-galaxy2.planets.push(makePlanet(20*1,60,null,{orbitalSpeed:0.00007}));
-galaxy2.planets.push(makePlanet(18*2,130,null,{orbitalSpeed:0.00004}));
-galaxy2.planets.push(makePlanet(22*1,210,null,{orbitalSpeed:0.00002}));
-galaxy2.planets.push(makePlanet(15*1,300,null,{orbitalSpeed:0.00003}));
-
-// --- TROUS DE VER ET TROUS NOIRS ---
-function makeWormhole(pos){ // sphère avec effet shader/mesh simple
-  const geo = new THREE.TorusGeometry(20,5,27,64);
-  const mat = new THREE.MeshBasicMaterial({color:0x66ccff, transparent:true, opacity:0.7});
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(pos);
-  scene.add(mesh);
-  return mesh;
+// Real solar system (scaled for gameplay, not real units). Distances and radii are scaled down.
+const planets = [];
+// Mercury
+planets.push(makePlanet('Mercury', 1.2, 28, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
+// Venus
+planets.push(makePlanet('Venus', 1.8, 40, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
+// Earth with clouds and moon
+const earth = makePlanet('Earth', 2.0, 60, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
+planets.push(earth);
+if(earthCloudsTex){
+  const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.06,32,32),
+    new THREE.MeshPhongMaterial({map:earthCloudsTex, transparent:true, opacity:0.9, depthWrite:false}));
+  earth.add(clouds);
 }
-function makeBlackHole(pos){
-  const geo = new THREE.SphereGeometry(20,22,22);
-  const mat = new THREE.MeshBasicMaterial({color:0x000000});
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(pos);
-  scene.add(mesh);
-  return mesh;
-}
+// Moon as satellite of Earth
+const moon = new THREE.Mesh(new THREE.SphereGeometry(0.54,24,24), new THREE.MeshStandardMaterial({map:moonTex}));
+moon.position.set(4.5,0,0); earth.add(moon);
+moon.userData = {orbitSpeed: 0.01, distance:4.5, angle: 0};
 
-// Galaxie 1 Wormholes
-galaxy1.wormholes.push(makeWormhole(new THREE.Vector3(400,0,0)));
-galaxy1.wormholes.push(makeWormhole(new THREE.Vector3(-400,0,0)));
-// Galaxie 1 Blackholes
-galaxy1.blackholes.push(makeBlackHole(new THREE.Vector3(0,0,400)));
-galaxy1.blackholes.push(makeBlackHole(new THREE.Vector3(0,0,-400)));
+// Mars
+planets.push(makePlanet('Mars', 1.1, 75, marsTex, {orbitalPeriod:687, rotationSpeed:0.001}));
+// Jupiter
+planets.push(makePlanet('Jupiter', 5.5, 120, jupiterTex, {orbitalPeriod:4333, rotationSpeed:0.002}));
+// Saturn (with ring)
+planets.push(makePlanet('Saturn', 4.8, 170, saturnTex, {orbitalPeriod:10759, rotationSpeed:0.0015, ring:{inner:6, outer:9, map: saturnRingTex}}));
+// Uranus
+planets.push(makePlanet('Uranus', 3.0, 210, uranusTex, {orbitalPeriod:30687, rotationSpeed:0.0008}));
+// Neptune
+planets.push(makePlanet('Neptune', 2.9, 260, neptuneTex, {orbitalPeriod:60190, rotationSpeed:0.0009}));
 
-// Galaxie 2 Wormholes (retour)
-galaxy2.wormholes.push(makeWormhole(new THREE.Vector3(400,0,0)));
-galaxy2.wormholes.push(makeWormhole(new THREE.Vector3(-400,0,0)));
-// Galaxie 2 Blackholes
-galaxy2.blackholes.push(makeBlackHole(new THREE.Vector3(0,0,400)));
-galaxy2.blackholes.push(makeBlackHole(new THREE.Vector3(0,0,-400)));
+// optional: dwarf Pluto (small)
+const pluto = makePlanet('Pluto', 0.6, 300, null, {orbitalPeriod:90560, rotationSpeed:0.0004});
+pluto.material && (pluto.material.color = new THREE.Color(0x9b7b6a));
+planets.push(pluto);
 
-// ---------------- Vaisseau Star-Lord style ----------------
-function assembleStarLordShip(){
-  const g = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({color:0x999999, metalness:0.8, roughness:0.3});
-  const body = new THREE.Mesh(new THREE.BoxGeometry(3,0.4,5),bodyMat); g.add(body);
-  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.8,16,16), new THREE.MeshPhysicalMaterial({color:0x111111, transmission:0.7, transparent:true, opacity:0.95}));
-  cockpit.position.set(0,0.35,1.5); g.add(cockpit);
-  // Ailes triangulaires
-  const wingMat = new THREE.MeshStandardMaterial({color:0xff5500, metalness:0.8});
-  const wingL = new THREE.Mesh(new THREE.ConeGeometry(1.2,3,3), wingMat); wingL.rotation.set(Math.PI/2,0,Math.PI/6); wingL.position.set(-2,0,-1); g.add(wingL);
-  const wingR = wingL.clone(); wingR.position.set(2,0,-1); wingR.rotation.z = -Math.PI/6; g.add(wingR);
-  // Turbo
-  const turboMat = new THREE.MeshStandardMaterial({color:0x333333});
-  const tL = new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.6,16),turboMat); tL.rotation.x=Math.PI/2; tL.position.set(-1,-0.2,-2.5); g.add(tL);
-  const tR = tL.clone(); tR.position.set(1,-0.2,-2.5); g.add(tR);
-  // Exhaust
-  const exhaustGeom = new THREE.BufferGeometry();
-  const count=200; const arr=new Float32Array(count*3);
-  for(let i=0;i<count;i++){arr[i*3]=(Math.random()-0.5)*0.5;arr[i*3+1]=-0.2-Math.random()*0.3;arr[i*3+2]=-2.5-Math.random()*0.6;}
-  exhaustGeom.setAttribute('position', new THREE.BufferAttribute(arr,3));
-  const exhaustMat = new THREE.PointsMaterial({color:0xffaa66,size:0.2,transparent:true,opacity:0.85});
-  const exhaust = new THREE.Points(exhaustGeom, exhaustMat); g.add(exhaust);
-  g.userData={updateExhaust:()=>{const a=exhaustGeom.attributes.position.array;for(let i=0;i<count;i++){const idx=i*3;a[idx]+=(Math.random()-0.5)*0.01;a[idx+1]-=0.01;a[idx+2]+=(Math.random()-0.5)*0.01;if(a[idx+1]<-1) a[idx+1]=-0.2-Math.random()*0.2;}exhaustGeom.attributes.position.needsUpdate=true}};
-  return g;
+// slow down global orbital speeds factor (gameplay)
+const ORBIT_SPEED_FACTOR = 0.7; // lower => slower
+
+// Ship (grey)
+function assembleShip(){
+  const group=new THREE.Group();
+  const bodyMat=new THREE.MeshStandardMaterial({color:0x8a8f92,metalness:0.85,roughness:0.2});
+  const body=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.2,24),bodyMat);
+  body.rotation.x=Math.PI/2;
+  group.add(body);
+  const glass=new THREE.Mesh(new THREE.SphereGeometry(0.42,18,18),new THREE.MeshPhysicalMaterial({color:0x222831,transmission:0.6,transparent:true,opacity:0.95,roughness:0.1}));
+  glass.position.set(0,0.45,0.6);
+  group.add(glass);
+  const wingMat=bodyMat.clone();
+  const wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,1.2),wingMat);
+  wingL.position.set(-0.9,0,-0.2); wingL.rotation.z=0.06;
+  const wingR=wingL.clone(); wingR.position.set(0.9,0,-0.2);
+  group.add(wingL,wingR);
+  const fin=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.6,0.8),wingMat);
+  fin.position.set(0,-0.6,-0.2); fin.rotation.x=0.18; group.add(fin);
+  const engineMat=new THREE.MeshStandardMaterial({color:0x2b2b2b,metalness:0.9,roughness:0.18});
+  const thrL=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.5,12),engineMat); thrL.rotation.x=Math.PI/2; thrL.position.set(-0.35,-1.05,0);
+  const thrR=thrL.clone(); thrR.position.set(0.35,-1.05,0); group.add(thrL,thrR);
+  const ringMat=new THREE.MeshBasicMaterial({color:0xffaa00,transparent:true,opacity:0.9});
+  const ringL=new THREE.Mesh(new THREE.TorusGeometry(0.16,0.03,8,32),ringMat); ringL.rotation.x=Math.PI/2; ringL.position.copy(thrL.position);
+  const ringR=ringL.clone(); ringR.position.copy(thrR.position); group.add(ringL,ringR);
+  const exhaustCount=80; const arr=new Float32Array(exhaustCount*3);
+  for(let i=0;i<exhaustCount;i++){arr[i*3]=(Math.random()-0.5)*0.25;arr[i*3+1]=-1.4-Math.random()*0.8;arr[i*3+2]=(Math.random()-0.5)*0.25;}
+  const exhaustGeom=new THREE.BufferGeometry(); exhaustGeom.setAttribute('position',new THREE.BufferAttribute(arr,3));
+  const exhaustMat=new THREE.PointsMaterial({color:0xffaa66,size:0.12,transparent:true,opacity:0.9,depthWrite:false});
+  const exhaust=new THREE.Points(exhaustGeom,exhaustMat); group.add(exhaust);
+  const l1=new THREE.PointLight(0xffaa66,0.6,6); l1.position.set(-0.35,-1.05,0); const l2=l1.clone(); l2.position.set(0.35,-1.05,0); group.add(l1,l2);
+  group.userData={setThrusterPower(p){const power=Math.max(0,Math.min(1,p));exhaustMat.size=0.05+power*0.24;exhaustMat.opacity=0.12+power*0.88;l1.intensity=0.2+power*1.2;l2.intensity=0.2+power*1.2}, updateExhaust(){const a=exhaustGeom.attributes.position.array;for(let i=0;i<a.length/3;i++){const idx=i*3;a[idx]+= (Math.random()-0.5)*0.004;a[idx+1]-=0.002-Math.random()*0.006;a[idx+2]+=(Math.random()-0.5)*0.004;if(a[idx+1]<-3.2) a[idx+1]=-1.4-Math.random()*0.8;}exhaustGeom.attributes.position.needsUpdate=true}};
+  return group;
 }
 
-let ship = assembleStarLordShip();
-ship.position.set(130,15,30);
+let ship = assembleShip();
+// start position moved OUT of the sun — user requested starting outside sun
+ship.position.set(28, 6, 12); // near Mercury orbit but not in star
 scene.add(ship);
 
+// Controls (touch)
 let move={x:0,y:0,up:false,down:false};
 const joy=document.getElementById('joystick'), joyInner=document.getElementById('joyInner');
 joy.addEventListener('touchstart',e=>e.preventDefault());
@@ -229,97 +279,76 @@ document.getElementById('btnUp').addEventListener('touchend',()=>move.up=false);
 document.getElementById('btnDown').addEventListener('touchstart',()=>move.down=true);
 document.getElementById('btnDown').addEventListener('touchend',()=>move.down=false);
 
-// --- ANIMATION LOOP ---
+// Physics
 let velocity=new THREE.Vector3(), direction=new THREE.Vector3();
 const forwardVec = new THREE.Vector3(0,0,-1);
-let currentGalaxy = 1;
-function getCurrentGal(){
-  return currentGalaxy===1?galaxy1:galaxy2;
-}
 
-// Collision planétaire
-function checkCollision(){
-  const gal = getCurrentGal();
-  for(const p of gal.planets){
-    const dist = ship.position.distanceTo(p.position);
-    if(dist < p.geometry.parameters.radius + 2){
-      const dir = ship.position.clone().sub(p.position).normalize();
-      ship.position.copy(p.position.clone().add(dir.multiplyScalar(p.geometry.parameters.radius + 2)));
-      velocity.set(0,0,0);
-    }
-  }
-}
+// Orbit helpers for moons and planets (store angles)
+planets.forEach(p => { p.userData.angle = Math.random()*Math.PI*2; });
+moon.userData.angle = 0;
 
-// Vérifie trous de ver
-function checkWormholes(){
-  const gal = getCurrentGal();
-  for(const wh of gal.wormholes){
-    const d = ship.position.distanceTo(wh.position);
-    if(d<20){
-      // Distorsion visuelle: scale temporaire des étoiles
-      gal.stars.scale.set(1.5,1.5,1.5);
-      // Aspire le vaisseau
-      velocity.z -= 0.5;
-      // Téléportation après distance
-      if(d<1){
-        currentGalaxy = currentGalaxy===1?2:1;
-        const newGal = getCurrentGal();
-        ship.position.copy(new THREE.Vector3(0,10,30));
-        galaxyLabel.textContent = `Galaxie ${currentGalaxy}`;
-        gal.stars.scale.set(1,1,1);
-      }
-    }
-  }
-}
-
-const ORBIT_SPEED_FACTOR = 0.5;
-
+// animation loop
 function animate(){
   requestAnimationFrame(animate);
   const now = Date.now();
 
-  // Orbits
-  for(const gal of [galaxy1, galaxy2]){
-    for(const p of gal.planets){
-      if(!p.userData.angle) p.userData.angle=Math.random()*Math.PI*2;
-      p.userData.angle += p.userData.orbitalSpeed*ORBIT_SPEED_FACTOR;
-      const a = p.userData.angle; const d = p.position.length();
-      p.position.x = Math.cos(a)*d; p.position.z = Math.sin(a)*d;
-      p.rotation.y += p.userData.rotationSpeed;
-    }
+  // update orbits (slower, realistic feel)
+  planets.forEach(p=>{
+    // use stored userData
+    p.userData.angle += p.userData.orbitalSpeed * ORBIT_SPEED_FACTOR;
+    const a = p.userData.angle;
+    const d = p.userData.distance;
+    p.position.x = Math.cos(a) * d;
+    p.position.z = Math.sin(a) * d;
+    if(p.userData.ring) p.userData.ring.position.copy(p.position);
+    p.rotation.y += (p.userData.rotationSpeed || 0.0005);
+  });
+
+  // moon orbit around earth
+  moon.userData.angle += 0.002;
+  moon.position.x = Math.cos(moon.userData.angle) * moon.userData.distance;
+  moon.position.z = Math.sin(moon.userData.angle) * moon.userData.distance;
+
+  // slow twinkle for starfields
+  if(window._starFields){
+    window._starFields.forEach((sf, i) => {
+      sf.mat.opacity = 0.75 + 0.15*Math.sin(now*sf.twinkle* (i+1) );
+    });
   }
 
-  ship.userData.updateExhaust && ship.userData.updateExhaust();
+  // dust subtle drift (rotate entire dust particle system a bit)
+  if(window._dust && window._dust.pts){
+    window._dust.pts.rotation.y += 0.00001;
+  }
 
+  // ship controls
   direction.set(0,0,0);
   const localF = forwardVec.clone().applyEuler(ship.rotation);
-  direction.add(localF.multiplyScalar(move.y*1.2));
-  if(move.up) direction.y += 0.4;
-  if(move.down) direction.y -= 0.4;
-  velocity.lerp(direction,0.06);
+  direction.add(localF.multiplyScalar(move.y*0.45));
+  if(move.up) direction.y += 0.12;
+  if(move.down) direction.y -= 0.12;
+  velocity.lerp(direction, 0.06);
   ship.position.add(velocity);
   ship.rotation.y -= move.x*0.04;
+  const thrusterPower = Math.min(1, Math.abs(move.y));
+  if(ship.userData) { ship.userData.setThrusterPower && ship.userData.setThrusterPower(thrusterPower); ship.userData.updateExhaust && ship.userData.updateExhaust(); }
 
-  checkCollision();
-  checkWormholes();
-
-  // Camera
-  const desired = ship.position.clone().add(new THREE.Vector3(0,30,60).applyEuler(ship.rotation));
-  camera.position.lerp(desired,0.08);
+  // camera follow
+  const desired = ship.position.clone().add(new THREE.Vector3(0,4,14).applyEuler(ship.rotation));
+  camera.position.lerp(desired, 0.08);
   camera.lookAt(ship.position);
-
-  // Affiche uniquement étoiles de la galaxie actuelle
-  galaxy1.stars.visible = currentGalaxy===1;
-  galaxy2.stars.visible = currentGalaxy===2;
 
   renderer.render(scene, camera);
 }
 animate();
 
-window.addEventListener('resize', ()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-window.addEventListener('keydown',(e)=>{
-  if(e.key.toLowerCase()==='g'){ ship.position.set(0,0,0); velocity.set(0,0,0);}
-  if(e.key.toLowerCase()==='h'){ ship.position.set(130,15,30); velocity.set(0,0,0);}
+// resize handling
+window.addEventListener('resize', ()=>{camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);});
+
+// desktop debug: G = reposition near sun, H = reset to starting safe position
+window.addEventListener('keydown', (e)=>{
+  if(e.key.toLowerCase()==='g'){ ship.position.set(0,0,0); velocity.set(0,0,0); }
+  if(e.key.toLowerCase()==='h'){ ship.position.set(28,6,12); velocity.set(0,0,0); }
 });
 
 </script>
