@@ -187,9 +187,9 @@ function makePlanet(name, radius, distance, texture, opts = {}){
 
 // Planets
 const planets = [];
-planets.push(makePlanet('Mercury', 1.2, 78, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
-planets.push(makePlanet('Venus', 1.8, 80, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
-const earth = makePlanet('Earth', 2.0, 120, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
+planets.push(makePlanet('Mercury', 3.9, 108, mercuryTex, {orbitalPeriod:88, rotationSpeed:0.0008}));
+planets.push(makePlanet('Venus', 2.8, 150, venusTex, {orbitalPeriod:225, rotationSpeed:0.0002}));
+const earth = makePlanet('Earth', 5.9, 180, earthTex, {orbitalPeriod:365, rotationSpeed:0.001});
 planets.push(earth);
 if(earthCloudsTex){
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(2.06,32,32),
