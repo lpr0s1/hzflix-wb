@@ -45,7 +45,7 @@ canvas{display:block}
 <body>
 
 <div id="loader">Chargement...</div>
-<div id="galaxyLabel">Infected galacti</div>
+<div id="galaxyLabel">Infected galactic</div>
 <div id="gemCounter"><span class="material-icons">diamond</span><span id="gemCount">0</span></div>
 
 <div class="joystick" id="joystick"><div class="joystick-inner" id="joyInner"></div></div>
@@ -81,9 +81,9 @@ canvas{display:block}
 <div id="welcomePopup" class="popup">
   <h3>//1nc0nnu></h3>
   <small>telnet smtp.****.*** 25</small>
-  <small>HELO hzflix.online</small>
-  <small>MAIL FROM:&lt;err0r@hz.err&gt;</small>
-  <small style="display: flex;">RCPT TO: &lt;****@you.com&gt;</small>
+<small>HELO hzflix.online</small>
+<small>MAIL FROM:< err0r@hz.err ></small>
+<small style="display: flex;">RCPT TO: < ****@ you.com ></small>
   <p id="welcomeText"></p>
   <button id="closeWelcome">Fermer</button>
 </div>
@@ -95,15 +95,9 @@ canvas{display:block}
   <button id="closeWarp">Fermer</button>
 </div>
 
-  
 
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
-
-// -------------------
-// Charge textures
-// -------------------
 const loaderEl = document.getElementById('loader');
 const galaxyLabel = document.getElementById('galaxyLabel');
 const gemCountEl = document.getElementById('gemCount');
@@ -262,74 +256,24 @@ function spawnGems(galaxy){
 galaxies.forEach(g => spawnGems(g));
 
 // -------------------
-// Vaisseaux (chargement .glb)
+// Vaisseaux stylés
 // -------------------
-let ships = [], currentShip = 0, ship;
-const loaderGLTF = new GLTFLoader();
-
-function createFallbackShips(){ // garde un fallback procédural si le GLB ne charge pas
-  ships = [];
-  function createShip(type){
-    const g = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({color:0x0ff,metalness:0.8,roughness:0.2,emissive:0x0088ff,emissiveIntensity:0.4});
-    const body = new THREE.Mesh(new THREE.ConeGeometry(1,3,16), mat); body.rotation.x=Math.PI/2; g.add(body);
-    const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.1,1.5), mat); wingL.position.set(-0.8,0,0); g.add(wingL);
-    const wingR = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.1,1.5), mat); wingR.position.set(0.8,0,0); g.add(wingR);
-    g.userData = {type};
-    g.visible=false;
-    return g;
-  }
-  ships.push(createShip('classic'));
-  ships.push(createShip('sleek'));
-  ships.push(createShip('bulky'));
-  ships[0].visible = true; ship = ships[0];
-  ship.position.set(28,6,12);
-  ships.forEach(s=>scene.add(s));
+let ships=[], currentShip=0, ship;
+function createShip(type){
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color:0x0ff,metalness:0.8,roughness:0.2,emissive:0x0088ff,emissiveIntensity:0.4});
+  const body = new THREE.Mesh(new THREE.ConeGeometry(1,3,16), mat); body.rotation.x=Math.PI/2; g.add(body);
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.1,1.5), mat); wingL.position.set(-0.8,0,0); g.add(wingL);
+  const wingR = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.1,1.5), mat); wingR.position.set(0.8,0,0); g.add(wingR);
+  g.userData = {type};
+  g.visible=false;
+  return g;
 }
+ships.push(createShip('classic'));
+ships.push(createShip('sleek'));
+ships.push(createShip('bulky'));
+ships[0].visible=true; ship=ships[0]; ship.position.set(28,6,12); scene.add(ship);
 
-// --- AJOUT 1 : créer immédiatement le fallback pour éviter que animate() ne tourne sans ship
-createFallbackShips();
-
-// fonction utilitaire pour initialiser l'UI après chargement
-function initShipUI(){
-  // si UI existante s'attend à éléments, on garde l'autre code inchangé — juste s'assurer que `ship` et `ships` sont définis
-  if(!ship){
-    createFallbackShips();
-  }
-  // initialise lastPos si le ship est présent
-  if (typeof lastPos !== 'undefined' && ship && ship.position) lastPos.copy(ship.position);
-}
-
-// Charge le vrai vaisseau glb (remplace le nom par /spaceship.glb)
-function loadSpaceshipGLB(url = '/spaceship.glb'){
-  loaderEl.style.display = ''; // si tu veux afficher loader pendant chargement
-  loaderGLTF.load(url, (gltf)=>{
-    // Retire fallback s'il existe
-    ships.forEach(s=>scene.remove(s));
-    ships = [];
-
-    const model = gltf.scene;
-    // Ajuste l'échelle et l'orientation si besoin
-    model.scale.setScalar(1.0);          // adapter si trop grand/petit
-    model.rotation.x = 0;
-    model.position.set(28,6,12);
-    model.userData = { type: 'glb', name: url };
-    scene.add(model);
-    ship = model;
-    ship.visible = true;
-    ships.push(ship);
-    loaderEl.style.display = 'none';
-    initShipUI();
-  }, undefined, (err)=>{
-    console.warn('Échec chargement /spaceship.glb — fallback appliqué', err);
-    loaderEl.style.display = 'none';
-    createFallbackShips();
-    initShipUI();
-  });
-}
-
-// premier essai de chargement du GLB ; si indisponible on bascule sur fallback
-loadSpaceshipGLB('/spaceship.glb');
 // -------------------
 // Popups & UI
 // -------------------
@@ -364,7 +308,6 @@ const challenges=[
   {name:"Entrer dans 2 galaxies",target:2,progress:0,done:false},
   {name:"Débloquer vaisseau Sleek",target:1,progress:0,done:false},
   {name:"Débloquer vaisseau Bulky",target:2,progress:0,done:false},
-  {name:"Collecter 50 gemmes",target:50,progress:0,done:false},
   {name:"Collecter 200 gemmes", target:200,progress:0,done:false}
 ];
 const challengeListEl=document.getElementById('challengeList'),challengePopup=document.getElementById('challengePopup'),notifEl=document.getElementById('challengeNotif');
@@ -457,9 +400,7 @@ let velocity=new THREE.Vector3(), direction=new THREE.Vector3();
 const forwardVec=new THREE.Vector3(0,0,-1);
 planets.forEach(p=>{p.userData.angle=Math.random()*Math.PI*2;}); moon.userData.angle=0;
 let totalDistance=0;
-const lastPos = new THREE.Vector3();  // <-- corrigé : ne copie pas ship avant qu'il existe
-// --- AJOUT 2 : si le fallback a déjà créé le ship, initialiser lastPos ici
-if (ship && ship.position) lastPos.copy(ship.position);
+const lastPos=new THREE.Vector3().copy(ship.position);
 
 function updateChallengeProgress(){
   const dist=lastPos.distanceTo(ship.position); totalDistance+=dist; lastPos.copy(ship.position);
