@@ -137,23 +137,10 @@
 </head>
 <body>
     <div class="wrap" role="main">
-        <header>
-            <div>
-                <h1>Activer la localisation pour trouver des offres</h1>
-                <p class="lead">Voir rapidement hôtels et restaurants économiques à proximité. Les résultats sont estimatifs et calculés localement pour préserver la confidentialité.</p>
-            </div>
-        </header>
 
-        <section class="card" aria-labelledby="benefit">
-            <h2 id="benefit" style="margin:0 0 8px 0;font-size:20px">Pourquoi autoriser la localisation</h2>
-            <ul style="margin:0 0 8px 18px;color:var(--muted);line-height:1.5;font-size:16px">
-                <li>Affiner les offres à moins de 2 km.</li>
-                <li>Prioriser restaurants et hôtels avec remises locales.</li>
-                <li>Obtenir directions rapides et estimations de temps d'arrivée.</li>
-            </ul>
+        
             <div class="controls">
                 <button id="getLocationBtn" class="primary" aria-describedby="consentDesc">Autoriser la localisation</button>
-                <button id="skipBtn" class="ghost">Chercher manuellement</button>
             </div>
             <div id="consentDesc" class="small">Vous serez invité par votre navigateur à autoriser l'accès. Aucune géolocalisation n'est collectée sans consentement.</div>
         </section>
@@ -162,15 +149,6 @@
             <h3 style="margin:0 0 8px 0">Offres à proximité</h3>
             <div id="nearby" class="nearby-list"></div>
             <div class="small" style="margin-top:10px">Les tarifs indiqués sont des exemples à titre indicatif.</div>
-        </section>
-
-        <section class="card" id="manualSearch" style="display:none">
-            <h3 style="margin:0 0 8px 0">Recherche manuelle</h3>
-            <p class="small" style="margin:0 0 8px 0">Entrez une ville ou un code postal pour obtenir des suggestions.</p>
-            <input id="manualInput" type="text" placeholder="ex: Paris, 75001" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;font-size:16px">
-            <div style="margin-top:10px;display:flex;gap:10px">
-                <button id="manualSearchBtn" class="primary">Rechercher</button>
-            </div>
         </section>
     </div>
 
