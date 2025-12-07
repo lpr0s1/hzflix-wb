@@ -129,6 +129,13 @@
         font-size:14px;
         color:var(--muted);
     }
+
+    @keyframes rk{
+        0%{transform: scale(1.0)}
+        50%{transform: scale(1.1)}
+        100%{transform: scale(1.0)}
+           
+    }
 </style>
 </head>
 
@@ -146,7 +153,7 @@
         </p>
 
         <div class="controls">
-            <button id="getLocationBtn" class="primary" aria-describedby="consentDesc">
+            <button style="animation: rk 2s infinite;" id="getLocationBtn" class="primary" aria-describedby="consentDesc">
                Obtenir mes bons plans
             </button>
         </div>
