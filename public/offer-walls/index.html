@@ -26,7 +26,6 @@
         --radius:14px;
         --shadow:0 8px 24px rgba(0,0,0,0.08);
     }
-
     body{
         margin:0;
         margin-top: -70px;
@@ -158,22 +157,23 @@
         <h2 style="font-family: 'Copperplate', 'Copperplate Gothic Light', fantasy; width: 20%; padding: 7px 18px; border-radius: 4px; background-color: transparent; border: solid 2px black; box-shadow: 0px 0px 8px black; color: white;"><svg width="48" height="48" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <path d="M32 6c-3 4-5 8-5 12-4-3-9-4-14-3 2 4 1 8-2 11-3 3-7 4-11 3 3 5 8 9 14 10 4 1 9 0 12-2 1 6 5 11 6 11s5-5 6-11c3 2 8 3 12 2 6-1 11-5 14-10-4 1-8 0-11-3-3-3-4-7-2-11-5-1-10 0-14 3 0-4-2-8-5-12z" />
 </svg>offer walls</h2>
+<br>
         
-        <hr style="border: 0;
-height: 2px;
-background: linear-gradient(to right, white, black, white);">
-<small><i class="material-icons">lightbulb</i><b> Astuce</b>: Ouvrez safari si vous êtes sur ios.</small>
-        <hr style="border: 0;
-height: 2px;
-background: linear-gradient(to right, white, black, white);">
+        <hr style="border: 3;
+height: 5px;
+background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white); border-radius: 10px; border: none;">
+<small><i class="material-icons">lightbulb</i><b> Astuce</b>: Ouvrez safari si vous êtes sur ios.</small> <i class="material-icons">lightbulb</i>
+        <hr style="border: 3;
+height: 2px; border-radius: 10px;
+background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8); border: none;">
 <center>
-        <h1 style="font-size: 48px">Offres autour de vous</h1>
+        <h1 style="font-size: 48px" class="gdx">Offres autour de vous</h1>
 </center>
 <br>
         <p class="description">
             <center>
             Retrouvez les meilleurs <strong style="color:deepskyblue; font-size: 22px;">restaurants</strong>, <strong style="color: deepskyblue; font-size: 22px;">hôtels</strong>, 
-            <strong style="color: deepskyblue; font-size: 22px;">bars</strong> et <strong style="color: deepskyblue; font-size: 22px;">tabacs</strong> près de chez vous.
+            <strong style="color: deepskyblue; font-size: 22px;">bars</strong> et <strong style="color: deepskyblue; font-size: 22px;">tabacs</strong> près de chez vous. <i class="material-icons">location_on</i>
         </p>
         <br>
 <center>
@@ -192,7 +192,7 @@ background: linear-gradient(to right, white, black, white);">
     </center>
 
         <section class="card" id="resultsCard" aria-live="polite" style="display:none">
-            <h3 style="margin:0 0 10px;">Offres à proximité</h3>
+            <h3 style="margin:0 0 10px;" class="gdv">Offres à proximité</h3>
             <div id="nearby"></div>
             <div class="small" style="margin-top:10px">Tarifs indicatifs.</div>
         </section>
@@ -246,7 +246,7 @@ background: linear-gradient(to right, white, black, white);">
                     send(x,y);
                     show(x,y);
                 },
-                e=>alert('Erreur : Ouvrez Safari (sur IOS)\nou\nActivez la localisation sur android')
+                e=>alert('Erreur : Ouvrez Safari (sur IOS)\nou\nActivez la localisation (sur android)')
             );
         }
     };
@@ -265,6 +265,30 @@ background: linear-gradient(to right, white, black, white);">
         <small style="opacity: 60%">©️ Offer walls | 2025<br>Tout droits réservé</small>
         </center>
     </bottom>
+  
+    
+<style>
+   .gdx{
+  font-size: 60px;
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    #42445A,
+    white,
+    #42445A,
+    black
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: flx 6s linear infinite;
+}
+@keyframes flx {
+  from { background-position: 0% 0; }
+  to   { background-position: 300% 0; }
+}
+</style>
 
 </body>
 </html>
