@@ -193,6 +193,30 @@
   to   { background-position: 300% 0; }
 }
 
+
+    @keyframes gu{
+        0%{
+        background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white);
+        }
+        50%{
+            background: linear-gradient(to right, #E4EDF8, red, #E4EDF8, white);
+           }
+        100%{
+            background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white);
+        }
+    }
+
+    @keyframes gl{
+        0%{
+            background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8);
+        }
+        50%{
+            background: linear-gradient(to right, #E4EDF8, white, red, #E4EDF8);
+        }
+        100%{
+            background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8);
+        }
+    }
     
 </style>
 </head>
@@ -205,10 +229,12 @@
         
         <hr style="border: solid 3;
 height: 5px;
+            animation: gu 2s infinite;
 background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white); border-radius: 10px; border: none;">
 <small><i class="material-icons">lightbulb</i><b> Astuce</b>: Ouvrez safari si vous êtes sur ios.</small> <i class="material-icons">lightbulb</i>
         <hr style="border: solid 3;
 height: 2px; border-radius: 10px;
+            animation: gl 2s infinite;
 background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8); border: none;">
 <center><br><h1 style="font-size: 48px;" class="gdx">Les meilleurs offres, juste à côté !</h1></center><br><hr><br>
         <p class="description"><center>
