@@ -195,27 +195,15 @@
 
 
     @keyframes gu{
-        0%{
-        background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white);
-        }
-        50%{
-            background: linear-gradient(to right, #E4EDF8, red, #E4EDF8, white);
-           }
-        100%{
-            background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white);
-        }
+        0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
     }
 
     @keyframes gl{
-        0%{
-            background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8);
-        }
-        50%{
-            background: linear-gradient(to right, #E4EDF8, white, red, #E4EDF8);
-        }
-        100%{
-            background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8);
-        }
+        0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
     }
     
 </style>
@@ -227,12 +215,12 @@
 <br>
         <br>
         
-        <hr style="border: solid 3;
+        <hr style="border: 3px solid;
 height: 5px; transition: all 0.8s ease;
             animation: gu 2s infinite;
 background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white); border-radius: 10px; border: none;">
 <small><i class="material-icons">lightbulb</i><b> Astuce</b>: Ouvrez safari si vous êtes sur ios.</small> <i class="material-icons">lightbulb</i>
-        <hr style="border: solid 3;
+        <hr style="border: 3px solid;
 height: 2px; transition: all 0.8s ease; border-radius: 10px;
             animation: gl 2s infinite;
 background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8); border: none;">
