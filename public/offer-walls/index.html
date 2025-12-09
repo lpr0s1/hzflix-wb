@@ -16,6 +16,10 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+
+*{
+    overflow-x: hidden;
+}
     :root{
         --accent:#0b79d0;
         --accent-light:#5ab3ff;
@@ -26,13 +30,14 @@
         --radius:14px;
         --shadow:0 8px 24px rgba(0,0,0,0.08);
     }
+
     body{
+        width: 100%;
         margin:0;
         margin-top: -70px;
         background:var(--bg);
         font-family:system-ui,-apple-system,Segoe UI,Roboto;
         color:var(--text);
-        overflow-x:hidden;
         background-image:
             radial-gradient(circle at 10% 20%, rgba(11,121,208,0.08), transparent 50%),
             radial-gradient(circle at 90% 80%, rgba(11,121,208,0.06), transparent 50%);
@@ -48,6 +53,7 @@
   background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0));
   z-index: 9999;
     }
+    
     body::after {
     content: "";
     position: fixed;
@@ -80,7 +86,7 @@
 
     .description{
         color:var(--muted);
-        font-size:25px;
+        font-size:22px;
         margin-bottom:22px;
     }
 
@@ -193,55 +199,65 @@
   to   { background-position: 300% 0; }
 }
 
-
-    @keyframes gu{
-        0% { background-position: 0% 0%; }
-    50% { background-position: 100% 0%; }
-    100% { background-position: 0% 0%; }
-    }
-
-    @keyframes gl{
-        0% { background-position: 0% 0%; }
-    50% { background-position: 100% 0%; }
-    100% { background-position: 0% 0%; }
-    }
     
 </style>
 </head>
 
 <body>
     <div class="wrap" role="main">
-        <img src="https://hzflix.online/offer-walls/copy_5182F8D3-92C2-465B-8856-E96181463EC4.gif" srcset="https://hzflix.online/offer-walls/copy_5182F8D3-92C2-465B-8856-E96181463EC4.gif" style="width: 99%; height: 90px; transform: scaleY(0.01); transform: scaleX(1.2)">
+        <img src="copy_5182F8D3-92C2-465B-8856-E96181463EC4.gif" style="width: 99%; height: 120px; transform: scaleY(0.2); transform: scaleX(1.2)">
 <br>
-        <br>
         
-        <hr style="border: 3px solid;
-height: 5px; transition: all 0.8s ease;
-            animation: gu 2s infinite;
-background: linear-gradient(to right, #E4EDF8, red, #E4EDF8, white); border-radius: 10px; border: none;">
+        <hr style="border: 3;
+height: 5px;
+background: linear-gradient(to right, #E4EDF8, black, #E4EDF8, white); border-radius: 10px; border: none;">
 <small><i class="material-icons">lightbulb</i><b> Astuce</b>: Ouvrez safari si vous êtes sur ios.</small> <i class="material-icons">lightbulb</i>
-        <hr style="border: 3px solid;
-height: 2px; transition: all 0.8s ease; border-radius: 10px;
-            animation: gl 2s infinite;
-background: linear-gradient(to right, #E4EDF8, white, red, #E4EDF8); border: none;">
-<center><br><h1 style="font-size: 48px;" class="gdx">Les meilleurs offres, juste à côté !</h1></center><br><hr><br>
-        <p class="description"><center>
-            Retrouvez les meilleurs <strong class="gxv">restaurants</strong>, <strong class="gxv">hôtels</strong>, <strong class="gxv">bars</strong> et <strong class="gxv">tabacs</strong> près de chez vous. <i class="material-icons">location_on</i></p><br><center>
-        <div class="controls"><button style="animation: rk 2s infinite; text-align: center; content-align: center; justify-content: center; " id="getLocationBtn" class="primary" aria-describedby="consentDesc">
-               Obtenir mes bons plans</button>
+        <hr style="border: 3;
+height: 2px; border-radius: 10px;
+background: linear-gradient(to right, #E4EDF8, white, black, #E4EDF8); border: none;">
+<center>
+    <br>
+        <h1 style="font-size: 48px;" class="gdx">Les meilleurs offres, juste à côté !</h1>
+</center>
+<br>
+        <hr>
+        <br>
+        <p class="description">
+            <center>
+            Retrouvez les meilleurs <strong class="gxv">restaurants</strong>, <strong class="gxv">hôtels</strong>, 
+            <strong class="gxv">bars</strong> et <strong class="gxv">tabacs</strong> près de chez vous. <i class="material-icons">location_on</i>
+        </p>
+        <br>
+<center>
+        <div class="controls">
+            <button style="animation: rk 2s infinite; text-align: center; content-align: center; justify-content: center; " id="getLocationBtn" class="primary" aria-describedby="consentDesc">
+               Obtenir mes bons plans
+            </button>
             </center>
         </div>
+        
+        
+        
         <center>
-        <p style="width: 80%; font-size: 16px; opacity: 60%; font-family: 'Copperplate', 'Copperplate Gothic Light', fantasy;">Grâce à notre <b>algorithme de pointe</b>, nous détectons les offres les plus <b>performantes</b> et les évaluons de manière comparative afin de garantir un <b>avantage</b> concurrentiel <b>décisif</b>.</p>
+            <span style="font-size: 39px" class="material-icons">developer_board</span>
+        <p style="width: 80%; font-size: 25px; opacity: 60%; font-family: 'Copperplate', 'Copperplate Gothic Light', fantasy;">Grâce à notre <b>algorithme de pointe</b>, nous détectons les offres les plus <b>performantes</b> et les évaluons de manière comparative afin de garantir un <b>avantage</b> concurrentiel <b>décisif</b>.</p>
         <br>
         </center>
 </center>
+<br>
+<br>
     <center>
-        <div id="consentDesc" style="justify-content: center; color: red; background-color: #333; height: 70px; margin-top: 20px;" class="small">
+        <i class="material-icons"></i>
+        <div id="consentDesc" style="justify-content: center; color: red; background-color: #333; height: 200px; margin-top: 20px; overflow: hidden;" class="small">
+            <br>
             <div style="width: 77%;">
-            <b>Vous serez invité à autoriser l'accès. Aucune donnée n'est collectée sans votre accord.</b>
+            <b style="font-size: 28px">Vous serez invité à autoriser l'accès. Aucune donnée n'est collectée sans votre accord.</b>
             </div>
+            <br><br>
+            <br><br>
         </div>
+        <br>
+        <br>
     </center>
     </center>
 
