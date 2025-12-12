@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Logiciel Generator — WebApp</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Liquid glass customizations on top of Tailwind */
+    :root{
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --accent-1: #4cc1ff;
+      --accent-2: #6b7dff;
+      --muted: rgba(234,240,255,0.75);
+    }
+
+    /* body */
+    body { @apply bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 text-slate-50 antialiased; }
+
+    /* glass panel */
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+    }
+
+    /* subtle focus */
+    .focus-outline:focus {
+      outline: 2px solid rgba(99,102,241,0.18);
+      outline-offset: 2px;
+    }
+
+    /* version pill active */
+    .pill-active {
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      color: #06202b;
+      font-weight: 700;
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 960px) {
+      .desktop-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <br>
+  <br>
+          <label class="flex items-center gap-2 text-sm text-slate-300">
+            <input id="securityToggle" type="checkbox" class="focus-outline" checked />
+            Bloquer exécution locale (runcmd)
+          </label>
+          <button id="importSample" class="ml-2 px-3 py-2 rounded-md glass hover:scale-[1.01] focus:outline-none">Importer sample</button>
+        </div>
+      </header>
+
+      <!-- Main app grid -->
+      <main class="grid desktop-grid grid-cols-[1fr_420px] gap-6">
+
+        <!-- Left: Builder -->
+        <section class="glass p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-full">
+              <label class="text-xs text-slate-300">Nom du projet</label>
+              <input id="projName" class="w-full mt-2 p-3 rounded-lg bg-transparent border border-[rgba(255,255,255,0.04)] focus:outline-none focus:ring-2 focus:ring-slate-600" value="MonApplication" />
+            </div>
+
+            <div class="w-52">
+              <label class="text-xs text-slate-300">Langage</label>
+              <select id="lang" class="w-full mt-2 p-3 rounded-lg bg-transparent border border-[rgba(255,255,255,0.04)] focus:outline-none">
+                <option value="python">Python (Tkinter)</option>
+                <option value="batch">Batch (.bat)</option>
+                <option value="go">Golang (.go)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-sm text-slate-300 mb-2">Pages</div>
+            <div class="flex gap-2">
+              <input id="pageName" class="flex-1 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]" placeholder="Titre page (ex: Accueil)" />
+              <button id="addPage" class="px-4 py-2 rounded-md text-slate-900 font-semibold" style="background:linear-gradient(90deg,#4cc1ff,#6b7dff)">Ajouter</button>
+            </div>
+
+            <div id="pages" class="mt-4 max-h-56 overflow-auto space-y-3"></div>
+          </div>
+
+          <!-- Page editor -->
+          <div class="mt-6 border-t border-[rgba(255,255,255,0.03)] pt-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-300">Édition de page</div>
+                <select id="selectPage" class="mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)] w-64"></select>
+              </div>
+              <div class="text-sm text-slate-400">Sélectionnez une page pour éditer</div>
+            </div>
+
+            <div class="mt-3">
+              <label class="text-xs text-slate-300">Bloc de texte</label>
+              <textarea id="addText" class="w-full mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)] min-h-[90px]" placeholder="Texte affiché sur la page"></textarea>
+              <div class="flex gap-2 mt-3">
+                <button id="addTextBtn" class="px-3 py-2 rounded-md glass">Ajouter texte</button>
+                <button id="clearPage" class="px-3 py-2 rounded-md glass">Vider page</button>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <label class="text-xs text-slate-300">Bouton (action)</label>
+              <input id="btnLabel" class="w-full mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]" placeholder="Libellé (ex: Ouvrir site)" />
+              <select id="btnAction" class="w-full mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]">
+                <option value="message">Afficher message</option>
+                <option value="openurl">Ouvrir URL</option>
+                <option value="runcmd">Exécuter commande</option>
+              </select>
+              <input id="btnPayload" class="w-full mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]" placeholder="URL / message / commande" />
+              <div class="flex gap-2 mt-3">
+                <button id="addBtn" class="px-3 py-2 rounded-md" style="background:linear-gradient(90deg,#4cc1ff,#6b7dff);color:#06202b;font-weight:700">Ajouter bouton</button>
+                <button id="addSpacer" class="px-3 py-2 rounded-md glass">Ajouter espace</button>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2 text-sm text-slate-300"><input id="navBar" type="checkbox" /> Inclure barre de navigation</label>
+                <label class="flex items-center gap-2 text-sm text-slate-300"><input id="autoRun" type="checkbox" /> Autorun</label>
+              </div>
+              <input id="startupCmd" class="w-full mt-3 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]" placeholder="Commande au démarrage (optionnelle)" />
+              <label class="text-xs text-slate-300 mt-3 block">Changelog (README)</label>
+              <textarea id="changelog" class="w-full mt-2 p-3 rounded-md bg-transparent border border-[rgba(255,255,255,0.04)]" rows="2" placeholder="Notes de version"></textarea>
+
+              <div class="flex gap-3 mt-4">
+                <button id="generate" class="px-4 py-2 rounded-md" style="background:linear-gradient(90deg,#4cc1ff,#6b7dff);color:#06202b;font-weight:700">Générer une version</button>
+                <button id="previewBtn" class="px-4 py-2 rounded-md glass">Prévisualiser</button>
+                <button id="resetBtn" class="px-4 py-2 rounded-md glass">Réinitialiser</button>
+              </div>
+
+              <div id="feedback" class="mt-3 text-sm text-slate-300"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right: Preview + Versions -->
+        <aside class="space-y-4">
+          <div class="glass p-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="text-sm text-slate-300">Aperçu / version active</div>
+                <div id="versionInfo" class="text-xs text-slate-400 mt-1">Aucune version</div>
+              </div>
+              <div class="flex gap-2">
+                <a id="downloadLink" class="px-3 py-2 rounded-md glass">Télécharger</a>
+                <button id="copyCode" class="px-3 py-2 rounded-md glass">Copier</button>
+              </div>
+            </div>
+
+            <pre id="preview" class="mt-4 p-3 rounded-md bg-[rgba(0,0,0,0.55)] text-[13px] max-h-[420px] overflow-auto"></pre>
+
+            <div class="flex gap-2 mt-3">
+              <button id="showReadme" class="px-3 py-2 rounded-md glass">Afficher README</button>
+              <button id="openLatest" class="px-3 py-2 rounded-md glass">Télécharger dernière</button>
+            </div>
+          </div>
+
+          <div class="glass p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-slate-300">Historique des versions</div>
+              <div id="versionsCount" class="text-xs text-slate-400">0</div>
+            </div>
+            <div id="versionsList" class="mt-3 max-h-[260px] overflow-auto space-y-3"></div>
+          </div>
+        </aside>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- bottom versions strip -->
+  <div class="fixed left-4 right-4 bottom-4 flex justify-center pointer-events-none">
+    <div class="pointer-events-auto glass px-3 py-2 rounded-xl flex items-center gap-3 max-w-[1100px] w-full overflow-auto">
+      <div class="text-slate-300 text-sm mr-2">Versions</div>
+      <div id="versionsStrip" class="flex gap-2"></div>
+    </div>
+  </div>
+
+  <!-- App JS (all inside single script for portability) -->
+  <script>
+    (function(){
+      // helpers
+      const $ = s => document.querySelector(s);
+      const $$ = s => Array.from(document.querySelectorAll(s));
+      const uid = ()=> Date.now().toString(36).slice(-6);
+      const esc = s => String(s||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\r/g,'').replace(/\n/g,'\\n');
+      const escAttr = s => String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+
+      // state
+      const state = {
+        pages: [],     // [{title, items: [{type:'text'|'button', text?, label?, action?, payload?}]}]
+        versions: [],  // newest first: [{id,name,ts,filename,code,lang,changelog,safe}]
+        securityBlock: true,
+        lang: 'python'
+      };
+
+      // elements
+      const projName = $('#projName');
+      const langSel = $('#lang');
+      const pageName = $('#pageName');
+      const addPageBtn = $('#addPage');
+      const pagesEl = $('#pages');
+      const selectPage = $('#selectPage');
+      const addText = $('#addText');
+      const addTextBtn = $('#addTextBtn');
+      const btnLabel = $('#btnLabel');
+      const btnAction = $('#btnAction');
+      const btnPayload = $('#btnPayload');
+      const addBtn = $('#addBtn');
+      const addSpacer = $('#addSpacer');
+      const clearPage = $('#clearPage');
+      const navBar = $('#navBar');
+      const autoRun = $('#autoRun');
+      const startupCmd = $('#startupCmd');
+      const changelog = $('#changelog');
+      const generateBtn = $('#generate');
+      const previewBtn = $('#previewBtn');
+      const previewEl = $('#preview');
+      const downloadLink = $('#downloadLink');
+      const copyCode = $('#copyCode');
+      const resetBtn = $('#resetBtn');
+      const securityToggle = $('#securityToggle');
+      const importSample = $('#importSample');
+      const versionsList = $('#versionsList');
+      const versionsStrip = $('#versionsStrip');
+      const versionsCount = $('#versionsCount');
+      const versionInfo = $('#versionInfo');
+      const showReadme = $('#showReadme');
+      const openLatest = $('#openLatest');
+      const feedback = $('#feedback');
+
+      // init bindings
+      langSel.addEventListener('change', e => state.lang = e.target.value);
+      securityToggle.addEventListener('change', e => { state.securityBlock = e.target.checked; notify('Sécurité runcmd: ' + (state.securityBlock ? 'activée' : 'désactivée')); });
+
+      // page management functions
+      function refreshPages(){
+        pagesEl.innerHTML = '';
+        selectPage.innerHTML = '';
+        state.pages.forEach((p, idx) => {
+          const item = document.createElement('div');
+          item.className = 'list-item flex items-center justify-between';
+          item.innerHTML = `
+            <div>
+              <div class="font-semibold">${escapeHtml(p.title)}</div>
+              <div class="text-xs text-slate-400">${p.items.length} éléments</div>
+            </div>`;
+          const controls = document.createElement('div');
+          controls.className = 'flex gap-2';
+          controls.appendChild(iconBtn('↑','Monter', ()=> movePage(idx,-1)));
+          controls.appendChild(iconBtn('↓','Descendre', ()=> movePage(idx,1)));
+          controls.appendChild(iconBtn('⧉','Dupliquer', ()=> { state.pages.splice(idx+1,0, deepCopy(p)); refreshPages(); }));
+          controls.appendChild(iconBtn('✎','Editer', ()=> { selectPage.value = idx; renderPageEditor(); window.scrollTo({top:0,behavior:'smooth'}); }));
+          controls.appendChild(iconBtn('✖','Supprimer', ()=> { if(confirm('Supprimer la page ?')){ state.pages.splice(idx,1); refreshPages(); renderPageEditor(); } }));
+          item.appendChild(controls);
+          pagesEl.appendChild(item);
+          const opt = document.createElement('option'); opt.value = idx; opt.textContent = p.title; selectPage.appendChild(opt);
+        });
+        if(state.pages.length === 0) pagesEl.innerHTML = '<div class="text-sm text-slate-400">Aucune page</div>';
+      }
+
+      function iconBtn(symbol, title, cb){
+        const b = document.createElement('button');
+        b.className = 'icon-btn';
+        b.title = title;
+        b.innerHTML = `<span>${symbol}</span>`;
+        b.addEventListener('click', function(e){ e.stopPropagation(); cb(); });
+        return b;
+      }
+
+      function movePage(i, dir){
+        const j = i + dir;
+        if(j < 0 || j >= state.pages.length) return;
+        const [p] = state.pages.splice(i,1);
+        state.pages.splice(j,0,p);
+        refreshPages();
+      }
+
+      addPageBtn.addEventListener('click', ()=> {
+        const t = pageName.value.trim() || ('Page ' + (state.pages.length + 1));
+        state.pages.push({ title: t, items: [] });
+        pageName.value = '';
+        refreshPages();
+        renderPageEditor();
+        notify('Page ajoutée');
+      });
+
+      importSample.addEventListener('click', ()=> {
+        projName.value = 'MonApp-Sample';
+        state.pages = [
+          { title: 'Accueil', items: [{type:'text', text:'Bienvenue sur MonApp'}, {type:'button', label:'Visiter site', action:'openurl', payload:'https://example.com'}] },
+          { title: 'A propos', items: [{type:'text', text:'Ceci est un sample'}] }
+        ];
+        refreshPages(); renderPageEditor(); notify('Sample importé');
+      });
+
+      // editor
+      function renderPageEditor(){
+        if(!state.pages || state.pages.length === 0){
+          addText.disabled = addTextBtn.disabled = btnLabel.disabled = btnAction.disabled = btnPayload.disabled = addBtn.disabled = addSpacer.disabled = true;
+          previewEl.textContent = 'Créez une page pour commencer';
+          selectPage.innerHTML = '';
+          return;
+        }
+        addText.disabled = addTextBtn.disabled = btnLabel.disabled = btnAction.disabled = btnPayload.disabled = addBtn.disabled = addSpacer.disabled = false;
+        const idx = parseInt(selectPage.value || '0', 10); const p = state.pages[idx];
+        if(!p){ previewEl.textContent = 'Sélectionnez une page'; return; }
+        let out = `Édition: ${p.title}\n\n`;
+        p.items.forEach((it,i)=> out += `${i+1}. [${it.type}] ${it.label || it.text || ''}\n`);
+        previewEl.textContent = out;
+      }
+
+      selectPage.addEventListener('change', renderPageEditor);
+
+      addTextBtn.addEventListener('click', ()=> {
+        const txt = addText.value.trim(); if(!txt){ notify('Texte vide', true); return; }
+        const idx = parseInt(selectPage.value || '0', 10); if(!state.pages[idx]){ notify('Aucune page sélectionnée', true); return; }
+        state.pages[idx].items.push({ type:'text', text: txt });
+        addText.value = '';
+        renderPageEditor(); refreshPages();
+        notify('Texte ajouté');
+      });
+
+      clearPage.addEventListener('click', ()=> {
+        const idx = parseInt(selectPage.value || '0', 10); if(!state.pages[idx]) return;
+        if(confirm('Vider la page ?')){ state.pages[idx].items = []; renderPageEditor(); refreshPages(); notify('Page vidée'); }
+      });
+
+      addBtn.addEventListener('click', ()=> {
+        const label = btnLabel.value.trim(); if(!label){ notify('Libellé requis', true); return; }
+        const action = btnAction.value; const payload = btnPayload.value.trim();
+        const idx = parseInt(selectPage.value || '0', 10); if(!state.pages[idx]){ notify('Aucune page sélectionnée', true); return; }
+        state.pages[idx].items.push({ type:'button', label, action, payload });
+        btnLabel.value=''; btnPayload.value=''; renderPageEditor(); refreshPages(); notify('Bouton ajouté');
+      });
+
+      addSpacer.addEventListener('click', ()=> {
+        const idx = parseInt(selectPage.value || '0', 10); if(!state.pages[idx]) return;
+        state.pages[idx].items.push({ type:'text', text: '' }); renderPageEditor(); refreshPages(); notify('Espace ajouté');
+      });
+
+      // reset
+      resetBtn.addEventListener('click', ()=> {
+        if(!confirm('Réinitialiser le projet ?')) return;
+        state.pages = []; state.versions = []; projName.value = 'MonApplication'; langSel.value = 'python'; securityToggle.checked = true; changelog.value = '';
+        previewEl.textContent = ''; clearVersions(); refreshPages(); renderPageEditor(); notify('Projet réinitialisé');
+      });
+
+      // generators (Python, Batch, Go)
+      function genPython(){
+        const title = projName.value.trim() || 'MonApp';
+        let code = `from tkinter import *\nfrom tkinter import messagebox\nimport webbrowser\nimport os\nroot=Tk()\nroot.title("${esc(title)}")\nroot.geometry("480x560")\nroot.config(bg='#0f1116')\nframes={}\n`;
+        if(navBar.checked && state.pages.length > 1) code += `nav_frame=Frame(root,bg='#0f1116')\nnav_frame.pack(side='bottom',fill='x')\n`;
+        state.pages.forEach((p,pi)=>{
+          code += `frame${pi}=Frame(root,bg='#0f1116')\nframes['${pi}']=frame${pi}\n`;
+          code += pi===0 ? `frame${pi}.pack(fill='both',expand=True)\n` : `frame${pi}.pack_forget()\n`;
+          p.items.forEach(it=>{
+            if(it.type === 'text') code += `Label(frame${pi},text="${esc(it.text)}",fg='white',bg='#0f1116',wraplength=440,justify='left').pack(padx=12,pady=8,anchor='w')\n`;
+            if(it.type === 'button'){
+              if(it.action === 'message'){ const idf = uid(); code += `def fn_${pi}_${idf}():\n    messagebox.showinfo("${esc(it.label)}","${esc(it.payload||'')}")\nButton(frame${pi},text="${esc(it.label)}",command=fn_${pi}_${idf},width=30).pack(pady=6)\n`; }
+              else if(it.action === 'openurl') code += `Button(frame${pi},text="${esc(it.label)}",command=lambda:webbrowser.open("${esc(it.payload||'https://')}"),width=30).pack(pady=6)\n`;
+              else if(it.action === 'runcmd'){ if(state.securityBlock) code += `Button(frame${pi},text="${esc(it.label)} (bloqué)",state='disabled',width=30).pack(pady=6)\n`; else code += `Button(frame${pi},text="${esc(it.label)}",command=lambda:os.system("${esc(it.payload||'')}"),width=30).pack(pady=6)\n`; }
+            }
+          });
+        });
+        if(navBar.checked && state.pages.length>1){
+          code += `def show(i):\n    for k in frames:\n        frames[k].pack_forget()\n    frames[str(i)].pack(fill='both',expand=True)\n`;
+          state.pages.forEach((p,pi)=> code += `btn=Button(nav_frame,text="${esc(p.title)}",command=lambda i=${pi}:show(i),width=12)\nbtn.pack(side='left',expand=True,padx=6,pady=8)\n`);
+        }
+        if(autoRun.checked && startupCmd.value.trim()){ if(!state.securityBlock) code += `os.system("${esc(startupCmd.value.trim())}")\n`; else code += `# Autorun bloqué pour sécurité\n`; }
+        code += `root.mainloop()\n`;
+        return code;
+      }
+
+      function genBatch(){
+        const title = projName.value.trim() || 'MonApp';
+        let code = `@echo off\ntitle ${title}\ncolor 0f\n:menu\ncls\necho = ${title} =\necho.\n`;
+        state.pages.forEach((p,pi)=> code += `echo ${pi+1}. ${p.title}\n`);
+        code += `echo 0. Quitter\nset /p choice=Choisir: \n`;
+        state.pages.forEach((p,pi)=> code += `if "%choice%"=="${pi+1}" goto page${pi+1}\n`);
+        code += `if "%choice%"=="0" goto end\n\ngoto menu\n\n`;
+        state.pages.forEach((p,pi)=>{
+          code += `:page${pi+1}\ncls\necho ${p.title}\necho.\n`;
+          p.items.forEach(it=>{
+            if(it.type==='text') code += `echo ${it.text}\n`;
+            if(it.type==='button'){
+              if(it.action==='message') code += `echo [${it.label}] : ${it.payload}\n`;
+              if(it.action==='openurl') code += `start "" "${it.payload}"\n`;
+              if(it.action==='runcmd') code += state.securityBlock ? `rem commande bloquée pour sécurité: ${it.payload}\n` : `${it.payload}\n`;
+            }
+          });
+          code += `echo.\npause\ngoto menu\n\n`;
+        });
+        code += `:end\nexit\n`;
+        return code;
+      }
+
+      function genGo(){
+        const title = projName.value.trim() || 'MonApp';
+        let go = `package main\n\nimport (\n\t"fmt\"\n\t\"net/http\"\n)\n\nfunc main(){\n\tfmt.Println(\"Serveur: http://localhost:8080\")\n\thttp.HandleFunc(\"/\", handler)\n\thttp.ListenAndServe(\":8080\", nil)\n}\n\nfunc handler(w http.ResponseWriter, r *http.Request){\n\tw.Header().Set(\"Content-Type\",\"text/html; charset=utf-8\")\n\tfmt.Fprint(w, \`<!doctype html><html><head><meta charset=\"utf-8\"><title>${escAttr(title)}</title><style>body{font-family:Inter,Arial;background:#0f1116;color:#fff;padding:18px}</style></head><body><h1>${escAttr(title)}</h1>\`)\n`;
+        state.pages.forEach((p,pi)=>{
+          go += `\tfmt.Fprint(w, \"<h2>${escAttr(p.title)}</h2>\")\n`;
+          p.items.forEach(it=>{
+            if(it.type==='text') go += `\tfmt.Fprint(w, \"<div>${escAttr(it.text)}</div>\")\n`;
+            else if(it.type==='button'){
+              if(it.action==='openurl') go += `\tfmt.Fprint(w, \"<div><a href=\\\"${escAttr(it.payload)}\\\" target=\\\"_blank\\\">${escAttr(it.label)}</a></div>\")\n`;
+              else go += `\tfmt.Fprint(w, \"<div>${escAttr(it.label)} - action non supportée</div>\")\n`;
+            }
+          });
+        });
+        go += `\tfmt.Fprint(w, \"</body></html>\")\n}\n`;
+        return go;
+      }
+
+      function buildCode(){
+        state.lang = langSel.value;
+        if(state.lang === 'python') return genPython();
+        if(state.lang === 'batch') return genBatch();
+        if(state.lang === 'go') return genGo();
+        return '';
+      }
+
+      // versioning
+      function createVersion(code){
+        const id = uid(); const vnum = state.versions.length + 1;
+        const ext = state.lang === 'python' ? '.py' : state.lang === 'batch' ? '.bat' : '.go';
+        const filename = `${(projName.value.trim()||'MonApp')}_v${vnum}${ext}`;
+        let hasRun = false;
+        state.pages.forEach(p=>p.items.forEach(it=>{ if(it.type==='button' && it.action==='runcmd' && (it.payload||'').trim()) hasRun = true; }));
+        const safe = !(hasRun && !state.securityBlock);
+        const rec = { id, name:`v${vnum}`, ts:new Date().toLocaleString(), filename, code, lang: state.lang, changelog: changelog.value || '', safe };
+        state.versions.unshift(rec);
+        addVersionToUI(rec);
+        setActiveVersion(rec.id);
+        notify('Version créée: ' + rec.name);
+        return rec;
+      }
+
+      function addVersionToUI(rec){
+        // list
+        const row = document.createElement('div'); row.className = 'list-item flex items-center justify-between';
+        row.id = 'ver-' + rec.id;
+        row.innerHTML = `<div><div class="font-semibold">${rec.name}</div><div class="text-xs text-slate-400">${rec.filename} · ${rec.ts} ${rec.safe? '': '· ⚠️ exécution'}</div></div>`;
+        const ctrls = document.createElement('div'); ctrls.className='flex gap-2';
+        const openBtn = document.createElement('button'); openBtn.className='glass px-3 py-2 rounded-md'; openBtn.textContent='Ouvrir'; openBtn.addEventListener('click', ()=> setActiveVersion(rec.id));
+        const dlBtn = document.createElement('button'); dlBtn.className='px-3 py-2 rounded-md'; dlBtn.textContent='Télécharger'; dlBtn.style.background = 'linear-gradient(90deg,#4cc1ff,#6b7dff)'; dlBtn.style.color='#06202b'; dlBtn.addEventListener('click', ()=> download(rec));
+        const delBtn = document.createElement('button'); delBtn.className='glass px-3 py-2 rounded-md'; delBtn.textContent='Supprimer'; delBtn.addEventListener('click', ()=> { if(confirm('Supprimer version ?')){ row.remove(); state.versions = state.versions.filter(v=>v.id!==rec.id); removeStrip(rec.id); updateVersionsCount(); previewEl.textContent='Version supprimée'; } });
+        ctrls.appendChild(openBtn); ctrls.appendChild(dlBtn); ctrls.appendChild(delBtn);
+        row.appendChild(ctrls);
+        versionsList.prepend(row);
+
+        // strip pill
+        const pill = document.createElement('button'); pill.className = 'version-pill'; pill.id = 'pill-' + rec.id; pill.textContent = rec.name; pill.addEventListener('click', ()=> setActiveVersion(rec.id));
+        versionsStrip.prepend(pill);
+        updateVersionsCount();
+      }
+
+      function setActiveVersion(id){
+        const rec = state.versions.find(r=>r.id===id); if(!rec) return;
+        $$('.version-pill').forEach(b => b.classList.remove('pill-active'));
+        const pill = $('#pill-' + id); if(pill) pill.classList.add('pill-active');
+        previewEl.textContent = rec.code;
+        versionInfo.textContent = `${rec.name} — ${rec.filename} — ${rec.ts} ${rec.safe? '' : '· ⚠️ exécution locale'}`;
+        const blob = new Blob([rec.code], { type:'application/octet-stream' });
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = rec.filename;
+      }
+
+      function download(rec){
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rec.code], { type:'application/octet-stream' })); a.download = rec.filename; document.body.appendChild(a); a.click(); a.remove();
+      }
+
+      function removeStrip(id){ const s = $('#pill-' + id); if(s) s.remove(); updateVersionsCount(); }
+      function updateVersionsCount(){ versionsCount.textContent = state.versions.length; }
+      function clearVersions(){ versionsList.innerHTML = ''; versionsStrip.innerHTML = ''; state.versions = []; updateVersionsCount(); versionInfo.textContent = 'Aucune version'; previewEl.textContent = ''; }
+
+      generateBtn.addEventListener('click', ()=> {
+        const code = buildCode();
+        if(!code){ notify('Aucun code généré — créez des pages', true); return; }
+        const rec = createVersion(code);
+        if(!rec.safe) notify('⚠️ Cette version contient exécution locale — prudence', true);
+      });
+
+      previewBtn.addEventListener('click', ()=> { const code = buildCode(); previewEl.textContent = code || 'Aucun code'; });
+
+      copyCode.addEventListener('click', async ()=> {
+        try{ await navigator.clipboard.writeText(previewEl.textContent); notify('Code copié'); } catch(e){ notify('Impossible de copier', true); }
+      });
+
+      showReadme.addEventListener('click', ()=> {
+        const last = state.versions[0]; const v = last ? last.name : 'N/A';
+        const rd = `# ${(projName.value||'MonApp')}\nVersion: ${v}\nGénéré: ${new Date().toLocaleString()}\nLang: ${langSel.value}\nRuncmd bloqué: ${securityToggle.checked ? 'oui' : 'non'}\n\nChangelog:\n${(changelog.value || '-')}\n\nInstructions:\n- Python: python ${(projName.value||'app')}.py\n- Batch: double-clic sur .bat\n- Go: go run file.go\n`;
+        previewEl.textContent = rd;
+      });
+
+      openLatest.addEventListener('click', ()=> {
+        const last = state.versions[0]; if(!last){ notify('Aucune version', true); return } download(last);
+      });
+      function notify(msg, err){
+        feedback.textContent = msg;
+        feedback.style.color = err ? 'var(--danger)' : 'var(--success)';
+        setTimeout(()=> { if(feedback.textContent === msg) feedback.textContent = ''; }, 3000);
+      }
+      function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+      function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+
+      projName.value = 'MonApplication';
+      langSel.value = 'python';
+      refreshPages();
+      renderPageEditor();
+
+      document.addEventListener('keydown', (e)=> { if(e.ctrlKey && (e.key === 's' || e.key === 'S')){ e.preventDefault(); copyCode.click(); } });
+
+    
+      window.__LG_STATE = state;
+    })();
+  </script>
+</body>
+</html>
