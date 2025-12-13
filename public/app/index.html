@@ -192,8 +192,6 @@ function dist(a,b){
   const x=Math.sin(dP/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
-
-// Bouton géolocalisation
 btnGeo.addEventListener('click', () => {
   if(!navigator.geolocation){
     notice.textContent = "Géolocalisation non supportée";
