@@ -98,68 +98,26 @@ html,body{
   font-weight:700;
   backdrop-filter:blur(12px)
 }
+#btnGeo{
+  position:absolute;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:12px 24px;
+  border-radius:999px;
+  font-weight:700;
+  background:linear-gradient(135deg,#0ea5e9,#22d3ee);
+  color:#020617;
+  box-shadow:0 12px 30px rgba(34,211,238,.4);
+  cursor:pointer;
+  z-index:10;
+}
+#btnGeo:hover{
+  transform:translate(-50%,-2px);
+  box-shadow:0 18px 40px rgba(34,211,238,.45);
+}
 </style>
 </head>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('Service Worker enregistré'))
-      .catch(err => console.warn('Erreur SW:', err));
-  }
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-  const swCode = `
-self.addEventListener('install', e => { 
-  self.skipWaiting(); 
-  e.waitUntil(caches.open('roaderly-v1').then(c => c.addAll(['/'])));
-});
-self.addEventListener('fetch', e => { 
-  if(e.request.method!=='GET') return; 
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/')))); 
-});
-`;
-  const blob = new Blob([swCode], {type:'application/javascript'});
-  const url = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url).catch(()=>{});
-}
-
-function createManifest(){
-  const manifest = {
-    name:'Compteur realtime',
-    short_name:'Compteur realtime',
-    version:'1.0.0',
-    start_url:'.',
-    display:'standalone',
-    background_color:'#071022',
-    theme_color:'#06b6d4',
-    icons:[{
-      src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22%3E%3Ctext y=%2236%22 font-size=%2236%22%3E🚗%3C/text%3E%3C/svg%3E',
-      sizes:'48x48',
-      type:'image/svg+xml'
-         }]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  const murl = URL.createObjectURL(blob);
-  const link = document.getElementById('manifestLink');
-  link.href = murl;
-}
-createManifest();
-
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  btnInstall.style.display='block';
-  btnInstall.addEventListener('click', async ()=>{
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    deferredPrompt=null;
-    btnInstall.style.display='none';
-  });
-});
-</script>
 
 <body>
 <div class="container">
@@ -178,6 +136,7 @@ window.addEventListener('beforeinstallprompt', e => {
   </div>
 
   <div id="notice" class="notice">Activation de la géolocalisation…</div>
+  <button id="btnGeo">Activer la géolocalisation</button>
 </div>
 
 <script>
@@ -187,6 +146,7 @@ const left=document.getElementById("left");
 const right=document.getElementById("right");
 const notice=document.getElementById("notice");
 const preview=document.getElementById("preview");
+const btnGeo=document.getElementById("btnGeo");
 let last=null, sim=false;
 
 function seg(bar){
@@ -233,14 +193,12 @@ function dist(a,b){
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 
-// Gestion de la géolocalisation avec demande explicite
-window.addEventListener("load", ()=>{
+// Bouton géolocalisation
+btnGeo.addEventListener('click', () => {
   if(!navigator.geolocation){
     notice.textContent = "Géolocalisation non supportée";
     return;
   }
-
-  notice.textContent = "Demande de géolocalisation…";
 
   navigator.geolocation.getCurrentPosition(
     (position)=>{
@@ -269,6 +227,8 @@ window.addEventListener("load", ()=>{
     },
     { enableHighAccuracy:true }
   );
+
+  btnGeo.style.display = 'none';
 });
 
 preview.onclick=()=>{
