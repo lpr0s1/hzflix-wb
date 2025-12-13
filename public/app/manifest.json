@@ -1,7 +1,7 @@
 {
-  "name": "Roaderly",
-  "short_name": "Roaderly",
-  "description": "Application de navigation, parkings et rasso en France",
+  "name": "Compteur realtime",
+  "short_name": "compteur realtime",
+  "description": "Application compteur kilometrique en temp reel",
   "start_url": "./index.html",
   "display": "fullscreen",
   "orientation": "portrait",
