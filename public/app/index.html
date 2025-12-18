@@ -184,10 +184,8 @@ preview.addEventListener('click', ()=>{
 
 function toRPMFromSpeed(m_s){
   const kmh = m_s * 3.6;
-  const idle = 800;
-  const maxKmh = 220;
-  const maxRpm = 8000;
-  const rpm = idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
+  const maxKmh = 220; // vitesse max attendue en km/h
+  const rpm = Math.min(MAX, Math.round((kmh / maxKmh) * MAX));
   return rpm;
 }
 
