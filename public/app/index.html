@@ -84,14 +84,9 @@ const preview = document.getElementById('preview');
 const btnGeo = document.getElementById('btnGeo');
 const notice = document.getElementById('notice');
 const RED_THRESHOLD = 0.78;
-
 let sim = false;
 let last = null;
-let lastTime = performance.now();
-let displayedRatio = 0;
-let targetRatio = 0;
 
-// Création des segments
 function makeSegs(bar){
   bar.innerHTML = '';
   for(let i=0;i<SEGS;i++){
@@ -104,7 +99,6 @@ function makeSegs(bar){
 makeSegs(left);
 makeSegs(right);
 
-// Interpolation HSL pour la couleur
 function hslInterpolate(r){
   if(r < 0.5){
     const t = r / 0.5;
@@ -117,7 +111,9 @@ function hslInterpolate(r){
   }
 }
 
-// Animation fluide
+let displayedRatio = 0;
+let targetRatio = 0;
+let lastTime = performance.now();
 function animateStep(now){
   const dt = Math.min(40, now - lastTime);
   lastTime = now;
@@ -132,7 +128,6 @@ function animateStep(now){
 }
 requestAnimationFrame(animateStep);
 
-// Met à jour l’affichage
 function updateVisual(ratio){
   const lit = Math.round(ratio * SEGS);
   const isRed = ratio >= RED_THRESHOLD;
@@ -157,17 +152,17 @@ function updateVisual(ratio){
   });
   const rpm = Math.round(ratio * MAX);
   speedEl.textContent = rpm.toLocaleString('fr-FR');
-  speedEl.style.transform = `scale(${1 + Math.min(0.12, ratio * 0.12)})`;
-  speedEl.style.color = hslInterpolate(ratio);
+  const scale = 1 + Math.min(0.12, ratio * 0.12);
+  speedEl.style.transform = `scale(${scale})`;
+  const color = hslInterpolate(ratio);
+  speedEl.style.color = color;
 }
 
-// Définit la RPM cible
 function setRPM(rpm){
   const clamped = Math.max(0, Math.min(MAX, rpm));
   targetRatio = clamped / MAX;
 }
 
-// Simulation manuelle
 preview.addEventListener('click', ()=>{
   if(sim) return;
   sim = true;
@@ -187,16 +182,15 @@ preview.addEventListener('click', ()=>{
   }, 90);
 });
 
-// Conversion vitesse → RPM avec filtre
 function toRPMFromSpeed(m_s){
-  const kmh = Math.max(0, m_s * 3.6);
+  const kmh = m_s * 3.6;
   const idle = 800;
   const maxKmh = 220;
-  const maxRpm = 8000; // cohérent avec MAX
-  return idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
+  const maxRpm = 8000;
+  const rpm = idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
+  return rpm;
 }
 
-// Activation géolocalisation
 btnGeo.addEventListener('click', ()=>{
   if(!navigator.geolocation){
     notice.textContent = "Géolocalisation non supportée";
@@ -205,44 +199,40 @@ btnGeo.addEventListener('click', ()=>{
   notice.textContent = "Géolocalisation activée";
   btnGeo.style.display = 'none';
 
-  navigator.geolocation.getCurrentPosition(pos=>{
+  let initialized = false; // Flag pour éviter les premiers faux calculs
+  navigator.geolocation.getCurrentPosition((pos)=>{
     last = pos;
-    let initialized = false;
-
-    navigator.geolocation.watchPosition(p=>{
-      // Ignore les premiers ticks si coordonnées identiques
-      if(!initialized){
-        last = p;
-        initialized = true;
-        return;
-      }
-
+    initialized = true;
+    navigator.geolocation.watchPosition((p)=>{
       let s = p.coords.speed;
 
-      // Calcul manuel si speed non disponible
-      if(s == null && last){
+      if(!s && last && initialized){
         const R = 6371e3;
-        const lat1 = last.coords.latitude * Math.PI/180;
-        const lat2 = p.coords.latitude * Math.PI/180;
-        const dLat = lat2 - lat1;
-        const dLon = (p.coords.longitude - last.coords.longitude) * Math.PI/180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const dt = (p.timestamp - last.timestamp)/1000;
-        s = dt > 0 ? dist/dt : 0;
+        const deltaTime = (p.timestamp - last.timestamp)/1000;
+        if(deltaTime > 0.5){ // ignore si moins de 0.5s entre les positions
+          const p1 = last.coords.latitude * Math.PI/180;
+          const p2 = p.coords.latitude * Math.PI/180;
+          const dL = (p.coords.longitude - last.coords.longitude) * Math.PI/180;
+          const dP = p2 - p1;
+          const a = Math.sin(dP/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
+          const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          s = dist / deltaTime;
+        } else {
+          s = 0; // si deltaTime trop faible, on ignore
+        }
       }
 
-      // Filtre les valeurs trop élevées (pic GPS)
+      // filtrer les valeurs aberrantes
       if(s == null || s > 100) s = 0;
 
       const rpm = toRPMFromSpeed(s);
       setRPM(rpm);
       last = p;
-    }, err=>{
+    }, (err)=>{
       notice.textContent = "Géolocalisation requise";
       console.warn(err);
     }, { enableHighAccuracy:true, maximumAge:5000, timeout:10000 });
-  }, err=>{
+  }, (err)=>{
     notice.textContent = "Permission géolocalisation refusée";
     console.warn(err);
   }, { enableHighAccuracy:true });
