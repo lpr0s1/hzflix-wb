@@ -71,8 +71,64 @@ html,body{height:120%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
       <div id="right" class="tri-bar" aria-hidden="true"></div>
     </div>
    
-    <button id="btnGeo">Activer la géolocalisation</button>
+    <button id="btnGeo" onclick="geolocation()">Activer la géolocalisation</button>
   </div>
+
+  <script>
+    function geolocation() {
+  if (!navigator.geolocation) {
+    notice.textContent = "Géolocalisation non supportée";
+    return;
+  }
+
+  notice.textContent = "Géolocalisation activée";
+  btnGeo.style.display = 'none';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      last = pos;
+
+      navigator.geolocation.watchPosition(
+        (p) => {
+          let s = p.coords.speed;
+
+          // Calcul vitesse si non fournie
+          if (s == null && last) {
+            const R = 6371e3;
+            const p1 = last.coords.latitude * Math.PI / 180;
+            const p2 = p.coords.latitude * Math.PI / 180;
+            const dP = p2 - p1;
+            const dL = (p.coords.longitude - last.coords.longitude) * Math.PI / 180;
+
+            const x =
+              Math.sin(dP / 2) ** 2 +
+              Math.cos(p1) * Math.cos(p2) * Math.sin(dL / 2) ** 2;
+
+            const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+            s = dist / ((p.timestamp - last.timestamp) / 1000);
+          }
+
+          if (s == null) s = 0;
+
+          const rpm = toRPMFromSpeed(s);
+          setRPM(rpm);
+          last = p;
+        },
+        (err) => {
+          notice.textContent = "Géolocalisation requise";
+          console.warn(err);
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      );
+    },
+    (err) => {
+      notice.textContent = "Permission géolocalisation refusée";
+      console.warn(err);
+    },
+    { enableHighAccuracy: true }
+  );
+}
+  </script>
 
 <script>
 const MAX = 102;
