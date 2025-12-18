@@ -20,228 +20,204 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 <title>Velocity One</title>
 <script src="https://cdn.tailwindcss.com"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-html,body{
-  margin:0;height:130%;
-  background:radial-gradient(1200px 600px at center,#05091f,#02030d 70%);
-  display:flex;align-items:center;justify-content:center;
-  font-family:Inter,system-ui,-apple-system,Roboto;
-  color:white;
-  overflow:hidden
+:root{
+  --bg-1:#02030a;
+  --glass: rgba(255,255,255,0.03);
+  --accent-green: 120;
+  --accent-orange: 35;
+  --accent-red: 6;
+  --bar-width:72px;
+  --bar-height:78vh;
+  --segments:36;
+  --red-threshold:0.78;
+  --idle-rpm:800;
+  --max-rpm:9000;
 }
-.container{
-  width:100vw;height:100vh;
-  display:flex;align-items:center;justify-content:center;
-  position:relative
-}
-.gauge{
-  display:flex;align-items:center;gap:6vw
-}
-.tri-bar{
-  width:80px;height:78vh;
-  display:flex;flex-direction:column-reverse;
-  gap:6px;padding:14px;
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01));
-  clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);
-  border-radius:22px;
-  box-shadow:0 40px 80px rgba(0,0,0,.7),inset 0 0 30px rgba(255,255,255,.04)
-}
-.tri-seg{
-  height:16px;width:135%;
-  clip-path:polygon(10% 0,90% 0,100% 100%,0 100%);
-  background:rgba(255,255,255,.05);
-  transition:background .15s,opacity .15s,box-shadow .15s
-}
-.center{
-  width:300px;text-align:center;
-  display:flex;flex-direction:column;align-items:center
-}
-.speed{
-  font-size:52vw;max-width:300px;
-  font-weight:900;
-  letter-spacing:-.04em;
-  line-height:.85;
-  transition:color .2s,transform .2s
-}
-.unit{
-  font-size:22px;font-weight:700;
-  opacity:.85;margin-top:-10px
-}
-.preview{
-  margin-top:26px;
-  padding:12px 26px;
-  border-radius:999px;
-  font-weight:800;
-  letter-spacing:.04em;
-  background:linear-gradient(135deg,#0ea5e9,#22d3ee);
-  color:#020617;
-  box-shadow:0 18px 40px rgba(34,211,238,.35);
-  transition:transform .15s,box-shadow .15s,opacity .15s
-}
-.preview:hover{
-  transform:translateY(-2px);
-  box-shadow:0 26px 60px rgba(34,211,238,.45)
-}
-.glow{
-  position:absolute;
-  width:600px;height:600px;
-  background:radial-gradient(circle,rgba(0,255,255,.12),transparent 60%);
-  filter:blur(40px);
-  z-index:-1
-}
-.notice{
-  position:absolute;bottom:30px;
-  padding:12px 20px;
-  border-radius:999px;
-  background:rgba(255,255,255,.08);
-  font-weight:700;
-  backdrop-filter:blur(12px)
-}
-#btnGeo{
-  position:absolute;
-  bottom:80px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:12px 24px;
-  border-radius:999px;
-  font-weight:700;
-  background:linear-gradient(135deg,#0ea5e9,#22d3ee);
-  color:#020617;
-  box-shadow:0 12px 30px rgba(34,211,238,.4);
-  cursor:pointer;
-  z-index:10;
-}
-#btnGeo:hover{
-  transform:translate(-50%,-2px);
-  box-shadow:0 18px 40px rgba(34,211,238,.45);
-}
+*{box-sizing:border-box}
+html,body{height:120%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;background:radial-gradient(900px 420px at 50% 24%, #071028 0%, var(--bg-1) 60%);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.container{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:4vh 6vw}
+.bg-glow{position:absolute;left:50%;top:18%;width:760px;height:420px;transform:translateX(-50%);background:radial-gradient(closest-side, rgba(255,200,120,0.06), transparent 40%);filter:blur(60px);pointer-events:none;mix-blend-mode:screen}
+.gauge{display:flex;align-items:center;gap:0.01vw;z-index:2; text-shadow: 0px 0px 40px white}
+.tri-bar{width:var(--bar-width);height:var(--bar-height);display:flex;flex-direction:column-reverse;gap:8px;padding:18px;border-radius:26px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 28px 60px rgba(2,6,23,0.7),inset 0 1px 0 rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);align-items:center;justify-content:flex-start;position:relative;overflow:visible}
+.tri-bar::before{content:"";position:absolute;left:50%;top:8%;transform:translateX(-50%);width:6px;height:84%;border-radius:6px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));opacity:.6;filter:blur(.6px)}
+.tri-seg{width:62%;height:calc((var(--bar-height) - 36px - (var(--segments) - 1)*8px) / var(--segments));border-radius:999px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));opacity:.18;transition:all 220ms cubic-bezier(.2,.9,.2,1);transform-origin:center;box-shadow:none;align-self:center;position:relative;overflow:visible}
+.tri-seg.active{opacity:1;transform:scaleX(1.06);box-shadow:0 8px 28px rgba(0,0,0,0.35),0 2px 8px rgba(0,0,0,0.12) inset}
+.tri-seg::after{content:"";position:absolute;left:6%;right:6%;top:6%;height:40%;border-radius:999px;background:linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));opacity:.06;pointer-events:none}
+.center{width:420px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(2,6,23,0.6),inset 0 1px 0 rgba(255,255,255,0.02)}
+.speed{font-weight:900; transform: scale(1.8); font-size:180px;line-height:1.5;letter-spacing:-0.02em;color:#e6f7e9;text-shadow:0 10px 120px rgba(0,739,0,0.6);transition:color .12s,transform .12s;}
+.unit{font-weight:700;font-size:20px;color:rgba(255,255,255,0.8);margin-top:-8px}
+.preview{margin-top:12px;padding:12px 28px;border-radius:999px;font-weight:700;letter-spacing:.04em;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,0.4);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.preview:hover{transform:translateY(-3px)}
+.notice{position:absolute;bottom:36px;padding:12px 20px;border-radius:999px;background:rgba(255,255,255,0.03);font-weight:700;backdrop-filter:blur(12px);left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.85)}
+#btnGeo{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);padding:12px 26px;border-radius:999px;font-weight:700;background:linear-gradient(90deg,#2dd4bf,#60a5fa);color:#021018;border:none;cursor:pointer;box-shadow:0 18px 40px rgba(96,165,250,0.12)}
+#btnGeo:hover{transform:translate(-50%,-3px);box-shadow:0 26px 60px rgba(96,165,250,0.12)}
+@keyframes blink{0%{opacity:1}50%{opacity:0.12}100%{opacity:1}}
+.tri-seg.blink{animation:blink 700ms linear infinite}
+@media (max-width:720px){.center{width:300px}.speed{font-size:145px}:root{--bar-height:62vh}}
 </style>
 </head>
-
 <body>
-<div class="container">
-  <div class="glow"></div>
-
-  <div class="gauge">
-    <div id="left" class="tri-bar"></div>
-
-    <div class="center">
-      <div id="speed" class="speed">0</div>
-      <div class="unit">km/h</div>
-      <button id="preview" class="preview" style="opacity: 0;">PREVIEW</button>
+  <div class="container">
+    <div class="bg-glow" aria-hidden="true"></div>
+    <div class="gauge" role="region" aria-label="RPM visualizer">
+      <div id="left" class="tri-bar" aria-hidden="true"></div>
+      <div class="center">
+        <div id="speed" class="speed">0</div>
+        <div class="unit">KM/H</div>
+        <button id="preview" class="preview" style="display: none">SIMULER</button>
+      </div>
+      <div id="right" class="tri-bar" aria-hidden="true"></div>
     </div>
-
-    <div id="right" class="tri-bar"></div>
+   
+    <button id="btnGeo">Activer la géolocalisation</button>
   </div>
 
-  <div id="notice" class="notice">Activation de la géolocalisation…</div>
-  <button id="btnGeo">Activer la géolocalisation</button>
-</div>
-
 <script>
-const MAX=90, SEGS=29;
-const speedEl=document.getElementById("speed");
-const left=document.getElementById("left");
-const right=document.getElementById("right");
-const notice=document.getElementById("notice");
-const preview=document.getElementById("preview");
-const btnGeo=document.getElementById("btnGeo");
-let last=null, sim=false;
-
-function seg(bar){
+const MAX = 102;
+const SEGS = 36;
+const left = document.getElementById('left');
+const right = document.getElementById('right');
+const speedEl = document.getElementById('speed');
+const preview = document.getElementById('preview');
+const btnGeo = document.getElementById('btnGeo');
+const notice = document.getElementById('notice');
+const RED_THRESHOLD = 0.78;
+let sim = false;
+let last = null;
+function makeSegs(bar){
+  bar.innerHTML = '';
   for(let i=0;i<SEGS;i++){
-    const d=document.createElement("div");
-    d.className="tri-seg";
-    bar.appendChild(d);
+    const s = document.createElement('div');
+    s.className = 'tri-seg';
+    s.dataset.index = i;
+    bar.appendChild(s);
   }
 }
-seg(left); seg(right);
-
-function col(p){
-  const r=Math.round(255*p);
-  const g=Math.round(200*(1-p));
-  return `rgb(${r},${g},80)`;
+makeSegs(left);
+makeSegs(right);
+function hslInterpolate(r){
+  if(r < 0.5){
+    const t = r / 0.5;
+    const h = 120 + (35 - 120) * t;
+    return `hsl(${h} 95% ${50 - t*6}%)`;
+  } else {
+    const t = (r - 0.5) / 0.5;
+    const h = 35 + (6 - 35) * t;
+    return `hsl(${h} 92% ${46 - t*6}%)`;
+  }
 }
-
-function bars(v){
-  const l=Math.floor(Math.min(1,v/MAX)*SEGS);
-  [left,right].forEach(b=>{
-    [...b.children].forEach((s,i)=>{
-      const a=i<l;
-      s.style.background=a?col(i/SEGS):"rgba(255,255,255,.05)";
-      s.style.opacity=a?1:.25;
-      s.style.boxShadow=a?"0 0 12px rgba(255,120,0,.4)":"none";
-    })
-  })
+let displayedRatio = 0;
+let targetRatio = 0;
+let lastTime = performance.now();
+function easeOutCubic(t){return 1 - Math.pow(1 - t, 3)}
+function animateStep(now){
+  const dt = Math.min(40, now - lastTime);
+  lastTime = now;
+  const diff = targetRatio - displayedRatio;
+  if(Math.abs(diff) > 0.0005){
+    displayedRatio += diff * Math.min(1, dt / 120) * 0.9;
+  } else {
+    displayedRatio = targetRatio;
+  }
+  updateVisual(displayedRatio);
+  requestAnimationFrame(animateStep);
 }
-
-function draw(v){
-  speedEl.textContent=Math.round(v);
-  speedEl.style.color=col(Math.min(1,v/MAX));
-  speedEl.style.transform=`scale(${1+v/600})`;
-  bars(v);
+requestAnimationFrame(animateStep);
+function updateVisual(ratio){
+  const lit = Math.round(ratio * SEGS);
+  const isRed = ratio >= RED_THRESHOLD;
+  [left, right].forEach(bar=>{
+    Array.from(bar.children).forEach((seg, i)=>{
+      const segRatio = (i + 1) / SEGS;
+      if(i < lit){
+        seg.classList.add('active');
+        seg.style.background = `linear-gradient(90deg, ${hslInterpolate(segRatio*ratio)} , ${hslInterpolate(Math.min(1, segRatio))})`;
+        seg.style.boxShadow = `0 8px 38px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.12) inset`;
+      } else {
+        seg.classList.remove('active');
+        seg.style.background = '';
+        seg.style.boxShadow = '';
+      }
+      if(isRed && i >= Math.round(RED_THRESHOLD * SEGS)){
+        seg.classList.add('blink');
+      } else {
+        seg.classList.remove('blink');
+      }
+    });
+  });
+  const rpm = Math.round(ratio * MAX);
+  speedEl.textContent = rpm.toLocaleString('fr-FR');
+  const scale = 1 + Math.min(0.12, ratio * 0.12);
+  speedEl.style.transform = `scale(${scale})`;
+  const color = hslInterpolate(ratio);
+  speedEl.style.color = color;
 }
-
-function dist(a,b){
-  const R=6371e3;
-  const p1=a.coords.latitude*Math.PI/180;
-  const p2=b.coords.latitude*Math.PI/180;
-  const dP=p2-p1;
-  const dL=(b.coords.longitude-a.coords.longitude)*Math.PI/180;
-  const x=Math.sin(dP/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
-  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+function setRPM(rpm){
+  const clamped = Math.max(0, Math.min(MAX, rpm));
+  targetRatio = clamped / MAX;
 }
-btnGeo.addEventListener('click', () => {
+preview.addEventListener('click', ()=>{
+  if(sim) return;
+  sim = true;
+  let v = 0;
+  const up = setInterval(()=>{
+    v += Math.max(120, Math.round((Math.random()*1.2+0.8)*220));
+    if(v > MAX) v = MAX;
+    setRPM(v);
+    if(v >= MAX){
+      clearInterval(up);
+      const down = setInterval(()=>{
+        v -= Math.max(80, Math.round((Math.random()*0.6+0.4)*160));
+        if(v <= 0){ v = 0; setRPM(v); clearInterval(down); sim=false; }
+        else setRPM(v);
+      }, 90);
+    }
+  }, 90);
+});
+function toRPMFromSpeed(m_s){
+  const kmh = m_s * 3.6;
+  const idle = 800;
+  const maxKmh = 220;
+  const maxRpm = 8000;
+  const rpm = idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
+  return rpm;
+}
+btnGeo.addEventListener('click', ()=>{
   if(!navigator.geolocation){
     notice.textContent = "Géolocalisation non supportée";
     return;
   }
-
-  navigator.geolocation.getCurrentPosition(
-    (position)=>{
-      notice.style.display="none";
-      last = position;
-
-      navigator.geolocation.watchPosition(
-        (p)=>{
-          if(sim) return;
-          let s = p.coords.speed;
-          if(s==null && last){
-            s = dist(last,p)/((p.timestamp-last.timestamp)/1000);
-          }
-          draw(s*3.6);
-          last = p;
-        },
-        ()=>{
-          notice.textContent = "Géolocalisation requise";
-        },
-        { enableHighAccuracy:true }
-      );
-    },
-    (err)=>{
-      notice.textContent = "Permission géolocalisation refusée";
-      console.warn(err);
-    },
-    { enableHighAccuracy:true }
-  );
-
+  notice.textContent = "Géolocalisation activée";
   btnGeo.style.display = 'none';
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    last = pos;
+    navigator.geolocation.watchPosition((p)=>{
+      let s = p.coords.speed;
+      if(s == null && last){
+        const R = 6371e3;
+        const p1 = last.coords.latitude * Math.PI/180;
+        const p2 = p.coords.latitude * Math.PI/180;
+        const dP = p2 - p1;
+        const dL = (p.coords.longitude - last.coords.longitude) * Math.PI/180;
+        const x = Math.sin(dP/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
+        const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+        s = dist / ((p.timestamp - last.timestamp)/1000);
+      }
+      if(s == null) s = 0;
+      const rpm = toRPMFromSpeed(s);
+      setRPM(rpm);
+      last = p;
+    }, (err)=>{
+      notice.textContent = "Géolocalisation requise";
+      console.warn(err);
+    }, { enableHighAccuracy:true, maximumAge:5000, timeout:10000 });
+  }, (err)=>{
+    notice.textContent = "Permission géolocalisation refusée";
+    console.warn(err);
+  }, { enableHighAccuracy:true });
 });
-
-preview.onclick=()=>{
-  if(sim) return;
-  sim=true;
-  let v=0;
-  const i=setInterval(()=>{
-    v+=4;
-    draw(v);
-    if(v>=MAX){
-      clearInterval(i);
-      sim=false;
-    }
-  },60);
-}
 </script>
 </body>
 </html>
