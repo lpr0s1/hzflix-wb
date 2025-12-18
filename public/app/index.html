@@ -192,7 +192,7 @@ function toRPMFromSpeed(m_s){
   const kmh = Math.max(0, m_s * 3.6);
   const idle = 800;
   const maxKmh = 220;
-  const maxRpm = 9000; // cohérent avec MAX
+  const maxRpm = 8000; // cohérent avec MAX
   return idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
 }
 
@@ -250,3 +250,4 @@ btnGeo.addEventListener('click', ()=>{
 </script>
 </body>
 </html>
+
