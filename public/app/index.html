@@ -86,8 +86,11 @@ const preview = document.getElementById('preview');
 const btnGeo = document.getElementById('btnGeo');
 const notice = document.getElementById('notice');
 const RED_THRESHOLD = 0.78;
+
 let sim = false;
 let last = null;
+let gpsStartTime = null; // ✅ AJOUT
+
 function makeSegs(bar){
   bar.innerHTML = '';
   for(let i=0;i<SEGS;i++){
@@ -99,6 +102,7 @@ function makeSegs(bar){
 }
 makeSegs(left);
 makeSegs(right);
+
 function hslInterpolate(r){
   if(r < 0.5){
     const t = r / 0.5;
@@ -110,14 +114,18 @@ function hslInterpolate(r){
     return `hsl(${h} 92% ${46 - t*6}%)`;
   }
 }
+
 let displayedRatio = 0;
 let targetRatio = 0;
 let lastTime = performance.now();
-function easeOutCubic(t){return 1 - Math.pow(1 - t, 3)}
+
+function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3) }
+
 function animateStep(now){
   const dt = Math.min(40, now - lastTime);
   lastTime = now;
   const diff = targetRatio - displayedRatio;
+
   if(Math.abs(diff) > 0.0005){
     displayedRatio += diff * Math.min(1, dt / 120) * 0.9;
   } else {
@@ -127,20 +135,21 @@ function animateStep(now){
   requestAnimationFrame(animateStep);
 }
 requestAnimationFrame(animateStep);
+
 function updateVisual(ratio){
   const lit = Math.round(ratio * SEGS);
   const isRed = ratio >= RED_THRESHOLD;
+
   [left, right].forEach(bar=>{
     Array.from(bar.children).forEach((seg, i)=>{
       const segRatio = (i + 1) / SEGS;
       if(i < lit){
         seg.classList.add('active');
-        seg.style.background = `linear-gradient(90deg, ${hslInterpolate(segRatio*ratio)} , ${hslInterpolate(Math.min(1, segRatio))})`;
-        seg.style.boxShadow = `0 8px 38px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.12) inset`;
+        seg.style.background =
+          `linear-gradient(90deg, ${hslInterpolate(segRatio*ratio)} , ${hslInterpolate(Math.min(1, segRatio))})`;
       } else {
         seg.classList.remove('active');
         seg.style.background = '';
-        seg.style.boxShadow = '';
       }
       if(isRed && i >= Math.round(RED_THRESHOLD * SEGS)){
         seg.classList.add('blink');
@@ -149,17 +158,18 @@ function updateVisual(ratio){
       }
     });
   });
+
   const rpm = Math.round(ratio * MAX);
   speedEl.textContent = rpm.toLocaleString('fr-FR');
-  const scale = 1 + Math.min(0.12, ratio * 0.12);
-  speedEl.style.transform = `scale(${scale})`;
-  const color = hslInterpolate(ratio);
-  speedEl.style.color = color;
+  speedEl.style.transform = `scale(${1 + Math.min(0.12, ratio * 0.12)})`;
+  speedEl.style.color = hslInterpolate(ratio);
 }
+
 function setRPM(rpm){
   const clamped = Math.max(0, Math.min(MAX, rpm));
   targetRatio = clamped / MAX;
 }
+
 preview.addEventListener('click', ()=>{
   if(sim) return;
   sim = true;
@@ -178,46 +188,71 @@ preview.addEventListener('click', ()=>{
     }
   }, 90);
 });
+
 function toRPMFromSpeed(m_s){
   const kmh = m_s * 3.6;
   const idle = 800;
   const maxKmh = 220;
   const maxRpm = 8000;
-  const rpm = idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
-  return rpm;
+  return idle + (Math.min(kmh, maxKmh) / maxKmh) * (maxRpm - idle);
 }
+
 btnGeo.addEventListener('click', ()=>{
   if(!navigator.geolocation){
     notice.textContent = "Géolocalisation non supportée";
     return;
   }
-  notice.textContent = "Géolocalisation activée";
+
+  notice.textContent = "Initialisation GPS…";
   btnGeo.style.display = 'none';
+  gpsStartTime = Date.now(); // ✅ AJOUT
+
   navigator.geolocation.getCurrentPosition((pos)=>{
     last = pos;
+
     navigator.geolocation.watchPosition((p)=>{
+      const now = Date.now();
+
+      // ⛔ ignore les 2 premières secondes
+      if(now - gpsStartTime < 2000) return;
+
       let s = p.coords.speed;
+
       if(s == null && last){
+        const dt = (p.timestamp - last.timestamp) / 1000;
+        if(dt < 0.5) return; // ⛔ trop court
+
         const R = 6371e3;
         const p1 = last.coords.latitude * Math.PI/180;
         const p2 = p.coords.latitude * Math.PI/180;
         const dP = p2 - p1;
         const dL = (p.coords.longitude - last.coords.longitude) * Math.PI/180;
-        const x = Math.sin(dP/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
+        const x =
+          Math.sin(dP/2)**2 +
+          Math.cos(p1)*Math.cos(p2)*Math.sin(dL/2)**2;
+
         const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
-        s = dist / ((p.timestamp - last.timestamp)/1000);
+        s = dist / dt;
       }
-      if(s == null) s = 0;
-      const rpm = toRPMFromSpeed(s);
-      setRPM(rpm);
+
+      // ⛔ vitesses absurdes (> 300 km/h)
+      if(!s || s < 0 || s > 83) return;
+
+      setRPM(toRPMFromSpeed(s));
+      notice.textContent = "GPS actif";
       last = p;
-    }, (err)=>{
+
+    }, ()=>{
       notice.textContent = "Géolocalisation requise";
-      console.warn(err);
-    }, { enableHighAccuracy:true, maximumAge:5000, timeout:10000 });
-  }, (err)=>{
+    }, {
+      enableHighAccuracy:true,
+      maximumAge:1000,
+      timeout:10000
+    });
+
+  }, ()=>{
     notice.textContent = "Permission géolocalisation refusée";
-    console.warn(err);
+    btnGeo.style.display = 'block';
   }, { enableHighAccuracy:true });
 });
 </script>
