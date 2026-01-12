@@ -58,8 +58,10 @@
     ctn.style.transition = "all 0.3s ease";
     ctn.style.filter = "blur(8px)"
     ctn.style.opacity = "0";
+      ctn.style.transform = "scale(0)";
     
     bgt.addEventListener("click", () => {
+      ctn.style.transform = bgt.checked ? "scale(1.0)" : "scale(0)";
       ctn.style.opacity = bgt.checked ? "1" : "0";
       ctn.style.transform = bgt.checked ? "translateX(9px)" : "translateX(0px)"
       bxar.style.transform = bgt.checked ? "rotate(180deg)" : "rotate(0deg)"
