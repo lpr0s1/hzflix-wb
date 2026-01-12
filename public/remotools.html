@@ -21,7 +21,6 @@
     <center>
       <small style="color: white; text-shadow: 0px 0px 24px red">Port possible : (80/8080/443)</small>
     <input id="inpt" class="inpt" style="width: 70%; border-radius: 6px; border: solid 2px red; padding: 10px 30px; font-size: 18px;" type="url" placeholder="ex: http://exemple.com" required>
-    <input id="port" class="inpt" style="width: 70%; border-radius: 6px; border: solid 2px red; padding: 10px 30px; font-size: 18px;" type="text" placeholder="port: 80, 8080, ou 443">
     </center>
     <br>
    
@@ -213,15 +212,12 @@ const timer = setInterval(function() {
 </style>
     
         <script>
-        document.getElementById("port").value;
-        
-        port.value = "80"
         
       function adp() {
-        document.getElementById("inpt").value = "http://110.42.231.125:" + port.value;
+        document.getElementById("inpt").value = "http://110.42.231.125:80"
       }
       function adp2() {
-  document.getElementById("inpt").value = "http://50.222.183.105:" + port.value;
+  document.getElementById("inpt").value = "http://50.222.183.105:80"
 }
     </script>
     
