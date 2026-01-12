@@ -1,11 +1,9 @@
-<html lang="fr" translate="no">
+<html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <meta name="description" content="connexion a des cameras ip, directement sur le web.">
-    <meta name="referrer" content="no-referrer">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Remotools</title>
+    <title>Remote tools</title>
   </head>
   <body>
     
@@ -19,10 +17,10 @@
       }
     </style>
     
-    <h2 style="font-size: 29px; color: red; text-shadow: 0px 0px 20px red">Connectez vous a des cam ip et sites web en iframe.</h2>
+    <h2 style="font-size: 29px; color: red; text-shadow: 0px 0px 20px red">Connectez vous a des cameras ip.</h2>
     <center>
-      <small style="color: white; text-shadow: 0px 0px 24px red">Adresse de la cam ip, port possible : (80/8080/443)</small>
-    <input id="inpt" class="inpt" style="width: 70%; border-radius: 6px; border: solid 2px red; padding: 10px 30px; font-size: 18px;" type="text" placeholder="ex: http://0.0.0.0">
+      <small style="color: white; text-shadow: 0px 0px 24px red">Adresse de la camera ip, port possible : (80/8080/443)</small>
+    <input id="inpt" class="inpt" style="width: 70%; border-radius: 6px; border: solid 2px red; padding: 10px 30px; font-size: 18px;" type="url" placeholder="ex: http://0.0.0.0" required>
     <input id="port" class="inpt" style="width: 70%; border-radius: 6px; border: solid 2px red; padding: 10px 30px; font-size: 18px;" type="text" placeholder="port: 80, 8080, ou 443">
     </center>
     <br>
@@ -36,7 +34,7 @@
     <br>
     <br>
     <br><div style="display: flex">
-    <label id="kst" style="color: white" for="chk">Afficher des cam public</label>
+    <label id="kst" style="color: white" for="chk">Afficher des IP cam public</label>
     <i id="arow" style="color: white;" class="material-icons">expand_more</i>
     </div>
     <input id="chk" type="checkbox" style="display: none;">
@@ -142,16 +140,7 @@
     <b class="lgs" style="color: lightgrey; text-shadow: 0px 0px 10px red;"><i>Logs</i></b>
     <div style="color: white; overflow-x: auto; height: 100px; background-color: black; padding: 10px 28px; box-shadow: 0px 0px 50px red; border-radius: 7px;" id="logs"><p class="clogs"></p></div>
     
-  <script>
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-      e.preventDefault();
-    }
-  });
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
-</script>
+  
     <script>
       var a = document.getElementById("ad");
       var xb = document.getElementById("vk");
@@ -169,9 +158,9 @@
      var bn = document.getElementById(vix)
      var pi = document.getElementById("logs")
      
-     pi.innerHTML += "Lecteurs | source=" + inptk + "<br>";
      
-     if (!isValidUrl(inptk)) {
+     
+     if (inptk === "") {
   alert("Vous n avez mis aucune adresse !")
   return;
 }
@@ -190,6 +179,7 @@ const timer = setInterval(function() {
     btco.style.display = "block";
     xb.style.display = "none";
     a.style.display = "none";
+    pi.innerHTML += "Lecteurs | source=" + inptk + "<br>";
   }
 }, 20);
 }
@@ -199,7 +189,7 @@ const timer = setInterval(function() {
     <br>
     <fieldset style="border: solid 2px white; border-radius: 5px">
       <legend style="color: red"><b>Les lecteurs:</b></legend>
-    <iframe id="vix" width="325" height="240"></iframe>
+    <iframe id="vix" width="340" height="250"></iframe>
     
       <div class="frame">
     <img id="vie" alt="Live camera">
@@ -213,8 +203,8 @@ const timer = setInterval(function() {
 
 .frame img {
   color: red;
-  width: 93%;
-  height: 160px;
+  width: 95%;
+  height: 240px;
   border-radius: 8px;
   display: block;
 }
