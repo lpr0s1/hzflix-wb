@@ -31,20 +31,6 @@
     <progress class="chrg" id="vk" value="0" max="100"></progress>
   </center>
     <br>
-    <br>
-    <br><div style="display: flex">
-    <label id="kst" style="color: white" for="chk">Afficher des IP cam public</label>
-    <i id="arow" style="color: white;" class="material-icons">expand_more</i>
-    </div>
-    <input id="chk" type="checkbox" style="display: none;">
-    <br>
-    <div id="conten" style="border: solid 3px red; width: 80%; border-radius: 9px; padding: 10px 20px; overflow-y: auto; height: 52px;">
-      <small style="color: white">Scrollez pour tout voir.</small>
-      <small style="color: red">Toucher une ip pour la coller directement.</small>
-      <p style="color: white;" onclick="adp()"><u>110.42.231.125 | États-Unis</u><i class="material-icons">videocam</i></p>
-      <p style="color: white;" onclick="adp2()"><u>50.222.183.105 | États-Unis</u><i class="material-icons">videocam</i></p>
-    
-    </div>
     
 
     
@@ -211,15 +197,7 @@ const timer = setInterval(function() {
 }
 </style>
     
-        <script>
-        
-      function adp() {
-        document.getElementById("inpt").value = "http://110.42.231.125:80"
-      }
-      function adp2() {
-  document.getElementById("inpt").value = "http://50.222.183.105:80"
-}
-    </script>
+    
     
     
   </body>
