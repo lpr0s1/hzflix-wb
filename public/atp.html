@@ -5,180 +5,151 @@
 <title>NEON QUEST NETWORK</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
 *{box-sizing:border-box}
-body{
-margin:0;
-background:#05000a;
-color:#ff003c;
-font-family:"Silkscreen";
-min-height:100vh;
-display:flex;
-flex-direction:column;
-}
-header{
-padding:16px;
-text-align:center;
-font-size:20px;
-letter-spacing:2px;
-text-shadow:0 0 12px #ff003c;
-}
-#app{flex:1;padding:12px;max-width:720px;margin:auto;width:100%}
-input,textarea,button{width:100%;margin-top:8px}
-button{
-background:#ff003c;
-color:black;
-border:none;
-padding:12px;
-font-family:"Silkscreen";
-cursor:pointer;
-border-radius:6px;
-box-shadow:0 0 12px #ff003c;
-}
-button:active{transform:scale(.97)}
-input,textarea{
-background:black;
-color:#ff003c;
-border:2px solid #ff003c;
-padding:12px;
-border-radius:6px;
-}
-.panel{
-border:2px solid #ff003c;
-padding:12px;
-margin-top:12px;
-box-shadow:0 0 16px #ff003c;
-background:#080010;
-border-radius:10px;
-}
-.chatbox{
-height:40vh;
-overflow-y:auto;
-border:1px solid #ff003c;
-padding:10px;
-margin-bottom:10px;
-}
-.message{color:#00ffd5;margin-bottom:6px;font-size:14px}
-.quest{
-border:1px solid #00ffd5;
-padding:10px;
-margin-bottom:10px;
-border-radius:8px;
-}
-.voteRow{
-display:flex;
-justify-content:space-between;
-align-items:center;
-font-size:13px;
-}
-.glow{animation:glow 1.4s infinite alternate}
-@keyframes glow{
-from{text-shadow:0 0 6px #ff003c}
-to{text-shadow:0 0 18px #ff003c}
-}
+body{margin:0;background:#05000a;color:#ff003c;font-family:"Silkscreen";min-height:100vh;display:flex;flex-direction:column;}
+header{padding:16px;text-align:center;font-size:20px;letter-spacing:2px;text-shadow:0 0 12px #ff003c;}
+#app{flex:1;padding:12px;max-width:720px;margin:auto;width:100%;}
+input,textarea,button{width:100%;margin-top:8px;}
+button{background:#ff003c;color:black;border:none;padding:12px;font-family:"Silkscreen";cursor:pointer;border-radius:6px;box-shadow:0 0 12px #ff003c;}
+button:active{transform:scale(.97);}
+input,textarea{background:black;color:#ff003c;border:2px solid #ff003c;padding:12px;border-radius:6px;}
+.panel{border:2px solid #ff003c;padding:12px;margin-top:12px;box-shadow:0 0 16px #ff003c;background:#080010;border-radius:10px;}
+.chatbox{height:40vh;overflow-y:auto;border:1px solid #ff003c;padding:10px;margin-bottom:10px;}
+.message{color:#00ffd5;margin-bottom:6px;font-size:14px;}
+.quest{border:1px solid #00ffd5;padding:10px;margin-bottom:10px;border-radius:8px;}
+.voteRow{display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.glow{animation:glow 1.4s infinite alternate;}
+@keyframes glow{from{text-shadow:0 0 6px #ff003c}to{text-shadow:0 0 18px #ff003c}}
 </style>
 </head>
-
 <body>
 <header class="glow">NEON QUEST NETWORK</header>
 
 <div id="app">
+  <!-- Affichage loading -->
+  <div v-if="!loaded" style="text-align:center;padding:20px;">Chargement…</div>
 
-<div v-if="!username">
-<h2>Identité</h2>
-<input v-model.trim="tempName" placeholder="Ton pseudo">
-<button @click="login">Connexion</button>
+  <div v-else>
+
+    <!-- Connexion -->
+    <div v-if="!username">
+      <h2>Identité</h2>
+      <input v-model.trim="tempName" placeholder="Ton pseudo">
+      <button @click="login">Connexion</button>
+    </div>
+
+    <!-- Chat et Quêtes -->
+    <div v-else>
+
+      <div class="panel">
+        <h3>Chat Global</h3>
+        <div class="chatbox" ref="chat">
+          <div v-for="m in messages" :key="m.id" class="message">
+            <b>{{m.username}}</b> : {{m.content}}
+          </div>
+        </div>
+        <input v-model.trim="newMessage" placeholder="Message..." @keyup.enter="sendMessage">
+        <button @click="sendMessage"><i class="fa fa-paper-plane"></i></button>
+      </div>
+
+      <div class="panel">
+        <h3>Quêtes</h3>
+        <input v-model.trim="questTitle" placeholder="Titre">
+        <textarea v-model.trim="questDesc" placeholder="Description"></textarea>
+        <button @click="publishQuest"><i class="fa fa-plus"></i></button>
+
+        <div v-for="q in quests" :key="q.id" class="quest">
+          <h4>{{q.title}}</h4>
+          <p>{{q.description}}</p>
+          <div class="voteRow">
+            <div>
+              <button @click="voteUp(q)">👍</button>
+              <button @click="voteDown(q)">👎</button>
+            </div>
+            <div>{{q.upvotes}} / {{q.downvotes}}</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 
-<div v-else>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-<div class="panel">
-<h3>Chat Global</h3>
-<div class="chatbox" ref="chat">
-<div v-for="m in messages" :key="m.id" class="message">
-<b>{{m.username}}</b> : {{m.content}}
-</div>
-</div>
-<input v-model.trim="newMessage" placeholder="Message..." @keyup.enter="sendMessage">
-<button @click="sendMessage"><i class="fa fa-paper-plane"></i></button>
-</div>
-
-<div class="panel">
-<h3>Quêtes</h3>
-<input v-model.trim="questTitle" placeholder="Titre">
-<textarea v-model.trim="questDesc" placeholder="Description"></textarea>
-<button @click="publishQuest"><i class="fa fa-plus"></i></button>
-
-<div v-for="q in quests" :key="q.id" class="quest">
-<h4>{{q.title}}</h4>
-<p>{{q.description}}</p>
-<div class="voteRow">
-<div>
-<button @click="voteUp(q)">👍</button>
-<button @click="voteDown(q)">👎</button>
-</div>
-<div>{{q.upvotes}} / {{q.downvotes}}</div>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-<script>
-const supabase = supabasejs.createClient("https://ipxzpixgpetvuvwajpxi.supabase.co","sb_publishable_YrC_vtyQyh9VhSx8C6OeuA_FKzFya2m")
+const supabase = createClient(
+  "https://ipxzpixgpetvuvwajpxi.supabase.co",
+  "sb_publishable_YrC_vtyQyh9VhSx8C6OeuA_FKzFya2m"
+)
 
 new Vue({
-el:"#app",
-data:{
-username:"",
-tempName:"",
-messages:[],
-newMessage:"",
-quests:[],
-questTitle:"",
-questDesc:""
-},
-async mounted(){
-const {data:m}=await supabase.from("messages").select("*").order("created_at",{ascending:true})
-this.messages=m||[]
+  el:"#app",
+  data:{
+    username:"",
+    tempName:"",
+    messages:[],
+    newMessage:"",
+    quests:[],
+    questTitle:"",
+    questDesc:"",
+    loaded:false
+  },
+  async mounted(){
+    try {
+      // Récupérer messages + quêtes
+      const { data: m, error: e1 } = await supabase.from("messages").select("*").order("created_at",{ascending:true})
+      if(!e1) this.messages = m || []
 
-const {data:q}=await supabase.from("quests").select("*").order("created_at",{ascending:false})
-this.quests=q||[]
+      const { data: q, error: e2 } = await supabase.from("quests").select("*").order("created_at",{ascending:false})
+      if(!e2) this.quests = q || []
 
-supabase.channel("main")
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},p=>{
-this.messages.push(p.new)
-this.$nextTick(()=>this.$refs.chat.scrollTop=this.$refs.chat.scrollHeight)
-})
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"quests"},p=>this.quests.unshift(p.new))
-.on("postgres_changes",{event:"UPDATE",schema:"public",table:"quests"},p=>{
-const i=this.quests.findIndex(x=>x.id===p.new.id)
-if(i>-1) this.$set(this.quests,i,p.new)
-})
-.subscribe()
-},
-methods:{
-login(){if(this.tempName)this.username=this.tempName},
-async sendMessage(){
-if(!this.newMessage) return
-await supabase.from("messages").insert({username:this.username,content:this.newMessage})
-this.newMessage=""
-},
-async publishQuest(){
-if(!this.questTitle||!this.questDesc) return
-await supabase.from("quests").insert({title:this.questTitle,description:this.questDesc})
-this.questTitle=""
-this.questDesc=""
-},
-async voteUp(q){await supabase.from("quests").update({upvotes:q.upvotes+1}).eq("id",q.id)},
-async voteDown(q){await supabase.from("quests").update({downvotes:q.downvotes+1}).eq("id",q.id)}
-}
+      this.loaded = true
+
+      // Realtime
+      supabase.channel("main")
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+          this.messages.push(payload.new)
+          this.$nextTick(()=>this.$refs.chat.scrollTop = this.$refs.chat.scrollHeight)
+        })
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"quests"},payload=>{
+          this.quests.unshift(payload.new)
+        })
+        .on("postgres_changes",{event:"UPDATE",schema:"public",table:"quests"},payload=>{
+          const i = this.quests.findIndex(x => x.id===payload.new.id)
+          if(i>-1) this.$set(this.quests,i,payload.new)
+        })
+        .subscribe()
+
+    } catch(err) {
+      console.error("Erreur Supabase:", err)
+      this.loaded = false
+    }
+  },
+  methods:{
+    login(){ if(this.tempName) this.username=this.tempName },
+    async sendMessage(){
+      if(!this.newMessage) return
+      await supabase.from("messages").insert({ username:this.username, content:this.newMessage })
+      this.newMessage=""
+    },
+    async publishQuest(){
+      if(!this.questTitle || !this.questDesc) return
+      await supabase.from("quests").insert({ title:this.questTitle, description:this.questDesc, upvotes:0, downvotes:0 })
+      this.questTitle=""
+      this.questDesc=""
+    },
+    async voteUp(q){
+      await supabase.from("quests").update({ upvotes:q.upvotes+1 }).eq("id",q.id)
+    },
+    async voteDown(q){
+      await supabase.from("quests").update({ downvotes:q.downvotes+1 }).eq("id",q.id)
+    }
+  }
 })
 </script>
 
