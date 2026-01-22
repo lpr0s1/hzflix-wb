@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  </head>
+  <script src="https://app.embed.im/snow.js" defer></script>
+  <style>
+    body{
+      -webkit-user-select: none;
+    }
+  </style>
+  <body>
+    <pre style="display: none" id="cd">
+      // Entre la commande que tu veux envoyer
+// a ton pc, dans: (cmd) par exemple
+// ls, pour voir tout les fichiers et
+// dossiers.
+
+let cmd = ""
+
+// Remplace l ip par celle de ton pc
+// tape (ipconfig) dans ta console windows. Mais reste sur le port 8080
+
+let req = new Request("http://192.168.1.8:8080/run?cmd=" + encodeURIComponent(cmd))
+
+// Si tu veux changer de port demande moi
+// je ferais une autre version
+
+let res = await req.loadString()
+console.log(res)
+    </pre>
+
+    <script>
+      function copier(){
+        const cd = document.getElementById("cd").innerText;
+        navigator.clipboard.writeText(cd);
+      }
+    </script>
+    <h2>Client [Scriptable] (IOS)</h2>
+    <button onclick="copier()">Copier le code</button>
+    <br>
+    <hr>
+    <h2>Serveur.exe</h2>
+    <a href="https://hzflix.online/srv/serveur.exe"></a>
+    <br>
+  </body>
+</html>
