@@ -6,7 +6,13 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://hzflix.online/films/menu.html</loc>
+    <loc>https://hzflix.online/svr</loc>
+    <lastmod>2026-01-22</lastmod>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://hzflix.online/films/menu</loc>
     <lastmod>2025-03-04</lastmod>
     <priority>0.8</priority> 
   </url>
