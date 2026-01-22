@@ -6,6 +6,7 @@
   <script src="https://app.embed.im/snow.js" defer></script>
   <style>
     body{
+      margin: 15;
       -webkit-user-select: none;
     }
   </style>
@@ -40,9 +41,17 @@ console.log(res)
     <button onclick="copier()">Copier le code</button>
     <br>
     <hr>
-    <h2>Server.exe</h2>
-    <a href="https://hzflix.online/svr/server.exe">Telecharger le server sur windows</a>
+    <h2>Server.exe (windows)</h2>
+    <a href="https://hzflix.online/svr/server.exe">Telecharger le serveur</a>
     <br>
+
+    <br>
+    <div style="background-color: #333; padding: 10px 20px;">
+      <code style="color: lightgrey;">
+        Le serveur dois rester en cours d'execution sur l'ordinateur pour continuer
+        d'y acceder a distance. Et pour fermer la connexion, il suffit simplement de fermer le program.
+      </code>
+    </div>
 
     <style>
       button{
@@ -52,8 +61,10 @@ console.log(res)
         border-radius: 6px;
       }
       a{
-        background-color: lightblue;
+        background-color: black;
         font-size: 25px;
+        color: white;
+        text-decoration: none;
         border-radius: 6px;
         padding: 11px 22px;
       }
