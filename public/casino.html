@@ -1,0 +1,170 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+    *{
+      overflow: hidden;
+    }
+      body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        -webkit-user-select: none;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #222, #000);
+        color: white;
+        user-select: none;
+      }
+
+      h2.deg {
+        margin-top: 20px;
+        font-size: 3em;
+        background: linear-gradient(38deg, orange, red);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        animation: glow 2s infinite alternate;
+      }
+
+      @keyframes glow {
+        0% { text-shadow: 0 0 10px orange; }
+        100% { text-shadow: 0 0 30px red; }
+      }
+
+      .slots {
+        display: flex;
+        justify-content: center;
+        margin: 40px 0;
+        gap: 20px;
+        font-size: 5em;
+      }
+
+      .slot {
+        width: 1.5em;
+        height: 1.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at center, #444, #111);
+        border-radius: 20px;
+        box-shadow: 0 0 10px #000;
+        transition: transform 0.2s;
+      }
+
+      .slot.spin {
+        animation: spin 0.5s ease-out;
+      }
+
+      @keyframes spin {
+        0% { transform: translateY(-100%) scale(1.2); opacity: 0; }
+        50% { transform: translateY(20%) scale(1.1); opacity: 0.5; }
+        100% { transform: translateY(0%) scale(1); opacity: 1; }
+      }
+
+      .balance {
+        font-size: 2em;
+        text-align: center;
+        margin-bottom: 40px;
+        color: #ffd700;
+        text-shadow: 0 0 5px black;
+      }
+
+      .btn {
+        font-size: 2em;
+        width: 95%;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        color: white;
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        box-shadow: 0 0 15px #0072ff;
+        transition: transform 0.1s, box-shadow 0.3s, filter 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn:active {
+        text-decoration: bold;
+        filter: blur(5px);
+        border: solid 2px black;
+        transform: scale(0.9);
+        box-shadow: 0 0 5px red;
+        filter: brightness(1.5);
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("flm.gif");
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 0.1s;
+        border-radius: 30px;
+      }
+
+      .btn:active::before {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2 class="deg">HzCasino Party</h2>
+
+    <div class="slots">
+      <div class="slot" id="a">🔫</div>
+      <div class="slot" id="b">💸</div>
+      <div class="slot" id="c">🔥</div>
+    </div>
+
+    <div class="balance">
+      Vous avez : <span id="argent">0</span> €
+    </div>
+
+    <button class="btn" onclick="hv()">Jouer</button>
+
+    <script>
+      const argent = document.getElementById("argent");
+      const slots = [document.getElementById("a"), document.getElementById("b"), document.getElementById("c")];
+      const elem = ["😁", "🔥", "💸"];
+      let money = 0;
+
+      function hv() {
+        slots.forEach(slot => {
+          slot.classList.add("spin");
+        });
+
+        setTimeout(() => {
+      
+          const x = elem[Math.floor(Math.random() * elem.length)];
+          const j = elem[Math.floor(Math.random() * elem.length)];
+          const k = elem[Math.floor(Math.random() * elem.length)];
+
+          slots[0].innerText = x;
+          slots[1].innerText = j;
+          slots[2].innerText = k;
+
+          slots.forEach(slot => {
+            slot.classList.remove("spin");
+          });
+
+          if(x === j && j === k){
+            const y = Math.floor(Math.random() * 100 + 50);
+            money += y;
+            argent.innerText = money;
+          }
+        }, 400);
+      }
+    </script>
+  </body>
+</html>
