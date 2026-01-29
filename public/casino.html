@@ -19,17 +19,19 @@
       -webkit-user-zoom: none;
     }
       body {
-        overflow-y: hidden;
+        -webkit-overflow-x: hidden;
+        -webkit-overflow-y: hidden;
         -webkit-user-zoom: none;
         margin: 0;
         padding: 0;
         -webkit-user-select: none;
-        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        min-height: 100vh;
+        height: 110%;
+        max-width: 97%;
         background: radial-gradient(circle at top, #222, #000);
         color: white;
         user-select: none;
@@ -69,6 +71,13 @@
         border-radius: 20px;
         box-shadow: 0 0 10px #000;
         transition: transform 0.2s;
+        animation: zmx 2s infinite;
+      }
+      
+      @keyframes zmx{
+        0%{transform: scale(1.0)}
+        50%{transform: scale(0.9)}
+        100%{transform: scale(1.0)}
       }
 
       .slot.spin {
@@ -90,6 +99,7 @@
       }
 
       .btn {
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
         font-size: 2em;
         width: 95%;
         padding: 15px 30px;
@@ -129,19 +139,25 @@
       .btn:active::before {
         opacity: 0.6;
       }
+      
+      @keyframes rvk{
+        0%{opacity: 100%}
+        50%{opacity: 50%}
+        100%{opacity: 100%}
+      }
     </style>
 
   <body>
     <h2 class="deg">HzCasino Party</h2>
 
     <div class="slots">
-      <div class="slot" id="a">🔫</div>
+      <div class="slot" id="a">👻</div>
       <div class="slot" id="b">💸</div>
       <div class="slot" id="c">🔥</div>
     </div>
 
-    <div class="balance">
-      Vous avez : <span id="argent">0</span> €
+    <div class="balance"><b>
+      Vous avez :</b><br> <span style="font-size: 55px; animation: rvk 2s infinite;" id="argent">0</span> €
     </div>
 
     <button class="btn" onclick="hv()">Jouer</button>
@@ -149,7 +165,7 @@
     <script>
       const argent = document.getElementById("argent");
       const slots = [document.getElementById("a"), document.getElementById("b"), document.getElementById("c")];
-      const elem = ["😁", "🔥", "💸"];
+      const elem = ["👻", "🔥", "💸"];
       let money = 0;
 
       function hv() {
@@ -175,9 +191,22 @@
             const y = Math.floor(Math.random() * 100 + 50);
             money += y;
             argent.innerText = money;
+            document.getElementById("notif").style.opacity = "1"
+            document.getElementById("notif").innerHTML = "Vous venez de gagner: " + y + "€ !";
+            setTimeout(function() {
+              document.getElementById("notif").style.transition = "all 0.4s ease"
+  document.getElementById("notif").style.opacity = "0"
+}, 3000);
           }
         }, 200);
       }
+      
+      
     </script>
+    
+    
+    <br>
+    
+    <b><p style="opacity: 0; color: white; background-color: limegreen; font-size: 20px; border-radius: 4px; padding: 10px 35px; transition: all 0.4s ease;" id="notif"></p></b>
   </body>
 </html>
