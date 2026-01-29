@@ -98,16 +98,16 @@
         color: white;
         background: linear-gradient(135deg, #00c6ff, #0072ff);
         box-shadow: 0 0 15px #0072ff;
-        transition: transform 0.1s, box-shadow 0.3s, filter 0.3s;
+        transition: transform 0.3s, box-shadow 0.3s, filter 0.3s;
         position: relative;
         overflow: hidden;
       }
 
       .btn:active {
+        transform: scale(0.8);
         text-decoration: bold;
         filter: blur(5px);
         border: solid 2px black;
-        transform: scale(0.9);
         box-shadow: 0 0 5px red;
         filter: brightness(1.5);
       }
@@ -175,7 +175,7 @@
             money += y;
             argent.innerText = money;
           }
-        }, 400);
+        }, 200);
       }
     </script>
   </body>
