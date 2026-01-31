@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Page Personnalisable</title>
+</head>
+<body>
+    <h1 id="titre">Bienvenue !</h1>
+    <p id="contenu">Contenu par défaut.</p>
+
+    <script>
+        function getParameterByName(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const titre = getParameterByName('titre');
+            const contenu = getParameterByName('contenu');
+
+            if (titre) {
+                document.getElementById('titre').textContent = titre;
+            }
+
+            if (contenu) {
+                document.getElementById('contenu').textContent = contenu;
+            }
+        });
+    </script>
+</body>
+</html>
