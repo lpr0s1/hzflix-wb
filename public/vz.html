@@ -1,138 +1,145 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Détection multi-objets et visages</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@0.0.7/dist/face-detection.min.js"></script>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            touch-action: none; /* bloque le zoom tactile */
-        }
-        #controls {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        video, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw; /* full width */
-            height: 100vh; /* full height */
-            object-fit: cover; /* remplit l'écran sans étirer */
-            transform: scaleX(-1); /* miroir pour caméra frontale */
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Détection multi-objets et visages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@0.0.7/dist/face-detection.min.js"></script>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none; /* bloque le zoom tactile */
+}
+#controls {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover { background-color: #0056b3; }
+video, canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+</style>
 </head>
 <body>
-    <div id="controls">
-        <button id="switchCamera">Changer de caméra</button>
-    </div>
-    <video id="webcam" autoplay muted playsinline></video>
-    <canvas id="overlay"></canvas>
+<div id="controls">
+    <button id="switchCamera">Changer de caméra</button>
+</div>
+<video id="webcam" autoplay muted playsinline></video>
+<canvas id="overlay"></canvas>
 
-    <script>
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('overlay');
-        const ctx = canvas.getContext('2d');
-        const switchButton = document.getElementById('switchCamera');
+<script>
+const video = document.getElementById('webcam');
+const canvas = document.getElementById('overlay');
+const ctx = canvas.getContext('2d');
+const switchButton = document.getElementById('switchCamera');
 
-        let currentStream = null;
-        let usingFrontCamera = true;
+let currentStream = null;
+let usingFrontCamera = true;
+let cocoModel = null;
+let faceModel = null;
 
-        async function setupCamera() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
+// Setup caméra
+async function setupCamera() {
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+    }
 
-            const constraints = {
-                video: { 
-                    facingMode: usingFrontCamera ? 'user' : 'environment',
-                    width: { ideal: window.innerWidth },
-                    height: { ideal: window.innerHeight }
-                }
-            };
-
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = currentStream;
-
-            return new Promise(resolve => {
-                video.onloadedmetadata = () => { 
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    resolve(video); 
-                };
-            });
+    const constraints = {
+        video: { 
+            facingMode: usingFrontCamera ? 'user' : 'environment',
+            width: { ideal: window.innerWidth },
+            height: { ideal: window.innerHeight }
         }
+    };
 
-        async function detectObjects(cocoModel, faceModel) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = currentStream;
 
-            // Détection d'objets
-            const predictions = await cocoModel.detect(video);
-            predictions.forEach(pred => {
-                const [x, y, width, height] = pred.bbox;
-                ctx.strokeStyle = '#00FF00';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x, y, width, height);
-                ctx.font = '22px Arial';
-                ctx.fillStyle = '#00FF00';
-                ctx.fillText(`${pred.class} (${Math.round(pred.score * 100)}%)`, x, y > 25 ? y - 8 : y + 25);
-            });
+    return new Promise(resolve => {
+        video.onloadedmetadata = () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            // Appliquer miroir uniquement pour caméra frontale
+            video.style.transform = usingFrontCamera ? "scaleX(-1)" : "scaleX(1)";
+            resolve(video);
+        };
+    });
+}
 
-            // Détection de visages
-            const faces = await faceModel.estimateFaces({ input: video });
-            faces.forEach(face => {
-                const { topLeft, bottomRight } = face.boundingBox;
-                const [x1, y1] = topLeft;
-                const [x2, y2] = bottomRight;
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-                ctx.font = '22px Arial';
-                ctx.fillStyle = '#FF0000';
-                ctx.fillText(`Visage`, x1, y1 > 25 ? y1 - 8 : y1 + 25);
-            });
+// Détection
+async function detectObjects() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            requestAnimationFrame(() => detectObjects(cocoModel, faceModel));
-        }
-
-        switchButton.addEventListener('click', async () => {
-            usingFrontCamera = !usingFrontCamera;
-            await setupCamera();
+    if (cocoModel) {
+        const predictions = await cocoModel.detect(video);
+        predictions.forEach(pred => {
+            const [x, y, width, height] = pred.bbox;
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+            ctx.font = '22px Arial';
+            ctx.fillStyle = '#00FF00';
+            ctx.fillText(`${pred.class} (${Math.round(pred.score * 100)}%)`, x, y > 25 ? y - 8 : y + 25);
         });
+    }
 
-        async function main() {
-            await setupCamera();
-            const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-            const faceModel = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
-                runtime: 'tfjs',
-                maxFaces: 10
-            });
-            detectObjects(cocoModel, faceModel);
-        }
+    if (faceModel) {
+        const faces = await faceModel.estimateFaces({ input: video });
+        faces.forEach(face => {
+            const { topLeft, bottomRight } = face.boundingBox;
+            const [x1, y1] = topLeft;
+            const [x2, y2] = bottomRight;
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.font = '22px Arial';
+            ctx.fillStyle = '#FF0000';
+            ctx.fillText(`Visage`, x1, y1 > 25 ? y1 - 8 : y1 + 25);
+        });
+    }
 
-        main();
-    </script>
+    requestAnimationFrame(detectObjects);
+}
+
+// Bouton changement caméra
+switchButton.addEventListener('click', async () => {
+    usingFrontCamera = !usingFrontCamera;
+    await setupCamera();
+});
+
+// Initialisation
+async function main() {
+    await setupCamera();
+    cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+    faceModel = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
+        runtime: 'tfjs',
+        maxFaces: 10
+    });
+    detectObjects();
+}
+
+main();
+</script>
 </body>
 </html>
