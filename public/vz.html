@@ -62,26 +62,31 @@ async function initDetector() {
     });
 }
 
-// Determine if hand is closed (simple heuristic)
+// Determine if hand is closed
 function isHandClosed(keypoints) {
-    // Vérifier distance entre le poignet et les pointes des doigts (index, majeur, annulaire, etc.)
     const wrist = keypoints[0];
     const fingerTips = [8, 12, 16, 20].map(i => keypoints[i]);
     let avgDistance = 0;
-    fingerTips.forEach(tip => {
-        avgDistance += Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
-    });
+    fingerTips.forEach(tip => avgDistance += Math.hypot(tip.x - wrist.x, tip.y - wrist.y));
     avgDistance /= fingerTips.length;
-    // Si les doigts sont proches du poignet, main fermée (valeur empirique)
     return avgDistance < 60;
 }
 
 // Draw landmarks and bounding box
 function drawResults(hands) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    // Inverser uniquement si caméra frontale pour miroir
+    if (usingFront) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1); 
+    }
+
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 3;
     ctx.fillStyle = 'white';
+
     hands.forEach(hand => {
         const keypoints = hand.keypoints;
         const xs = keypoints.map(p => p.x);
@@ -93,6 +98,8 @@ function drawResults(hands) {
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
         keypoints.forEach(p => ctx.fillRect(p.x - 3, p.y - 3, 6, 6));
     });
+
+    ctx.restore();
 }
 
 // Main loop
@@ -101,7 +108,10 @@ async function detectLoop() {
         requestAnimationFrame(detectLoop);
         return;
     }
-    const hands = await detector.estimateHands(video, { flipHorizontal: usingFront });
+
+    // flipHorizontal=false car on inverse le canvas pour le miroir
+    const hands = await detector.estimateHands(video, { flipHorizontal: false });
+
     if (hands.length > 0) {
         const closed = isHandClosed(hands[0].keypoints);
         if (closed && !wasOpen) {
@@ -110,6 +120,7 @@ async function detectLoop() {
         }
         wasOpen = !closed;
     }
+
     drawResults(hands);
     requestAnimationFrame(detectLoop);
 }
