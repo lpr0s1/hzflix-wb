@@ -58,7 +58,7 @@ async function setupCamera() {
     canvas.height = video.videoHeight;
 }
 
-// Init detectors
+// Initialize detectors
 async function initDetectors() {
     // Hand Pose
     const model = handPoseDetection.SupportedModels.MediaPipeHands;
@@ -67,11 +67,11 @@ async function initDetectors() {
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
         modelType: 'full'
     });
-    // Coco-SSD
+    // Coco-SSD pour les objets
     objectDetector = await ml5.objectDetector('cocossd');
 }
 
-// Hand closed heuristic
+// Determine if hand is closed
 function isHandClosed(keypoints) {
     const wrist = keypoints[0];
     const fingerTips = [8, 12, 16, 20].map(i => keypoints[i]);
@@ -81,13 +81,14 @@ function isHandClosed(keypoints) {
     return avgDistance < 60;
 }
 
-// Draw everything
+// Draw hands and objects
 function drawResults(hands, objects) {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.save();
-    if (usingFront) { ctx.translate(canvas.width,0); ctx.scale(-1,1); }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw hands
+    ctx.save();
+    if (usingFront) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+
+    // Dessiner mains
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 3;
     ctx.fillStyle = 'white';
@@ -103,7 +104,7 @@ function drawResults(hands, objects) {
         keypoints.forEach(p => ctx.fillRect(p.x-3, p.y-3, 6,6));
     });
 
-    // Draw objects
+    // Dessiner objets
     if (objects) {
         objects.forEach(obj => {
             const { x, y, width, height, label } = obj;
@@ -121,14 +122,14 @@ function drawResults(hands, objects) {
 
 // Main loop
 async function detectLoop() {
-    if (!handDetector || !objectDetector || video.readyState !==4) {
+    if (!handDetector || !objectDetector || video.readyState !== 4) {
         requestAnimationFrame(detectLoop);
         return;
     }
 
-    // Hands
+    // Détecter mains
     const hands = await handDetector.estimateHands(video, { flipHorizontal: false });
-    if (hands.length >0) {
+    if (hands.length > 0) {
         const closed = isHandClosed(hands[0].keypoints);
         if (closed && !wasOpen) {
             countClosed++;
@@ -137,7 +138,7 @@ async function detectLoop() {
         wasOpen = !closed;
     }
 
-    // Objects
+    // Détecter objets (personnes, voitures, etc.)
     objectDetector.detect(video, (err, results) => {
         drawResults(hands, results);
     });
@@ -145,14 +146,14 @@ async function detectLoop() {
     requestAnimationFrame(detectLoop);
 }
 
-// Buttons
+// Bouton changement caméra
 document.getElementById('switchCamera').onclick = async () => {
     usingFront = !usingFront;
     await setupCamera();
 };
 
-// Start everything
-(async()=>{
+// Démarrage
+(async () => {
     await setupCamera();
     await initDetectors();
     detectLoop();
