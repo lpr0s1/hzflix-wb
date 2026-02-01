@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Détection d'objets YOLO avec Webcam</title>
+<title>Détection OBJETS & VISAGES | ml5.js</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-html, body { margin:0; padding:0; overflow:hidden; }
+html, body { margin:0; padding:0; overflow:hidden; touch-action:none; background:#000;}
+#controls { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:8px; }
+button { padding:10px 14px; font-size:16px; background:#007bff; color:white; border:none; border-radius:5px; }
+button:hover { background:#0056b3; }
 video, canvas { position:absolute; top:0; left:0; width:100vw; height:100vh; object-fit:cover; }
-#controls { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; }
-button { padding:8px 12px; margin: 0 4px; font-size:16px; }
 </style>
 </head>
 <body>
@@ -22,25 +23,25 @@ button { padding:8px 12px; margin: 0 4px; font-size:16px; }
 <video id="webcam" autoplay muted playsinline></video>
 <canvas id="overlay"></canvas>
 
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ml5/0.12.2/ml5.min.js"></script>
 
 <script>
-const video = document.getElementById("webcam");
-const canvas = document.getElementById("overlay");
-const ctx = canvas.getContext("2d");
+const video = document.getElementById('webcam');
+const canvas = document.getElementById('overlay');
+const ctx = canvas.getContext('2d');
 
-let session = null;
-let usingFront = true;
-let zoom = 1;
+let detector;
+let usingFrontCamera = true;
+let zoomFactor = 1;
 
-const modelUrl = "model/yolov8n.onnx"; // modèle YOLOv8 ONNX (directement téléchargeable)
-
+// Setup caméra
 async function setupCamera() {
   if (video.srcObject) {
     video.srcObject.getTracks().forEach(t => t.stop());
   }
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: usingFront ? "user" : "environment" }
+    video: { facingMode: usingFrontCamera ? 'user' : 'environment' }
   });
   video.srcObject = stream;
   await video.play();
@@ -48,72 +49,64 @@ async function setupCamera() {
   canvas.height = video.videoHeight;
 }
 
-async function loadModel() {
-  session = await ort.InferenceSession.create(modelUrl);
-  console.log("Modèle chargé :", session);
-}
-
-function preprocess(image) {
-  const off = document.createElement("canvas");
-  off.width = 640;
-  off.height = 640;
-  const ctxOff = off.getContext("2d");
-  ctxOff.drawImage(image, 0, 0, 640, 640);
-  const imgData = ctxOff.getImageData(0,0,640,640);
-  const data = Float32Array.from(imgData.data).map(v => v / 255);
-  return new ort.Tensor("float32", data, [1, 3, 640, 640]);
-}
-
-async function detectFrame() {
-  if (!session || video.readyState !== 4) {
-    requestAnimationFrame(detectFrame);
+// Détection et dessin
+function detectAndDraw() {
+  if (!detector || video.readyState !== 4) {
+    requestAnimationFrame(detectAndDraw);
     return;
   }
 
-  const inputTensor = preprocess(video);
-  const feeds = { images: inputTensor };
-  const results = await session.run(feeds);
+  detector.detect(video, (err, results) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.scale(zoomFactor, zoomFactor);
 
-  // format typique YOLOv8 ONNX : boxes + scores + classes
-  const boxes = results.boxes.data;
-  const scores = results.scores.data;
-  const classes = results.classes.data;
+    if (results) {
+      results.forEach(obj => {
+        const { x, y, width, height, label } = obj;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.save();
-  if (usingFront) { ctx.translate(canvas.width, 0); ctx.scale(1,1); }
-  ctx.scale(zoom, zoom);
+        // boîte autour
+        ctx.strokeStyle = '#00FF00';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, width, height);
 
-  const threshold = 0.3;
-  for (let i=0; i<scores.length; i++) {
-    if (scores[i] > threshold) {
-      const idx = i*4;
-      const [cx, cy, w, h] = [
-        boxes[idx], boxes[idx+1], boxes[idx+2], boxes[idx+3]
-      ];
-      const x = cx - w/2, y = cy - h/2;
-
-      ctx.strokeStyle = "#00FF00";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x, y, w, h);
-      ctx.fillStyle = "#00FF00";
-      ctx.fillText(classes[i].toString(), x, y - 5);
+        // label
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#00FF00';
+        ctx.fillText(label, x, y > 20 ? y - 5 : y + 20);
+      });
     }
-  }
+    ctx.restore();
+  });
 
-  ctx.restore();
-  requestAnimationFrame(detectFrame);
+  requestAnimationFrame(detectAndDraw);
 }
 
-document.getElementById("switchCamera").onclick = async () => {
-  usingFront = !usingFront;
+// Initialisation du modèle
+async function startDetection() {
+  detector = await ml5.objectDetector('cocossd');
+  detectAndDraw();
+}
+
+// Boutons
+document.getElementById('switchCamera').addEventListener('click', async () => {
+  usingFrontCamera = !usingFrontCamera;
   await setupCamera();
-};
+});
 
-document.getElementById("zoomIn").onclick = () => zoom = Math.min(zoom+0.1, 3);
-document.getElementById("zoomOut").onclick = () => zoom = Math.max(zoom-0.1, 0.5);
+document.getElementById('zoomIn').addEventListener('click', () => {
+  zoomFactor = Math.min(zoomFactor + 0.1, 3);
+});
 
-Promise.all([setupCamera(), loadModel()]).then(() => detectFrame());
+document.getElementById('zoomOut').addEventListener('click', () => {
+  zoomFactor = Math.max(zoomFactor - 0.1, 0.5);
+});
+
+// Démarrage
+(async () => {
+  await setupCamera();
+  startDetection();
+})();
 </script>
 
 </body>
