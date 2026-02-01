@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Détection d'objets iOS</title>
+    <title>Détection d'objets et visages iOS</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@0.0.7/dist/face-detection.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; }
@@ -27,27 +28,46 @@
             });
         }
 
-        async function detectObjects(model) {
+        async function detectObjects(cocoModel, faceModel) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const predictions = await model.detect(video);
 
+            // Détection d'objets
+            const predictions = await cocoModel.detect(video);
             predictions.forEach(pred => {
                 const [x, y, width, height] = pred.bbox;
                 ctx.strokeStyle = '#00FF00';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.strokeRect(x, y, width, height);
                 ctx.font = '18px Arial';
                 ctx.fillStyle = '#00FF00';
                 ctx.fillText(`${pred.class} (${Math.round(pred.score * 100)}%)`, x, y > 20 ? y - 5 : y + 20);
             });
 
-            requestAnimationFrame(() => detectObjects(model));
+            // Détection de visages
+            const faces = await faceModel.estimateFaces({ input: video });
+            faces.forEach(face => {
+                const { topLeft, bottomRight } = face.boundingBox;
+                const [x1, y1] = topLeft;
+                const [x2, y2] = bottomRight;
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                ctx.font = '18px Arial';
+                ctx.fillStyle = '#FF0000';
+                ctx.fillText(`Visage`, x1, y1 > 20 ? y1 - 5 : y1 + 20);
+            });
+
+            requestAnimationFrame(() => detectObjects(cocoModel, faceModel));
         }
 
         async function main() {
             await setupCamera();
-            const model = await cocoSsd.load();
-            detectObjects(model);
+            const cocoModel = await cocoSsd.load();
+            const faceModel = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
+                runtime: 'tfjs',
+                maxFaces: 5
+            });
+            detectObjects(cocoModel, faceModel);
         }
 
         main();
