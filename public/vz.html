@@ -21,7 +21,7 @@ video, canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh
 
 <video id="webcam" autoplay muted playsinline></video>
 <canvas id="overlay"></canvas>
-<div id="label">Passages de main fermée : 0</div>
+<div id="label">Detection de la main seulement</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
@@ -80,7 +80,7 @@ function drawResults(hands) {
     // Inverser uniquement si caméra frontale pour miroir
     if (usingFront) {
         ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1); 
+        ctx.scale(1, 1); 
     }
 
     ctx.strokeStyle = '#00FF00';
