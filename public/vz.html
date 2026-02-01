@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Détection d'objets iOS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; }
+        video { position: absolute; top: 0; left: 0; transform: scaleX(-1); }
+    </style>
+</head>
+<body>
+    <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
+    <canvas id="overlay" width="640" height="480"></canvas>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('overlay');
+        const ctx = canvas.getContext('2d');
+
+        async function setupCamera() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise(resolve => {
+                video.onloadedmetadata = () => { resolve(video); };
+            });
+        }
+
+        async function detectObjects(model) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const predictions = await model.detect(video);
+
+            predictions.forEach(pred => {
+                const [x, y, width, height] = pred.bbox;
+                ctx.strokeStyle = '#00FF00';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);
+                ctx.font = '18px Arial';
+                ctx.fillStyle = '#00FF00';
+                ctx.fillText(`${pred.class} (${Math.round(pred.score * 100)}%)`, x, y > 20 ? y - 5 : y + 20);
+            });
+
+            requestAnimationFrame(() => detectObjects(model));
+        }
+
+        async function main() {
+            await setupCamera();
+            const model = await cocoSsd.load();
+            detectObjects(model);
+        }
+
+        main();
+    </script>
+</body>
+</html>
