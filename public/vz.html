@@ -116,7 +116,7 @@ async function detectLoop() {
         const closed = isHandClosed(hands[0].keypoints);
         if (closed && !wasOpen) {
             countClosed++;
-            labelText.textContent = `Passages de main fermée : ${countClosed}`;
+            labelText.textContent = `Votre main est detecter`;
         }
         wasOpen = !closed;
     }
