@@ -81,7 +81,7 @@ async function setupCamera() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             // Appliquer miroir uniquement pour caméra frontale
-            video.style.transform = usingFrontCamera ? "scaleX(-1)" : "scaleX(1)";
+            video.style.transform = usingFrontCamera ? "scaleX(1)" : "scaleX(1)";
             resolve(video);
         };
     });
