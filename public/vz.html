@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Détection d'objets et visages iOS</title>
+    <title>Détection multi-objets et visages</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@0.0.7/dist/face-detection.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        #controls { position: absolute; top: 10px; z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; }
         video { position: absolute; top: 0; left: 0; transform: scaleX(-1); }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
     </style>
 </head>
 <body>
+    <div id="controls">
+        <button id="switchCamera">Changer de caméra</button>
+    </div>
     <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
     <canvas id="overlay" width="640" height="480"></canvas>
 
@@ -19,10 +24,26 @@
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('overlay');
         const ctx = canvas.getContext('2d');
+        const switchButton = document.getElementById('switchCamera');
+
+        let currentStream = null;
+        let usingFrontCamera = true;
 
         async function setupCamera() {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: { 
+                    facingMode: usingFrontCamera ? 'user' : 'environment',
+                    width: 640,
+                    height: 480
+                }
+            };
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = currentStream;
+
             return new Promise(resolve => {
                 video.onloadedmetadata = () => { resolve(video); };
             });
@@ -60,12 +81,17 @@
             requestAnimationFrame(() => detectObjects(cocoModel, faceModel));
         }
 
+        switchButton.addEventListener('click', async () => {
+            usingFrontCamera = !usingFrontCamera;
+            await setupCamera();
+        });
+
         async function main() {
             await setupCamera();
-            const cocoModel = await cocoSsd.load();
+            const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
             const faceModel = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
                 runtime: 'tfjs',
-                maxFaces: 5
+                maxFaces: 10
             });
             detectObjects(cocoModel, faceModel);
         }
