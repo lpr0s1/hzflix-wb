@@ -2,17 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Détection objets et visages</title>
+<title>Détection d'objets YOLO avec Webcam</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@0.0.7/dist/face-detection.min.js"></script>
 <style>
-html, body { margin:0; padding:0; overflow:hidden; touch-action:none; }
-#controls { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:10px; }
-button { padding:12px 18px; font-size:16px; background-color:#007BFF; color:white; border:none; border-radius:5px; cursor:pointer; }
-button:hover { background-color:#0056b3; }
+html, body { margin:0; padding:0; overflow:hidden; }
 video, canvas { position:absolute; top:0; left:0; width:100vw; height:100vh; object-fit:cover; }
+#controls { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; }
+button { padding:8px 12px; margin: 0 4px; font-size:16px; }
 </style>
 </head>
 <body>
@@ -26,89 +22,99 @@ video, canvas { position:absolute; top:0; left:0; width:100vw; height:100vh; obj
 <video id="webcam" autoplay muted playsinline></video>
 <canvas id="overlay"></canvas>
 
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
 <script>
-const video = document.getElementById('webcam');
-const canvas = document.getElementById('overlay');
-const ctx = canvas.getContext('2d');
+const video = document.getElementById("webcam");
+const canvas = document.getElementById("overlay");
+const ctx = canvas.getContext("2d");
 
-let currentStream = null;
-let usingFrontCamera = true;
-let cocoModel = null;
-let faceModel = null;
-let zoomFactor = 1;
+let session = null;
+let usingFront = true;
+let zoom = 1;
 
-// Setup caméra
+const modelUrl = "model/yolov8n.onnx"; // modèle YOLOv8 ONNX (directement téléchargeable)
+
 async function setupCamera() {
-  if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-  const constraints = { video: { facingMode: usingFrontCamera ? 'user' : 'environment' } };
-  currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-  video.srcObject = currentStream;
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: usingFront ? "user" : "environment" }
+  });
+  video.srcObject = stream;
   await video.play();
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 }
 
-// Détection et dessin
-async function detectAndDraw() {
-  if (video.readyState !== 4) { requestAnimationFrame(detectAndDraw); return; }
+async function loadModel() {
+  session = await ort.InferenceSession.create(modelUrl);
+  console.log("Modèle chargé :", session);
+}
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  if (usingFrontCamera) { ctx.translate(canvas.width,0); ctx.scale(-1,1); } // miroir
-  ctx.scale(zoomFactor, zoomFactor);
+function preprocess(image) {
+  const off = document.createElement("canvas");
+  off.width = 640;
+  off.height = 640;
+  const ctxOff = off.getContext("2d");
+  ctxOff.drawImage(image, 0, 0, 640, 640);
+  const imgData = ctxOff.getImageData(0,0,640,640);
+  const data = Float32Array.from(imgData.data).map(v => v / 255);
+  return new ort.Tensor("float32", data, [1, 3, 640, 640]);
+}
 
-  // Coco-SSD pour objets
-  if (cocoModel) {
-    const predictions = await cocoModel.detect(video);
-    predictions.forEach(pred => {
-      const [x,y,w,h] = pred.bbox;
-      ctx.strokeStyle = '#00FF00';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x,y,w,h);
-      ctx.font = '22px Arial';
-      ctx.fillStyle = '#00FF00';
-      ctx.fillText(`${pred.class} (${Math.round(pred.score*100)}%)`, x, y>25?y-8:y+25);
-    });
+async function detectFrame() {
+  if (!session || video.readyState !== 4) {
+    requestAnimationFrame(detectFrame);
+    return;
   }
 
-  // MediaPipe pour visages
-  if (faceModel) {
-    const faces = await faceModel.estimateFaces({ input: video });
-    faces.forEach(face => {
-      const { topLeft, bottomRight } = face.boundingBox;
-      const [x1,y1] = topLeft;
-      const [x2,y2] = bottomRight;
-      ctx.strokeStyle = '#FF0000';
+  const inputTensor = preprocess(video);
+  const feeds = { images: inputTensor };
+  const results = await session.run(feeds);
+
+  // format typique YOLOv8 ONNX : boxes + scores + classes
+  const boxes = results.boxes.data;
+  const scores = results.scores.data;
+  const classes = results.classes.data;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  if (usingFront) { ctx.translate(canvas.width, 0); ctx.scale(-1,1); }
+  ctx.scale(zoom, zoom);
+
+  const threshold = 0.3;
+  for (let i=0; i<scores.length; i++) {
+    if (scores[i] > threshold) {
+      const idx = i*4;
+      const [cx, cy, w, h] = [
+        boxes[idx], boxes[idx+1], boxes[idx+2], boxes[idx+3]
+      ];
+      const x = cx - w/2, y = cy - h/2;
+
+      ctx.strokeStyle = "#00FF00";
       ctx.lineWidth = 3;
-      ctx.strokeRect(x1,y1,x2-x1,y2-y1);
-      ctx.font = '22px Arial';
-      ctx.fillStyle = '#FF0000';
-      ctx.fillText(`Visage`, x1, y1>25?y1-8:y1+25);
-    });
+      ctx.strokeRect(x, y, w, h);
+      ctx.fillStyle = "#00FF00";
+      ctx.fillText(classes[i].toString(), x, y - 5);
+    }
   }
 
   ctx.restore();
-  requestAnimationFrame(detectAndDraw);
+  requestAnimationFrame(detectFrame);
 }
 
-// Boutons
-document.getElementById('switchCamera').addEventListener('click', async () => {
-  usingFrontCamera = !usingFrontCamera;
+document.getElementById("switchCamera").onclick = async () => {
+  usingFront = !usingFront;
   await setupCamera();
-});
+};
 
-document.getElementById('zoomIn').addEventListener('click', () => { zoomFactor = Math.min(zoomFactor+0.1, 3); });
-document.getElementById('zoomOut').addEventListener('click', () => { zoomFactor = Math.max(zoomFactor-0.1, 0.5); });
+document.getElementById("zoomIn").onclick = () => zoom = Math.min(zoom+0.1, 3);
+document.getElementById("zoomOut").onclick = () => zoom = Math.max(zoom-0.1, 0.5);
 
-// Initialisation
-async function main() {
-  await setupCamera();
-  cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' }); // modèle pré-entraîné
-  faceModel = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, { runtime:'tfjs', maxFaces:10 });
-  detectAndDraw();
-}
-
-main();
+Promise.all([setupCamera(), loadModel()]).then(() => detectFrame());
 </script>
+
 </body>
 </html>
