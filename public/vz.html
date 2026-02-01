@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Hand Tracking & Counting</title>
+<title>Hand + Object Tracking</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
 html, body { margin: 0; padding: 0; overflow: hidden; background: #000; }
@@ -23,6 +23,11 @@ video, canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh
 <canvas id="overlay"></canvas>
 <div id="label">Passages de main fermée : 0</div>
 
+<!-- ml5.js pour Coco-SSD -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ml5/0.12.2/ml5.min.js"></script>
+
+<!-- TensorFlow Hand Pose -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
@@ -35,8 +40,9 @@ const canvas = document.getElementById('overlay');
 const ctx = canvas.getContext('2d');
 const labelText = document.getElementById('label');
 
-let detector = null;
 let usingFront = true;
+let handDetector = null;
+let objectDetector = null;
 let countClosed = 0;
 let wasOpen = false;
 
@@ -52,17 +58,20 @@ async function setupCamera() {
     canvas.height = video.videoHeight;
 }
 
-// Initialize MediaPipe Hands detector
-async function initDetector() {
+// Init detectors
+async function initDetectors() {
+    // Hand Pose
     const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    detector = await handPoseDetection.createDetector(model, {
+    handDetector = await handPoseDetection.createDetector(model, {
         runtime: 'mediapipe',
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
         modelType: 'full'
     });
+    // Coco-SSD
+    objectDetector = await ml5.objectDetector('cocossd');
 }
 
-// Determine if hand is closed
+// Hand closed heuristic
 function isHandClosed(keypoints) {
     const wrist = keypoints[0];
     const fingerTips = [8, 12, 16, 20].map(i => keypoints[i]);
@@ -72,21 +81,16 @@ function isHandClosed(keypoints) {
     return avgDistance < 60;
 }
 
-// Draw landmarks and bounding box
-function drawResults(hands) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+// Draw everything
+function drawResults(hands, objects) {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.save();
-    // Inverser uniquement si caméra frontale pour miroir
-    if (usingFront) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1); 
-    }
+    if (usingFront) { ctx.translate(canvas.width,0); ctx.scale(-1,1); }
 
+    // Draw hands
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 3;
     ctx.fillStyle = 'white';
-
     hands.forEach(hand => {
         const keypoints = hand.keypoints;
         const xs = keypoints.map(p => p.x);
@@ -96,23 +100,35 @@ function drawResults(hands) {
         const minY = Math.min(...ys);
         const maxY = Math.max(...ys);
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-        keypoints.forEach(p => ctx.fillRect(p.x - 3, p.y - 3, 6, 6));
+        keypoints.forEach(p => ctx.fillRect(p.x-3, p.y-3, 6,6));
     });
+
+    // Draw objects
+    if (objects) {
+        objects.forEach(obj => {
+            const { x, y, width, height, label } = obj;
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, width, height);
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#FF0000';
+            ctx.fillText(label, x, y > 20 ? y - 5 : y + 20);
+        });
+    }
 
     ctx.restore();
 }
 
 // Main loop
 async function detectLoop() {
-    if (!detector || video.readyState !== 4) {
+    if (!handDetector || !objectDetector || video.readyState !==4) {
         requestAnimationFrame(detectLoop);
         return;
     }
 
-    // flipHorizontal=false car on inverse le canvas pour le miroir
-    const hands = await detector.estimateHands(video, { flipHorizontal: false });
-
-    if (hands.length > 0) {
+    // Hands
+    const hands = await handDetector.estimateHands(video, { flipHorizontal: false });
+    if (hands.length >0) {
         const closed = isHandClosed(hands[0].keypoints);
         if (closed && !wasOpen) {
             countClosed++;
@@ -121,18 +137,24 @@ async function detectLoop() {
         wasOpen = !closed;
     }
 
-    drawResults(hands);
+    // Objects
+    objectDetector.detect(video, (err, results) => {
+        drawResults(hands, results);
+    });
+
     requestAnimationFrame(detectLoop);
 }
 
+// Buttons
 document.getElementById('switchCamera').onclick = async () => {
     usingFront = !usingFront;
     await setupCamera();
 };
 
-(async () => {
+// Start everything
+(async()=>{
     await setupCamera();
-    await initDetector();
+    await initDetectors();
     detectLoop();
 })();
 </script>
