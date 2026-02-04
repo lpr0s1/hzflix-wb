@@ -1118,6 +1118,11 @@
             document.getElementById('results').classList.add('hidden');
             document.getElementById('critical-section').classList.add('hidden');
 
+            window.scrollBy({
+                top: 250,
+                left: 0,
+                behavior: "smooth"
+            })
             // Extract vendor and product info
             let vendor = '';
             let product = '';
