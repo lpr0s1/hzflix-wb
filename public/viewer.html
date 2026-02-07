@@ -8,21 +8,28 @@
 <title>Viewer écran</title>
 </head>
 <body class="bg-black flex flex-col items-center justify-center h-screen p-6 space-y-4">
-<h1 class="text-white text-2xl font-bold">Viewer d'écran</h1>
-<input id="broadcasterId" placeholder="ID du diffuseur" class="p-2 rounded-xl w-64 text-black"/>
+<h1 class="text-white text-2xl font-bold text-center">Viewer d'écran</h1>
+
+<input id="broadcasterId" placeholder="ID du diffuseur" class="p-3 rounded-xl w-64 text-black"/>
 <button id="connect" class="bg-green-600 px-6 py-3 rounded-xl text-lg">Se connecter</button>
-<video id="video" autoplay playsinline class="rounded-xl shadow-xl mt-4 w-3/4"></video>
+
+<video id="video" autoplay playsinline class="rounded-xl shadow-xl mt-4 w-11/12 max-w-lg"></video>
 
 <script>
 const peer = new Peer(); // PeerJS cloud
 const video = document.getElementById('video');
 
 document.getElementById('connect').onclick = () => {
-  const broadcasterId = document.getElementById('broadcasterId').value;
-  const call = peer.call(broadcasterId, null); // Appel au diffuseur
+  const broadcasterId = document.getElementById('broadcasterId').value.trim();
+  if (!broadcasterId) return alert("Entrez l'ID du diffuseur");
+
+  const call = peer.call(broadcasterId, null); // On initie la connexion
   call.on('stream', stream => {
-    video.srcObject = stream; // Affiche le flux
+    video.srcObject = stream; // Affiche le flux en direct
   });
+
+  call.on('close', () => alert("Le diffuseur a arrêté la diffusion"));
+  call.on('error', err => console.error(err));
 };
 </script>
 </body>
