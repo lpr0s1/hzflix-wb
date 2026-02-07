@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<title>Viewer écran</title>
+</head>
+<body class="bg-black flex flex-col items-center justify-center h-screen p-6 space-y-4">
+<h1 class="text-white text-xl font-bold">Viewer écran</h1>
+<video id="video" autoplay playsinline class="rounded-xl w-3/4 shadow-lg"></video>
+<textarea id="offer" class="w-full h-40 bg-zinc-900 text-white p-4 rounded-xl" placeholder="Coller l'offer ici"></textarea>
+<button id="connect" class="bg-green-600 px-6 py-3 rounded-xl">Se connecter</button>
+
+<script>
+const pc = new RTCPeerConnection();
+const video = document.getElementById("video");
+
+// Recevoir le flux
+pc.ontrack = e => video.srcObject = e.streams[0];
+
+document.getElementById("connect").onclick = async () => {
+  const offer = JSON.parse(document.getElementById("offer").value);
+  await pc.setRemoteDescription(offer);
+  
+  // Créer answer
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+
+  console.log("=== COPY THIS ANSWER BACK TO BROADCASTER ===");
+  console.log(JSON.stringify(pc.localDescription));
+
+  // ICE candidates pour LAN
+  pc.onicecandidate = event => {
+    if (event.candidate) console.log("New ICE candidate:", JSON.stringify(event.candidate));
+  };
+};
+</script>
+</body>
+</html>
