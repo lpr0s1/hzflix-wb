@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<title>Diffusion Écran Local</title>
+</head>
+<body class="bg-black flex flex-col items-center justify-center h-screen p-6 space-y-4">
+<h1 class="text-white text-xl font-bold">Diffuseur écran</h1>
+<button id="start" class="bg-blue-600 px-6 py-3 rounded-xl">Démarrer diffusion</button>
+<video id="preview" autoplay muted playsinline class="rounded-xl w-3/4 shadow-lg"></video>
+
+<script>
+let pc = new RTCPeerConnection();
+const preview = document.getElementById("preview");
+
+document.getElementById("start").onclick = async () => {
+  // Capture écran
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  preview.srcObject = stream;
+
+  // Ajouter les tracks au peer connection
+  stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+  // Créer offer
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  console.log("=== COPY THIS OFFER TO VIEWER ===");
+  console.log(JSON.stringify(pc.localDescription));
+
+  // ICE candidates (pour tester en LAN)
+  pc.onicecandidate = event => {
+    if (event.candidate) {
+      console.log("New ICE candidate:", JSON.stringify(event.candidate));
+    }
+  };
+};
+</script>
+</body>
+</html>
