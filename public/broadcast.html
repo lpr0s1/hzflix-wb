@@ -7,30 +7,39 @@
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <title>Diffuseur écran</title>
 </head>
+
 <body class="bg-black flex flex-col items-center justify-center h-screen p-6 space-y-4">
 <h1 class="text-white text-2xl font-bold">Diffuseur d'écran</h1>
 <button id="start" class="bg-blue-600 px-6 py-3 rounded-xl text-lg">Démarrer diffusion</button>
 <p class="text-white" id="peerId"></p>
 
 <script>
-const peer = new Peer(); // PeerJS cloud server gratuit
+const startBtn = document.getElementById('start');
+const peerIdEl = document.getElementById('peerId');
 
-peer.on('open', id => {
-  document.getElementById('peerId').innerText = `Votre ID : ${id}\nEnvoyez-le au viewer.`;
-});
+// Crée le Peer après le click pour s'assurer que getDisplayMedia fonctionne
+startBtn.onclick = async () => {
+  // Demande l'écran avant tout
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+  } catch (err) {
+    alert("Impossible de capturer l'écran : " + err);
+    return;
+  }
 
-document.getElementById('start').onclick = async () => {
-  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+  const peer = new Peer(); // PeerJS cloud
+  peer.on('open', id => {
+    peerIdEl.innerText = `Votre ID : ${id}\nEnvoyez-le aux viewers.`;
+  });
 
-  // Garde un objet pour tous les viewers
-  const calls = {};
-
-  // Quand un viewer se connecte automatiquement
   peer.on('call', call => {
-    call.answer(stream); // Envoie le flux d'écran
-    calls[call.peer] = call;
+    call.answer(stream); // Envoie le flux capturé
     console.log(`Viewer connecté : ${call.peer}`);
   });
+
+  startBtn.disabled = true; // Désactive le bouton
+  startBtn.innerText = "Diffusion en cours...";
 };
 </script>
 </body>
