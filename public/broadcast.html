@@ -4,38 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.tailwindcss.com"></script>
-<title>Diffusion Écran Local</title>
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<title>Diffuseur écran</title>
 </head>
 <body class="bg-black flex flex-col items-center justify-center h-screen p-6 space-y-4">
-<h1 class="text-white text-xl font-bold">Diffuseur écran</h1>
-<button id="start" class="bg-blue-600 px-6 py-3 rounded-xl">Démarrer diffusion</button>
-<video id="preview" autoplay muted playsinline class="rounded-xl w-3/4 shadow-lg"></video>
+<h1 class="text-white text-2xl font-bold">Diffuseur d'écran</h1>
+<button id="start" class="bg-blue-600 px-6 py-3 rounded-xl text-lg">Démarrer diffusion</button>
+<p class="text-white" id="peerId"></p>
 
 <script>
-let pc = new RTCPeerConnection();
-const preview = document.getElementById("preview");
+const peer = new Peer(); // PeerJS cloud server gratuit
 
-document.getElementById("start").onclick = async () => {
-  // Capture écran
-  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-  preview.srcObject = stream;
+peer.on('open', id => {
+  document.getElementById('peerId').innerText = `Votre ID : ${id}\nEnvoyez-le au viewer.`;
+});
 
-  // Ajouter les tracks au peer connection
-  stream.getTracks().forEach(track => pc.addTrack(track, stream));
+document.getElementById('start').onclick = async () => {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-  // Créer offer
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
+  // Garde un objet pour tous les viewers
+  const calls = {};
 
-  console.log("=== COPY THIS OFFER TO VIEWER ===");
-  console.log(JSON.stringify(pc.localDescription));
-
-  // ICE candidates (pour tester en LAN)
-  pc.onicecandidate = event => {
-    if (event.candidate) {
-      console.log("New ICE candidate:", JSON.stringify(event.candidate));
-    }
-  };
+  // Quand un viewer se connecte automatiquement
+  peer.on('call', call => {
+    call.answer(stream); // Envoie le flux d'écran
+    calls[call.peer] = call;
+    console.log(`Viewer connecté : ${call.peer}`);
+  });
 };
 </script>
 </body>
